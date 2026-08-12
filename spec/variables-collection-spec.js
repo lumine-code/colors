@@ -4,7 +4,15 @@
  * DS102: Remove unnecessary code created because of implicit returns
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
  */
+const path = require("path");
+
 const VariablesCollection = require("../lib/variables-collection");
+
+// Variables bucket under their path, and a restored one is normalised to this
+// platform's spelling so a rescan -- which reports what the scanner found --
+// replaces the right bucket. The expectation is built the same way rather than
+// as a POSIX literal that could only ever match on a POSIX machine.
+const FOO_PATH = path.normalize("/path/to/foo.styl");
 
 describe("VariablesCollection", function () {
   let [collection, changeSpy] = Array.from([]);
@@ -568,8 +576,8 @@ describe("VariablesCollection", function () {
 
       return it("restores all the denormalized data in the collection", function () {
         expect(collection.variableNames).toEqual(["foo", "bar", "baz"]);
-        expect(Object.keys(collection.variablesByPath)).toEqual(["/path/to/foo.styl"]);
-        expect(collection.variablesByPath["/path/to/foo.styl"].length).toEqual(3);
+        expect(Object.keys(collection.variablesByPath)).toEqual([FOO_PATH]);
+        expect(collection.variablesByPath[FOO_PATH].length).toEqual(3);
         return expect(collection.dependencyGraph).toEqual({
           foo: ["bar"],
         });
