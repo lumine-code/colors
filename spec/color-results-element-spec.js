@@ -1,70 +1,84 @@
-{click} = require './helpers/events'
-ColorSearch = require '../lib/color-search'
+/*
+ * decaffeinate suggestions:
+ * DS101: Remove unnecessary use of Array.from
+ * DS102: Remove unnecessary code created because of implicit returns
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const {click} = require('./helpers/events');
+const ColorSearch = require('../lib/color-search');
 
-describe 'ColorResultsElement', ->
-  [search, resultsElement, pigments, project, completeSpy, findSpy] = []
+describe('ColorResultsElement', function() {
+  let [search, resultsElement, pigments, project, completeSpy, findSpy] = Array.from([]);
 
-  beforeEach ->
-    atom.config.set 'pigments.sourceNames', [
-      '**/*.styl'
+  beforeEach(function() {
+    atom.config.set('pigments.sourceNames', [
+      '**/*.styl',
       '**/*.less'
-    ]
+    ]);
 
-    waitsForPromise -> atom.packages.activatePackage('pigments').then (pkg) ->
-      pigments = pkg.mainModule
-      project = pigments.getProject()
+    waitsForPromise(() => atom.packages.activatePackage('pigments').then(function(pkg) {
+      pigments = pkg.mainModule;
+      return project = pigments.getProject();
+    }));
 
-    waitsForPromise -> project.initialize()
+    waitsForPromise(() => project.initialize());
 
-    runs ->
-      search = project.findAllColors()
-      spyOn(search, 'search').andCallThrough()
-      completeSpy = jasmine.createSpy('did-complete-search')
-      search.onDidCompleteSearch(completeSpy)
+    return runs(function() {
+      search = project.findAllColors();
+      spyOn(search, 'search').andCallThrough();
+      completeSpy = jasmine.createSpy('did-complete-search');
+      search.onDidCompleteSearch(completeSpy);
 
-      resultsElement = atom.views.getView(search)
+      resultsElement = atom.views.getView(search);
 
-      jasmine.attachToDOM(resultsElement)
+      return jasmine.attachToDOM(resultsElement);
+    });
+  });
 
-  afterEach -> waitsFor -> completeSpy.callCount > 0
+  afterEach(() => waitsFor(() => completeSpy.callCount > 0));
 
-  it 'is associated with ColorSearch model', ->
-    expect(resultsElement).toBeDefined()
+  it('is associated with ColorSearch model', () => expect(resultsElement).toBeDefined());
 
-  it 'starts the search', ->
-    expect(search.search).toHaveBeenCalled()
+  it('starts the search', () => expect(search.search).toHaveBeenCalled());
 
-  describe 'when matches are found', ->
-    beforeEach -> waitsFor -> completeSpy.callCount > 0
+  return describe('when matches are found', function() {
+    beforeEach(() => waitsFor(() => completeSpy.callCount > 0));
 
-    it 'groups results by files', ->
-      fileResults = resultsElement.querySelectorAll('.list-nested-item')
+    it('groups results by files', function() {
+      const fileResults = resultsElement.querySelectorAll('.list-nested-item');
 
-      expect(fileResults.length).toEqual(8)
+      expect(fileResults.length).toEqual(8);
 
-      expect(fileResults[0].querySelectorAll('li.list-item').length).toEqual(3)
+      return expect(fileResults[0].querySelectorAll('li.list-item').length).toEqual(3);
+    });
 
-    describe 'when a file item is clicked', ->
-      [fileItem] = []
-      beforeEach ->
-        fileItem = resultsElement.querySelector('.list-nested-item > .list-item')
-        click(fileItem)
+    describe('when a file item is clicked', function() {
+      let [fileItem] = Array.from([]);
+      beforeEach(function() {
+        fileItem = resultsElement.querySelector('.list-nested-item > .list-item');
+        return click(fileItem);
+      });
 
-      it 'collapses the file matches', ->
-        expect(resultsElement.querySelector('.list-nested-item.collapsed')).toExist()
+      return it('collapses the file matches', () => expect(resultsElement.querySelector('.list-nested-item.collapsed')).toExist());
+    });
 
-    describe 'when a matches item is clicked', ->
-      [matchItem, spy] = []
-      beforeEach ->
-        spy = jasmine.createSpy('did-add-text-editor')
+    return describe('when a matches item is clicked', function() {
+      let [matchItem, spy] = Array.from([]);
+      beforeEach(function() {
+        spy = jasmine.createSpy('did-add-text-editor');
 
-        atom.workspace.onDidAddTextEditor(spy)
-        matchItem = resultsElement.querySelector('.search-result.list-item')
-        click(matchItem)
+        atom.workspace.onDidAddTextEditor(spy);
+        matchItem = resultsElement.querySelector('.search-result.list-item');
+        click(matchItem);
 
-        waitsFor -> spy.callCount > 0
+        return waitsFor(() => spy.callCount > 0);
+      });
 
-      it 'opens the file', ->
-        expect(spy).toHaveBeenCalled()
-        {textEditor} = spy.argsForCall[0][0]
-        expect(textEditor.getSelectedBufferRange()).toEqual([[1,13],[1,23]])
+      return it('opens the file', function() {
+        expect(spy).toHaveBeenCalled();
+        const {textEditor} = spy.argsForCall[0][0];
+        return expect(textEditor.getSelectedBufferRange()).toEqual([[1,13],[1,23]]);
+      });
+    });
+  });
+});

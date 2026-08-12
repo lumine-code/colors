@@ -1,413 +1,447 @@
-{Disposable} = require 'atom'
-Pigments = require '../lib/pigments'
-PigmentsAPI = require '../lib/pigments-api'
-registry = require '../lib/variable-expressions'
+/*
+ * decaffeinate suggestions:
+ * DS101: Remove unnecessary use of Array.from
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const {Disposable} = require('atom');
+const Pigments = require('../lib/pigments');
+const PigmentsAPI = require('../lib/pigments-api');
+const registry = require('../lib/variable-expressions');
 
-{SERIALIZE_VERSION, SERIALIZE_MARKERS_VERSION} = require '../lib/versions'
+const {SERIALIZE_VERSION, SERIALIZE_MARKERS_VERSION} = require('../lib/versions');
 
-describe "Pigments", ->
-  [workspaceElement, pigments, project] = []
+describe("Pigments", function() {
+  let [workspaceElement, pigments, project] = Array.from([]);
 
-  beforeEach ->
-    workspaceElement = atom.views.getView(atom.workspace)
-    jasmine.attachToDOM(workspaceElement)
+  beforeEach(function() {
+    workspaceElement = atom.views.getView(atom.workspace);
+    jasmine.attachToDOM(workspaceElement);
 
-    atom.config.set('pigments.sourceNames', ['**/*.sass', '**/*.styl'])
-    atom.config.set('pigments.ignoredNames', [])
-    atom.config.set('pigments.ignoredScopes', [])
-    atom.config.set('pigments.autocompleteScopes', [])
+    atom.config.set('pigments.sourceNames', ['**/*.sass', '**/*.styl']);
+    atom.config.set('pigments.ignoredNames', []);
+    atom.config.set('pigments.ignoredScopes', []);
+    atom.config.set('pigments.autocompleteScopes', []);
 
-    registry.createExpression 'pigments:txt_vars', '^[ \\t]*([a-zA-Z_$][a-zA-Z0-9\\-_]*)\\s*=(?!=)\\s*([^\\n\\r;]*);?$', ['txt']
+    registry.createExpression('pigments:txt_vars', '^[ \\t]*([a-zA-Z_$][a-zA-Z0-9\\-_]*)\\s*=(?!=)\\s*([^\\n\\r;]*);?$', ['txt']);
 
-    waitsForPromise label: 'pigments activation', ->
-      atom.packages.activatePackage('pigments').then (pkg) ->
-        pigments = pkg.mainModule
-        project = pigments.getProject()
+    return waitsForPromise({label: 'pigments activation'}, () => atom.packages.activatePackage('pigments').then(function(pkg) {
+      pigments = pkg.mainModule;
+      return project = pigments.getProject();
+    }));
+  });
 
-  afterEach ->
-    registry.removeExpression 'pigments:txt_vars'
-    project?.destroy()
+  afterEach(function() {
+    registry.removeExpression('pigments:txt_vars');
+    return (project != null ? project.destroy() : undefined);
+  });
 
-  it 'instanciates a ColorProject instance', ->
-    expect(pigments.getProject()).toBeDefined()
+  it('instanciates a ColorProject instance', () => expect(pigments.getProject()).toBeDefined());
 
-  it 'serializes the project', ->
-    date = new Date
-    spyOn(pigments.getProject(), 'getTimestamp').andCallFake -> date
-    expect(pigments.serialize()).toEqual({
-      project:
-        deserializer: 'ColorProject'
-        timestamp: date
-        version: SERIALIZE_VERSION
-        markersVersion: SERIALIZE_MARKERS_VERSION
-        globalSourceNames: ['**/*.sass', '**/*.styl']
-        globalIgnoredNames: []
+  it('serializes the project', function() {
+    const date = new Date;
+    spyOn(pigments.getProject(), 'getTimestamp').andCallFake(() => date);
+    return expect(pigments.serialize()).toEqual({
+      project: {
+        deserializer: 'ColorProject',
+        timestamp: date,
+        version: SERIALIZE_VERSION,
+        markersVersion: SERIALIZE_MARKERS_VERSION,
+        globalSourceNames: ['**/*.sass', '**/*.styl'],
+        globalIgnoredNames: [],
         buffers: {}
-    })
-
-  describe 'when deactivated', ->
-    [editor, editorElement, colorBuffer] = []
-    beforeEach ->
-      waitsForPromise label: 'text-editor opened', ->
-        atom.workspace.open('four-variables.styl').then (e) ->
-          editor = e
-          editorElement = atom.views.getView(e)
-          colorBuffer = project.colorBufferForEditor(editor)
-
-      waitsFor 'pigments markers appended to the DOM', ->
-        editorElement.querySelector('pigments-markers')
-
-      runs ->
-        spyOn(project, 'destroy').andCallThrough()
-        spyOn(colorBuffer, 'destroy').andCallThrough()
-
-        pigments.deactivate()
-
-    it 'destroys the pigments project', ->
-      expect(project.destroy).toHaveBeenCalled()
-
-    it 'destroys all the color buffers that were created', ->
-      expect(project.colorBufferForEditor(editor)).toBeUndefined()
-      expect(project.colorBuffersByEditorId).toBeNull()
-      expect(colorBuffer.destroy).toHaveBeenCalled()
-
-    it 'destroys the color buffer element that were added to the DOM', ->
-      expect(editorElement.querySelector('pigments-markers')).not.toExist()
-
-  describe 'pigments:project-settings', ->
-    item = null
-    beforeEach ->
-      atom.commands.dispatch(workspaceElement, 'pigments:project-settings')
-
-      waitsFor 'active pane item', ->
-        item = atom.workspace.getActivePaneItem()
-        item?
-
-    it 'opens a settings view in the active pane', ->
-      item.matches('pigments-color-project')
-
-  ##       ###    ########  ####
-  ##      ## ##   ##     ##  ##
-  ##     ##   ##  ##     ##  ##
-  ##    ##     ## ########   ##
-  ##    ######### ##         ##
-  ##    ##     ## ##         ##
-  ##    ##     ## ##        ####
-
-  describe 'API provider', ->
-    [service, editor, editorElement, buffer] = []
-    beforeEach ->
-      waitsForPromise label: 'text-editor opened', ->
-        atom.workspace.open('four-variables.styl').then (e) ->
-          editor = e
-          editorElement = atom.views.getView(e)
-          buffer = project.colorBufferForEditor(editor)
-
-      runs -> service = pigments.provideAPI()
-
-      waitsForPromise label: 'project initialized', -> project.initialize()
-
-    it 'returns an object conforming to the API', ->
-      expect(service instanceof PigmentsAPI).toBeTruthy()
-
-      expect(service.getProject()).toBe(project)
-
-      expect(service.getPalette()).toEqual(project.getPalette())
-      expect(service.getPalette()).not.toBe(project.getPalette())
-
-      expect(service.getVariables()).toEqual(project.getVariables())
-      expect(service.getColorVariables()).toEqual(project.getColorVariables())
-
-    describe '::observeColorBuffers', ->
-      [spy] = []
-
-      beforeEach ->
-        spy = jasmine.createSpy('did-create-color-buffer')
-        service.observeColorBuffers(spy)
-
-      it 'calls the callback for every existing color buffer', ->
-        expect(spy).toHaveBeenCalled()
-        expect(spy.calls.length).toEqual(1)
-
-      it 'calls the callback on every new buffer creation', ->
-        waitsForPromise  label: 'text-editor opened', ->
-          atom.workspace.open('buttons.styl')
-
-        runs ->
-          expect(spy.calls.length).toEqual(2)
+      }
+    });
+  });
+
+  describe('when deactivated', function() {
+    let [editor, editorElement, colorBuffer] = Array.from([]);
+    beforeEach(function() {
+      waitsForPromise({label: 'text-editor opened'}, () => atom.workspace.open('four-variables.styl').then(function(e) {
+        editor = e;
+        editorElement = atom.views.getView(e);
+        return colorBuffer = project.colorBufferForEditor(editor);
+      }));
+
+      waitsFor('pigments markers appended to the DOM', () => editorElement.querySelector('pigments-markers'));
+
+      return runs(function() {
+        spyOn(project, 'destroy').andCallThrough();
+        spyOn(colorBuffer, 'destroy').andCallThrough();
+
+        return pigments.deactivate();
+      });
+    });
+
+    it('destroys the pigments project', () => expect(project.destroy).toHaveBeenCalled());
+
+    it('destroys all the color buffers that were created', function() {
+      expect(project.colorBufferForEditor(editor)).toBeUndefined();
+      expect(project.colorBuffersByEditorId).toBeNull();
+      return expect(colorBuffer.destroy).toHaveBeenCalled();
+    });
+
+    return it('destroys the color buffer element that were added to the DOM', () => expect(editorElement.querySelector('pigments-markers')).not.toExist());
+  });
+
+  describe('pigments:project-settings', function() {
+    let item = null;
+    beforeEach(function() {
+      atom.commands.dispatch(workspaceElement, 'pigments:project-settings');
+
+      return waitsFor('active pane item', function() {
+        item = atom.workspace.getActivePaneItem();
+        return (item != null);
+      });
+    });
+
+    return it('opens a settings view in the active pane', () => item.matches('pigments-color-project'));
+  });
+
+  //#       ###    ########  ####
+  //#      ## ##   ##     ##  ##
+  //#     ##   ##  ##     ##  ##
+  //#    ##     ## ########   ##
+  //#    ######### ##         ##
+  //#    ##     ## ##         ##
+  //#    ##     ## ##        ####
+
+  describe('API provider', function() {
+    let [service, editor, editorElement, buffer] = Array.from([]);
+    beforeEach(function() {
+      waitsForPromise({label: 'text-editor opened'}, () => atom.workspace.open('four-variables.styl').then(function(e) {
+        editor = e;
+        editorElement = atom.views.getView(e);
+        return buffer = project.colorBufferForEditor(editor);
+      }));
+
+      runs(() => service = pigments.provideAPI());
+
+      return waitsForPromise({label: 'project initialized'}, () => project.initialize());
+    });
+
+    it('returns an object conforming to the API', function() {
+      expect(service instanceof PigmentsAPI).toBeTruthy();
+
+      expect(service.getProject()).toBe(project);
+
+      expect(service.getPalette()).toEqual(project.getPalette());
+      expect(service.getPalette()).not.toBe(project.getPalette());
+
+      expect(service.getVariables()).toEqual(project.getVariables());
+      return expect(service.getColorVariables()).toEqual(project.getColorVariables());
+    });
+
+    return describe('::observeColorBuffers', function() {
+      let [spy] = Array.from([]);
+
+      beforeEach(function() {
+        spy = jasmine.createSpy('did-create-color-buffer');
+        return service.observeColorBuffers(spy);
+      });
+
+      it('calls the callback for every existing color buffer', function() {
+        expect(spy).toHaveBeenCalled();
+        return expect(spy.calls.length).toEqual(1);
+      });
+
+      return it('calls the callback on every new buffer creation', function() {
+        waitsForPromise({label: 'text-editor opened'}, () => atom.workspace.open('buttons.styl'));
+
+        return runs(() => expect(spy.calls.length).toEqual(2));
+      });
+    });
+  });
+
+  //#     ######   #######  ##        #######  ########   ######
+  //#    ##    ## ##     ## ##       ##     ## ##     ## ##    ##
+  //#    ##       ##     ## ##       ##     ## ##     ## ##
+  //#    ##       ##     ## ##       ##     ## ########   ######
+  //#    ##       ##     ## ##       ##     ## ##   ##         ##
+  //#    ##    ## ##     ## ##       ##     ## ##    ##  ##    ##
+  //#     ######   #######  ########  #######  ##     ##  ######
+
+  describe('color expression consumer', function() {
+    let [colorProvider, consumerDisposable, editor, editorElement, colorBuffer, colorBufferElement, otherConsumerDisposable] = Array.from([]);
+    beforeEach(function() {
+      return colorProvider = {
+        name: 'todo',
+        regexpString: 'TODO',
+        scopes: ['*'],
+        priority: 0,
+        handle(match, expression, context) {
+          return this.red = 255;
+        }
+      };
+    });
 
-  ##     ######   #######  ##        #######  ########   ######
-  ##    ##    ## ##     ## ##       ##     ## ##     ## ##    ##
-  ##    ##       ##     ## ##       ##     ## ##     ## ##
-  ##    ##       ##     ## ##       ##     ## ########   ######
-  ##    ##       ##     ## ##       ##     ## ##   ##         ##
-  ##    ##    ## ##     ## ##       ##     ## ##    ##  ##    ##
-  ##     ######   #######  ########  #######  ##     ##  ######
+    afterEach(function() {
+      if (consumerDisposable != null) {
+        consumerDisposable.dispose();
+      }
+      return (otherConsumerDisposable != null ? otherConsumerDisposable.dispose() : undefined);
+    });
 
-  describe 'color expression consumer', ->
-    [colorProvider, consumerDisposable, editor, editorElement, colorBuffer, colorBufferElement, otherConsumerDisposable] = []
-    beforeEach ->
-      colorProvider =
-        name: 'todo'
-        regexpString: 'TODO'
-        scopes: ['*']
-        priority: 0
-        handle: (match, expression, context) ->
-          @red = 255
+    describe('when consumed before opening a text editor', function() {
+      beforeEach(function() {
+        consumerDisposable = pigments.consumeColorExpressions(colorProvider);
 
-    afterEach ->
-      consumerDisposable?.dispose()
-      otherConsumerDisposable?.dispose()
+        waitsForPromise({label: 'text-editor opened'}, () => atom.workspace.open('color-consumer-sample.txt').then(function(e) {
+          editor = e;
+          editorElement = atom.views.getView(e);
+          return colorBuffer = project.colorBufferForEditor(editor);
+        }));
 
-    describe 'when consumed before opening a text editor', ->
-      beforeEach ->
-        consumerDisposable = pigments.consumeColorExpressions(colorProvider)
+        waitsForPromise({label: 'color buffer initialized'}, () => colorBuffer.initialize());
+        return waitsForPromise({label: 'color buffer variables available'}, () => colorBuffer.variablesAvailable());
+      });
 
-        waitsForPromise label: 'text-editor opened', ->
-          atom.workspace.open('color-consumer-sample.txt').then (e) ->
-            editor = e
-            editorElement = atom.views.getView(e)
-            colorBuffer = project.colorBufferForEditor(editor)
+      it('parses the new expression and renders a color', () => expect(colorBuffer.getColorMarkers().length).toEqual(1));
 
-        waitsForPromise label: 'color buffer initialized', ->
-          colorBuffer.initialize()
-        waitsForPromise label: 'color buffer variables available', ->
-          colorBuffer.variablesAvailable()
+      it('returns a Disposable instance', () => expect(consumerDisposable instanceof Disposable).toBeTruthy());
 
-      it 'parses the new expression and renders a color', ->
-        expect(colorBuffer.getColorMarkers().length).toEqual(1)
+      return describe('the returned disposable', function() {
+        it('removes the provided expression from the registry', function() {
+          consumerDisposable.dispose();
 
-      it 'returns a Disposable instance', ->
-        expect(consumerDisposable instanceof Disposable).toBeTruthy()
+          return expect(project.getColorExpressionsRegistry().getExpression('todo')).toBeUndefined();
+        });
 
-      describe 'the returned disposable', ->
-        it 'removes the provided expression from the registry', ->
-          consumerDisposable.dispose()
+        return it('triggers an update in the opened editors', function() {
+          const updateSpy = jasmine.createSpy('did-update-color-markers');
 
-          expect(project.getColorExpressionsRegistry().getExpression('todo')).toBeUndefined()
+          colorBuffer.onDidUpdateColorMarkers(updateSpy);
+          consumerDisposable.dispose();
 
-        it 'triggers an update in the opened editors', ->
-          updateSpy = jasmine.createSpy('did-update-color-markers')
+          waitsFor('did-update-color-markers event dispatched', () => updateSpy.callCount > 0);
 
-          colorBuffer.onDidUpdateColorMarkers(updateSpy)
-          consumerDisposable.dispose()
+          return runs(() => expect(colorBuffer.getColorMarkers().length).toEqual(0));
+        });
+      });
+    });
 
-          waitsFor 'did-update-color-markers event dispatched', ->
-            updateSpy.callCount > 0
+    describe('when consumed after opening a text editor', function() {
+      beforeEach(function() {
+        waitsForPromise({label: 'text-editor opened'}, () => atom.workspace.open('color-consumer-sample.txt').then(function(e) {
+          editor = e;
+          editorElement = atom.views.getView(e);
+          return colorBuffer = project.colorBufferForEditor(editor);
+        }));
 
-          runs -> expect(colorBuffer.getColorMarkers().length).toEqual(0)
+        waitsForPromise({label: 'color buffer initialized'}, () => colorBuffer.initialize());
+        return waitsForPromise({label: 'color buffer variables available'}, () => colorBuffer.variablesAvailable());
+      });
 
-    describe 'when consumed after opening a text editor', ->
-      beforeEach ->
-        waitsForPromise label: 'text-editor opened', ->
-          atom.workspace.open('color-consumer-sample.txt').then (e) ->
-            editor = e
-            editorElement = atom.views.getView(e)
-            colorBuffer = project.colorBufferForEditor(editor)
+      it('triggers an update in the opened editors', function() {
+        const updateSpy = jasmine.createSpy('did-update-color-markers');
 
-        waitsForPromise label: 'color buffer initialized', ->
-          colorBuffer.initialize()
-        waitsForPromise label: 'color buffer variables available', ->
-          colorBuffer.variablesAvailable()
+        colorBuffer.onDidUpdateColorMarkers(updateSpy);
+        consumerDisposable = pigments.consumeColorExpressions(colorProvider);
 
-      it 'triggers an update in the opened editors', ->
-        updateSpy = jasmine.createSpy('did-update-color-markers')
+        waitsFor('did-update-color-markers event dispatched', () => updateSpy.callCount > 0);
 
-        colorBuffer.onDidUpdateColorMarkers(updateSpy)
-        consumerDisposable = pigments.consumeColorExpressions(colorProvider)
+        runs(function() {
+          expect(colorBuffer.getColorMarkers().length).toEqual(1);
 
-        waitsFor 'did-update-color-markers event dispatched', ->
-          updateSpy.callCount > 0
+          return consumerDisposable.dispose();
+        });
 
-        runs ->
-          expect(colorBuffer.getColorMarkers().length).toEqual(1)
+        waitsFor('did-update-color-markers event dispatched', () => updateSpy.callCount > 1);
 
-          consumerDisposable.dispose()
+        return runs(() => expect(colorBuffer.getColorMarkers().length).toEqual(0));
+      });
 
-        waitsFor 'did-update-color-markers event dispatched', ->
-          updateSpy.callCount > 1
+      return describe('when an array of expressions is passed', () => it('triggers an update in the opened editors', function() {
+        const updateSpy = jasmine.createSpy('did-update-color-markers');
 
-        runs -> expect(colorBuffer.getColorMarkers().length).toEqual(0)
+        colorBuffer.onDidUpdateColorMarkers(updateSpy);
+        consumerDisposable = pigments.consumeColorExpressions({
+          expressions: [colorProvider]
+        });
 
-      describe 'when an array of expressions is passed', ->
-        it 'triggers an update in the opened editors', ->
-          updateSpy = jasmine.createSpy('did-update-color-markers')
+        waitsFor('did-update-color-markers event dispatched', () => updateSpy.callCount > 0);
 
-          colorBuffer.onDidUpdateColorMarkers(updateSpy)
-          consumerDisposable = pigments.consumeColorExpressions({
-            expressions: [colorProvider]
-          })
+        runs(function() {
+          expect(colorBuffer.getColorMarkers().length).toEqual(1);
 
-          waitsFor 'did-update-color-markers event dispatched', ->
-            updateSpy.callCount > 0
+          return consumerDisposable.dispose();
+        });
 
-          runs ->
-            expect(colorBuffer.getColorMarkers().length).toEqual(1)
+        waitsFor('did-update-color-markers event dispatched', () => updateSpy.callCount > 1);
 
-            consumerDisposable.dispose()
+        return runs(() => expect(colorBuffer.getColorMarkers().length).toEqual(0));
+      }));
+    });
 
-          waitsFor 'did-update-color-markers event dispatched', ->
-            updateSpy.callCount > 1
+    return describe('when the expression matches a variable value', function() {
+      beforeEach(() => waitsForPromise({label: 'project initialized'}, () => project.initialize()));
 
-          runs -> expect(colorBuffer.getColorMarkers().length).toEqual(0)
+      it('detects the new variable as a color variable', function() {
+        const variableSpy = jasmine.createSpy('did-update-variables');
 
-    describe 'when the expression matches a variable value', ->
-      beforeEach ->
-        waitsForPromise label: 'project initialized', ->
-          project.initialize()
+        project.onDidUpdateVariables(variableSpy);
 
-      it 'detects the new variable as a color variable', ->
-        variableSpy = jasmine.createSpy('did-update-variables')
+        atom.config.set('pigments.sourceNames', ['**/*.txt']);
 
-        project.onDidUpdateVariables(variableSpy)
+        waitsFor('variables updated', () => variableSpy.callCount > 1);
 
-        atom.config.set 'pigments.sourceNames', ['**/*.txt']
+        runs(function() {
+          expect(project.getVariables().length).toEqual(6);
+          expect(project.getColorVariables().length).toEqual(4);
 
-        waitsFor 'variables updated', -> variableSpy.callCount > 1
+          return consumerDisposable = pigments.consumeColorExpressions(colorProvider);
+        });
 
-        runs ->
-          expect(project.getVariables().length).toEqual(6)
-          expect(project.getColorVariables().length).toEqual(4)
+        waitsFor('variables updated', () => variableSpy.callCount > 2);
 
-          consumerDisposable = pigments.consumeColorExpressions(colorProvider)
+        return runs(function() {
+          expect(project.getVariables().length).toEqual(6);
+          return expect(project.getColorVariables().length).toEqual(5);
+        });
+      });
 
-        waitsFor 'variables updated', -> variableSpy.callCount > 2
+      return describe('and there was an expression that could not be resolved before', () => it('updates the invalid color as a now valid color', function() {
+        const variableSpy = jasmine.createSpy('did-update-variables');
 
-        runs ->
-          expect(project.getVariables().length).toEqual(6)
-          expect(project.getColorVariables().length).toEqual(5)
+        project.onDidUpdateVariables(variableSpy);
 
-      describe 'and there was an expression that could not be resolved before', ->
-        it 'updates the invalid color as a now valid color', ->
-          variableSpy = jasmine.createSpy('did-update-variables')
+        atom.config.set('pigments.sourceNames', ['**/*.txt']);
 
-          project.onDidUpdateVariables(variableSpy)
+        waitsFor('variables updated', () => variableSpy.callCount > 1);
 
-          atom.config.set 'pigments.sourceNames', ['**/*.txt']
+        return runs(function() {
+          otherConsumerDisposable = pigments.consumeColorExpressions({
+            name: 'bar',
+            regexpString: 'baz\\s+(\\w+)',
+            handle(match, expression, context) {
+              const [_, expr] = Array.from(match);
 
-          waitsFor 'variables updated', -> variableSpy.callCount > 1
+              const color = context.readColor(expr);
 
-          runs ->
-            otherConsumerDisposable = pigments.consumeColorExpressions
-              name: 'bar'
-              regexpString: 'baz\\s+(\\w+)'
-              handle: (match, expression, context) ->
-                [_, expr] = match
+              if (context.isInvalid(color)) { return this.invalid = true; }
 
-                color = context.readColor(expr)
+              return this.rgba = color.rgba;
+            }
+          });
 
-                return @invalid = true if context.isInvalid(color)
+          consumerDisposable = pigments.consumeColorExpressions(colorProvider);
 
-                @rgba = color.rgba
+          waitsFor('variables updated', () => variableSpy.callCount > 2);
 
-            consumerDisposable = pigments.consumeColorExpressions(colorProvider)
+          runs(function() {
+            expect(project.getVariables().length).toEqual(6);
+            expect(project.getColorVariables().length).toEqual(6);
+            expect(project.getVariableByName('bar').color.invalid).toBeFalsy();
 
-            waitsFor 'variables updated', -> variableSpy.callCount > 2
+            return consumerDisposable.dispose();
+          });
 
-            runs ->
-              expect(project.getVariables().length).toEqual(6)
-              expect(project.getColorVariables().length).toEqual(6)
-              expect(project.getVariableByName('bar').color.invalid).toBeFalsy()
+          waitsFor('variables updated', () => variableSpy.callCount > 3);
 
-              consumerDisposable.dispose()
+          return runs(function() {
+            expect(project.getVariables().length).toEqual(6);
+            expect(project.getColorVariables().length).toEqual(5);
+            return expect(project.getVariableByName('bar').color.invalid).toBeTruthy();
+          });
+        });
+      }));
+    });
+  });
 
-            waitsFor 'variables updated', -> variableSpy.callCount > 3
+  //#    ##     ##    ###    ########   ######
+  //#    ##     ##   ## ##   ##     ## ##    ##
+  //#    ##     ##  ##   ##  ##     ## ##
+  //#    ##     ## ##     ## ########   ######
+  //#     ##   ##  ######### ##   ##         ##
+  //#      ## ##   ##     ## ##    ##  ##    ##
+  //#       ###    ##     ## ##     ##  ######
 
-            runs ->
-              expect(project.getVariables().length).toEqual(6)
-              expect(project.getColorVariables().length).toEqual(5)
-              expect(project.getVariableByName('bar').color.invalid).toBeTruthy()
+  return describe('variable expression consumer', function() {
+    let [variableProvider, consumerDisposable, editor, editorElement, colorBuffer, colorBufferElement] = Array.from([]);
 
-  ##    ##     ##    ###    ########   ######
-  ##    ##     ##   ## ##   ##     ## ##    ##
-  ##    ##     ##  ##   ##  ##     ## ##
-  ##    ##     ## ##     ## ########   ######
-  ##     ##   ##  ######### ##   ##         ##
-  ##      ## ##   ##     ## ##    ##  ##    ##
-  ##       ###    ##     ## ##     ##  ######
-
-  describe 'variable expression consumer', ->
-    [variableProvider, consumerDisposable, editor, editorElement, colorBuffer, colorBufferElement] = []
-
-    beforeEach ->
-      variableProvider =
-        name: 'todo'
+    beforeEach(function() {
+      variableProvider = {
+        name: 'todo',
         regexpString: '(TODO):\\s*([^;\\n]+)'
+      };
 
-      waitsForPromise label: 'project initialized', ->
-        project.initialize()
+      return waitsForPromise({label: 'project initialized'}, () => project.initialize());
+    });
 
-    afterEach -> consumerDisposable?.dispose()
+    afterEach(() => consumerDisposable != null ? consumerDisposable.dispose() : undefined);
 
-    it 'updates the project variables when consumed', ->
-      variableSpy = jasmine.createSpy('did-update-variables')
+    it('updates the project variables when consumed', function() {
+      const variableSpy = jasmine.createSpy('did-update-variables');
 
-      project.onDidUpdateVariables(variableSpy)
+      project.onDidUpdateVariables(variableSpy);
 
-      atom.config.set 'pigments.sourceNames', ['**/*.txt']
+      atom.config.set('pigments.sourceNames', ['**/*.txt']);
 
-      waitsFor 'variables updated', -> variableSpy.callCount > 1
+      waitsFor('variables updated', () => variableSpy.callCount > 1);
 
-      runs ->
-        expect(project.getVariables().length).toEqual(6)
-        expect(project.getColorVariables().length).toEqual(4)
+      runs(function() {
+        expect(project.getVariables().length).toEqual(6);
+        expect(project.getColorVariables().length).toEqual(4);
 
-        consumerDisposable = pigments.consumeVariableExpressions(variableProvider)
+        return consumerDisposable = pigments.consumeVariableExpressions(variableProvider);
+      });
 
-      waitsFor 'variables updated after service consumed', ->
-        variableSpy.callCount > 2
+      waitsFor('variables updated after service consumed', () => variableSpy.callCount > 2);
 
-      runs ->
-        expect(project.getVariables().length).toEqual(7)
-        expect(project.getColorVariables().length).toEqual(4)
+      runs(function() {
+        expect(project.getVariables().length).toEqual(7);
+        expect(project.getColorVariables().length).toEqual(4);
 
-        consumerDisposable.dispose()
+        return consumerDisposable.dispose();
+      });
 
-      waitsFor 'variables updated after service disposed', ->
-        variableSpy.callCount > 3
+      waitsFor('variables updated after service disposed', () => variableSpy.callCount > 3);
 
-      runs ->
-        expect(project.getVariables().length).toEqual(6)
-        expect(project.getColorVariables().length).toEqual(4)
+      return runs(function() {
+        expect(project.getVariables().length).toEqual(6);
+        return expect(project.getColorVariables().length).toEqual(4);
+      });
+    });
 
-    describe 'when an array of expressions is passed', ->
-      it 'updates the project variables when consumed', ->
-        previousVariablesCount = null
-        atom.config.set 'pigments.sourceNames', ['**/*.txt']
+    return describe('when an array of expressions is passed', () => it('updates the project variables when consumed', function() {
+      let previousVariablesCount = null;
+      atom.config.set('pigments.sourceNames', ['**/*.txt']);
 
-        waitsFor 'variables initialized', ->
-          project.getVariables().length is 45
+      waitsFor('variables initialized', () => project.getVariables().length === 45);
 
-        runs ->
-          previousVariablesCount = project.getVariables().length
+      runs(() => previousVariablesCount = project.getVariables().length);
 
-        waitsFor 'variables updated', ->
-          project.getVariables().length is 6
+      waitsFor('variables updated', () => project.getVariables().length === 6);
 
-        runs ->
-          expect(project.getVariables().length).toEqual(6)
-          expect(project.getColorVariables().length).toEqual(4)
+      runs(function() {
+        expect(project.getVariables().length).toEqual(6);
+        expect(project.getColorVariables().length).toEqual(4);
 
-          previousVariablesCount = project.getVariables().length
+        previousVariablesCount = project.getVariables().length;
 
-          consumerDisposable = pigments.consumeVariableExpressions({
-            expressions: [variableProvider]
-          })
+        return consumerDisposable = pigments.consumeVariableExpressions({
+          expressions: [variableProvider]
+        });
+      });
 
-        waitsFor 'variables updated after service consumed', ->
-          project.getVariables().length isnt previousVariablesCount
+      waitsFor('variables updated after service consumed', () => project.getVariables().length !== previousVariablesCount);
 
-        runs ->
-          expect(project.getVariables().length).toEqual(7)
-          expect(project.getColorVariables().length).toEqual(4)
+      runs(function() {
+        expect(project.getVariables().length).toEqual(7);
+        expect(project.getColorVariables().length).toEqual(4);
 
-          previousVariablesCount = project.getVariables().length
+        previousVariablesCount = project.getVariables().length;
 
-          consumerDisposable.dispose()
+        return consumerDisposable.dispose();
+      });
 
-        waitsFor 'variables updated after service disposed', ->
-          project.getVariables().length isnt previousVariablesCount
+      waitsFor('variables updated after service disposed', () => project.getVariables().length !== previousVariablesCount);
 
-        runs ->
-          expect(project.getVariables().length).toEqual(6)
-          expect(project.getColorVariables().length).toEqual(4)
+      return runs(function() {
+        expect(project.getVariables().length).toEqual(6);
+        return expect(project.getColorVariables().length).toEqual(4);
+      });
+    }));
+  });
+});

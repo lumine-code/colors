@@ -1,25 +1,33 @@
-registry = require '../../lib/color-expressions'
-Pigments = require '../../lib/pigments'
+/*
+ * decaffeinate suggestions:
+ * DS102: Remove unnecessary code created because of implicit returns
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const registry = require('../../lib/color-expressions');
+const Pigments = require('../../lib/pigments');
 
-deserializers =
-  Palette: 'deserializePalette'
-  ColorSearch: 'deserializeColorSearch'
-  ColorProject: 'deserializeColorProject'
-  ColorProjectElement: 'deserializeColorProjectElement'
+const deserializers = {
+  Palette: 'deserializePalette',
+  ColorSearch: 'deserializeColorSearch',
+  ColorProject: 'deserializeColorProject',
+  ColorProjectElement: 'deserializeColorProjectElement',
   VariablesCollection: 'deserializeVariablesCollection'
+};
 
-beforeEach ->
-  atom.config.set('pigments.markerType', 'native-background')
-  atom.views.addViewProvider(Pigments.pigmentsViewProvider)
+beforeEach(function() {
+  atom.config.set('pigments.markerType', 'native-background');
+  atom.views.addViewProvider(Pigments.pigmentsViewProvider);
 
-  for k,v of deserializers
-    atom.deserializers.add name: k, deserialize: Pigments[v]
+  for (var k in deserializers) {
+    var v = deserializers[k];
+    atom.deserializers.add({name: k, deserialize: Pigments[v]});
+  }
 
-  registry.removeExpression('pigments:variables')
+  registry.removeExpression('pigments:variables');
 
-  jasmineContent = document.body.querySelector('#jasmine-content')
-  jasmineContent.style.width = '100%'
-  jasmineContent.style.height = '100%'
+  const jasmineContent = document.body.querySelector('#jasmine-content');
+  jasmineContent.style.width = '100%';
+  return jasmineContent.style.height = '100%';
+});
 
-afterEach ->
-  registry.removeExpression('pigments:variables')
+afterEach(() => registry.removeExpression('pigments:variables'));

@@ -1,165 +1,168 @@
-ColorScanner = require '../lib/color-scanner'
-ColorContext = require '../lib/color-context'
-registry = require '../lib/color-expressions'
+/*
+ * decaffeinate suggestions:
+ * DS101: Remove unnecessary use of Array.from
+ * DS102: Remove unnecessary code created because of implicit returns
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const ColorScanner = require('../lib/color-scanner');
+const ColorContext = require('../lib/color-context');
+const registry = require('../lib/color-expressions');
 
-describe 'ColorScanner', ->
-  [scanner, editor, text, result, lastIndex] = []
+describe('ColorScanner', function() {
+  let [scanner, editor, text, result, lastIndex] = Array.from([]);
 
-  withScannerForString = (string, block) ->
-    describe "with '#{string.replace(/#/g, '+')}'", ->
-      beforeEach ->
-        text = string
-        context = new ColorContext({registry})
-        scanner = new ColorScanner({context})
+  const withScannerForString = (string, block) => describe(`with '${string.replace(/#/g, '+')}'`, function() {
+    beforeEach(function() {
+      text = string;
+      const context = new ColorContext({registry});
+      return scanner = new ColorScanner({context});
+    });
 
-      afterEach -> scanner = null
+    afterEach(() => scanner = null);
 
-      do block
+    return block();
+  });
 
-  withTextEditor = (fixture, block) ->
-    describe "with #{fixture} buffer", ->
-      beforeEach ->
-        waitsForPromise -> atom.workspace.open(fixture)
-        runs ->
-          editor = atom.workspace.getActiveTextEditor()
-          text = editor.getText()
+  const withTextEditor = (fixture, block) => describe(`with ${fixture} buffer`, function() {
+    beforeEach(function() {
+      waitsForPromise(() => atom.workspace.open(fixture));
+      return runs(function() {
+        editor = atom.workspace.getActiveTextEditor();
+        return text = editor.getText();
+      });
+    });
 
-      afterEach -> editor = null
+    afterEach(() => editor = null);
 
-      do block
+    return block();
+  });
 
-  withScannerForTextEditor = (fixture, block) ->
-    withTextEditor fixture, ->
-      beforeEach ->
-        context = new ColorContext({registry})
-        scanner = new ColorScanner({context})
+  const withScannerForTextEditor = (fixture, block) => withTextEditor(fixture, function() {
+    beforeEach(function() {
+      const context = new ColorContext({registry});
+      return scanner = new ColorScanner({context});
+    });
 
-      afterEach -> scanner = null
+    afterEach(() => scanner = null);
 
-      do block
+    return block();
+  });
 
-  describe '::search', ->
-    withScannerForTextEditor 'html-entities.html', ->
-      beforeEach ->
-        result = scanner.search(text, 'html')
+  return describe('::search', function() {
+    withScannerForTextEditor('html-entities.html', function() {
+      beforeEach(() => result = scanner.search(text, 'html'));
 
-      it 'returns nothing', ->
-        expect(result).toBeUndefined()
+      return it('returns nothing', () => expect(result).toBeUndefined());
+    });
 
-    withScannerForTextEditor 'css-color-with-prefix.less', ->
-      beforeEach ->
-        result = scanner.search(text, 'less')
+    withScannerForTextEditor('css-color-with-prefix.less', function() {
+      beforeEach(() => result = scanner.search(text, 'less'));
 
-      it 'returns nothing', ->
-        expect(result).toBeUndefined()
+      return it('returns nothing', () => expect(result).toBeUndefined());
+    });
 
-    withScannerForTextEditor 'four-variables.styl', ->
-      beforeEach ->
-        result = scanner.search(text, 'styl')
+    withScannerForTextEditor('four-variables.styl', function() {
+      beforeEach(() => result = scanner.search(text, 'styl'));
 
-      it 'returns the first buffer color match', ->
-        expect(result).toBeDefined()
+      it('returns the first buffer color match', () => expect(result).toBeDefined());
 
-      describe 'the resulting buffer color', ->
-        it 'has a text range', ->
-          expect(result.range).toEqual([13,17])
+      describe('the resulting buffer color', function() {
+        it('has a text range', () => expect(result.range).toEqual([13,17]));
 
-        it 'has a color', ->
-          expect(result.color).toBeColor('#ffffff')
+        it('has a color', () => expect(result.color).toBeColor('#ffffff'));
 
-        it 'stores the matched text', ->
-          expect(result.match).toEqual('#fff')
+        it('stores the matched text', () => expect(result.match).toEqual('#fff'));
 
-        it 'stores the last index', ->
-          expect(result.lastIndex).toEqual(17)
+        it('stores the last index', () => expect(result.lastIndex).toEqual(17));
 
-        it 'stores match line', ->
-          expect(result.line).toEqual(0)
+        return it('stores match line', () => expect(result.line).toEqual(0));
+      });
 
-      describe 'successive searches', ->
-        it 'returns a buffer color for each match and then undefined', ->
-          doSearch = -> result = scanner.search(text, 'styl', result.lastIndex)
+      return describe('successive searches', function() {
+        it('returns a buffer color for each match and then undefined', function() {
+          const doSearch = () => result = scanner.search(text, 'styl', result.lastIndex);
 
-          expect(doSearch()).toBeDefined()
-          expect(doSearch()).toBeDefined()
-          expect(doSearch()).toBeDefined()
-          expect(doSearch()).toBeUndefined()
+          expect(doSearch()).toBeDefined();
+          expect(doSearch()).toBeDefined();
+          expect(doSearch()).toBeDefined();
+          return expect(doSearch()).toBeUndefined();
+        });
 
-        it 'stores the line of successive matches', ->
-          doSearch = -> result = scanner.search(text, 'styl', result.lastIndex)
+        return it('stores the line of successive matches', function() {
+          const doSearch = () => result = scanner.search(text, 'styl', result.lastIndex);
 
-          expect(doSearch().line).toEqual(2)
-          expect(doSearch().line).toEqual(4)
-          expect(doSearch().line).toEqual(6)
+          expect(doSearch().line).toEqual(2);
+          expect(doSearch().line).toEqual(4);
+          return expect(doSearch().line).toEqual(6);
+        });
+      });
+    });
 
-    withScannerForTextEditor 'class-after-color.sass', ->
-      beforeEach ->
-        result = scanner.search(text, 'sass')
+    withScannerForTextEditor('class-after-color.sass', function() {
+      beforeEach(() => result = scanner.search(text, 'sass'));
 
-      it 'returns the first buffer color match', ->
-        expect(result).toBeDefined()
+      it('returns the first buffer color match', () => expect(result).toBeDefined());
 
-      describe 'the resulting buffer color', ->
-        it 'has a text range', ->
-          expect(result.range).toEqual([15,20])
+      return describe('the resulting buffer color', function() {
+        it('has a text range', () => expect(result.range).toEqual([15,20]));
 
-        it 'has a color', ->
-          expect(result.color).toBeColor('#ffffff')
+        return it('has a color', () => expect(result.color).toBeColor('#ffffff'));
+      });
+    });
 
-    withScannerForTextEditor 'project/styles/variables.styl', ->
-      beforeEach ->
-        result = scanner.search(text, 'styl')
+    withScannerForTextEditor('project/styles/variables.styl', function() {
+      beforeEach(() => result = scanner.search(text, 'styl'));
 
-      it 'returns the first buffer color match', ->
-        expect(result).toBeDefined()
+      it('returns the first buffer color match', () => expect(result).toBeDefined());
 
-      describe 'the resulting buffer color', ->
-        it 'has a text range', ->
-          expect(result.range).toEqual([18,25])
+      return describe('the resulting buffer color', function() {
+        it('has a text range', () => expect(result.range).toEqual([18,25]));
 
-        it 'has a color', ->
-          expect(result.color).toBeColor('#BF616A')
+        return it('has a color', () => expect(result.color).toBeColor('#BF616A'));
+      });
+    });
 
-    withScannerForTextEditor 'crlf.styl', ->
-      beforeEach ->
-        result = scanner.search(text, 'styl')
+    withScannerForTextEditor('crlf.styl', function() {
+      beforeEach(() => result = scanner.search(text, 'styl'));
 
-      it 'returns the first buffer color match', ->
-        expect(result).toBeDefined()
+      it('returns the first buffer color match', () => expect(result).toBeDefined());
 
-      describe 'the resulting buffer color', ->
-        it 'has a text range', ->
-          expect(result.range).toEqual([7,11])
+      describe('the resulting buffer color', function() {
+        it('has a text range', () => expect(result.range).toEqual([7,11]));
 
-        it 'has a color', ->
-          expect(result.color).toBeColor('#ffffff')
+        return it('has a color', () => expect(result.color).toBeColor('#ffffff'));
+      });
 
-      it 'finds the second color', ->
-        doSearch = -> result = scanner.search(text, 'styl', result.lastIndex)
+      return it('finds the second color', function() {
+        const doSearch = () => result = scanner.search(text, 'styl', result.lastIndex);
 
-        doSearch()
+        doSearch();
 
-        expect(result.color).toBeDefined()
+        return expect(result.color).toBeDefined();
+      });
+    });
 
-    withScannerForTextEditor 'color-in-tag-content.html', ->
-      it 'finds both colors', ->
-        result = lastIndex: 0
-        doSearch = -> result = scanner.search(text, 'css', result.lastIndex)
+    withScannerForTextEditor('color-in-tag-content.html', () => it('finds both colors', function() {
+      result = {lastIndex: 0};
+      const doSearch = () => result = scanner.search(text, 'css', result.lastIndex);
 
-        expect(doSearch()).toBeDefined()
-        expect(doSearch()).toBeDefined()
-        expect(doSearch()).toBeUndefined()
+      expect(doSearch()).toBeDefined();
+      expect(doSearch()).toBeDefined();
+      return expect(doSearch()).toBeUndefined();
+    }));
 
-    withScannerForString '#add-something {}, #acedbe-foo {}, #acedbeef-foo {}', ->
-      it 'does not find any matches', ->
-        result = lastIndex: 0
-        doSearch = -> result = scanner.search(text, 'css', result.lastIndex)
+    withScannerForString('#add-something {}, #acedbe-foo {}, #acedbeef-foo {}', () => it('does not find any matches', function() {
+      result = {lastIndex: 0};
+      const doSearch = () => result = scanner.search(text, 'css', result.lastIndex);
 
-        expect(doSearch()).toBeUndefined()
+      return expect(doSearch()).toBeUndefined();
+    }));
 
-    withScannerForString '#add_something {}, #acedbe_foo {}, #acedbeef_foo {}', ->
-      it 'does not find any matches', ->
-        result = lastIndex: 0
-        doSearch = -> result = scanner.search(text, 'css', result.lastIndex)
+    return withScannerForString('#add_something {}, #acedbe_foo {}, #acedbeef_foo {}', () => it('does not find any matches', function() {
+      result = {lastIndex: 0};
+      const doSearch = () => result = scanner.search(text, 'css', result.lastIndex);
 
-        expect(doSearch()).toBeUndefined()
+      return expect(doSearch()).toBeUndefined();
+    }));
+  });
+});

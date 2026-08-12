@@ -1,3 +1,3 @@
-# comment = #ffffff
+// comment = #ffffff
 
-string = '#ffffff'
+const string = '#ffffff';

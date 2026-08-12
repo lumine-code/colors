@@ -1,415 +1,443 @@
+/*
+ * decaffeinate suggestions:
+ * DS101: Remove unnecessary use of Array.from
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
 
-describe 'autocomplete provider', ->
-  [completionDelay, editor, editorView, pigments, autocompleteMain, autocompleteManager, jasmineContent, project] = []
+describe('autocomplete provider', function() {
+  let [completionDelay, editor, editorView, pigments, autocompleteMain, autocompleteManager, jasmineContent, project] = Array.from([]);
 
-  beforeEach ->
-    runs ->
-      jasmineContent = document.body.querySelector('#jasmine-content')
+  beforeEach(function() {
+    runs(function() {
+      jasmineContent = document.body.querySelector('#jasmine-content');
 
-      atom.config.set('pigments.autocompleteScopes', ['*'])
+      atom.config.set('pigments.autocompleteScopes', ['*']);
       atom.config.set('pigments.sourceNames', [
-        '**/*.styl'
+        '**/*.styl',
         '**/*.less'
-      ])
+      ]);
+
+      // Set to live completion
+      atom.config.set('autocomplete-plus.enableAutoActivation', true);
+      // Set the completion delay
+      completionDelay = 100;
+      atom.config.set('autocomplete-plus.autoActivationDelay', completionDelay);
+      completionDelay += 100; // Rendering delay
+      const workspaceElement = atom.views.getView(atom.workspace);
+
+      return jasmineContent.appendChild(workspaceElement);
+    });
+
+    waitsForPromise('autocomplete-plus activation', () => atom.packages.activatePackage('autocomplete-plus').then(pkg => autocompleteMain = pkg.mainModule));
+
+    waitsForPromise('pigments activation', () => atom.packages.activatePackage('pigments').then(pkg => pigments = pkg.mainModule));
+
+    runs(function() {
+      spyOn(autocompleteMain, 'consumeProvider').andCallThrough();
+      return spyOn(pigments, 'provideAutocomplete').andCallThrough();
+    });
+
+    waitsForPromise('open sample file', () => atom.workspace.open('sample.styl').then(function(e) {
+      editor = e;
+      editor.setText('');
+      return editorView = atom.views.getView(editor);
+    }));
+
+    waitsForPromise('pigments project initialized', function() {
+      project = pigments.getProject();
+      return project.initialize();
+    });
+
+    return runs(function() {
+      ({
+        autocompleteManager
+      } = autocompleteMain);
+      spyOn(autocompleteManager, 'findSuggestions').andCallThrough();
+      return spyOn(autocompleteManager, 'displaySuggestions').andCallThrough();
+    });
+  });
+
+  describe('writing the name of a color', function() {
+    it('returns suggestions for the matching colors', function() {
+      runs(function() {
+        expect(editorView.querySelector('.autocomplete-plus')).not.toExist();
+
+        editor.moveToBottom();
+        editor.insertText('border: 1px solid ');
+        editor.moveToBottom();
+        editor.insertText('b');
+        editor.insertText('a');
 
-      # Set to live completion
-      atom.config.set('autocomplete-plus.enableAutoActivation', true)
-      # Set the completion delay
-      completionDelay = 100
-      atom.config.set('autocomplete-plus.autoActivationDelay', completionDelay)
-      completionDelay += 100 # Rendering delay
-      workspaceElement = atom.views.getView(atom.workspace)
+        return advanceClock(completionDelay);
+      });
+
+      waitsFor(() => autocompleteManager.displaySuggestions.calls.length === 1);
+
+      waitsFor(() => editorView.querySelector('.autocomplete-plus li') != null);
 
-      jasmineContent.appendChild(workspaceElement)
+      return runs(function() {
+        const popup = editorView.querySelector('.autocomplete-plus');
+        expect(popup).toExist();
+        expect(popup.querySelector('span.word').textContent).toEqual('base-color');
 
-    waitsForPromise 'autocomplete-plus activation', ->
-      atom.packages.activatePackage('autocomplete-plus').then (pkg) ->
-        autocompleteMain = pkg.mainModule
+        const preview = popup.querySelector('.color-suggestion-preview');
+        expect(preview).toExist();
+        return expect(preview.style.background).toEqual('rgb(255, 255, 255)');
+      });
+    });
 
-    waitsForPromise 'pigments activation', ->
-      atom.packages.activatePackage('pigments').then (pkg) ->
-        pigments = pkg.mainModule
+    it('replaces the prefix even when it contains a @', function() {
+      runs(function() {
+        expect(editorView.querySelector('.autocomplete-plus')).not.toExist();
 
-    runs ->
-      spyOn(autocompleteMain, 'consumeProvider').andCallThrough()
-      spyOn(pigments, 'provideAutocomplete').andCallThrough()
+        editor.moveToBottom();
+        editor.insertText('@');
+        editor.insertText('b');
+        editor.insertText('a');
 
-    waitsForPromise 'open sample file', ->
-      atom.workspace.open('sample.styl').then (e) ->
-        editor = e
-        editor.setText ''
-        editorView = atom.views.getView(editor)
+        return advanceClock(completionDelay);
+      });
+
+      waitsFor(() => autocompleteManager.displaySuggestions.calls.length === 1);
 
-    waitsForPromise 'pigments project initialized', ->
-      project = pigments.getProject()
-      project.initialize()
+      waitsFor(() => editorView.querySelector('.autocomplete-plus li') != null);
 
-    runs ->
-      autocompleteManager = autocompleteMain.autocompleteManager
-      spyOn(autocompleteManager, 'findSuggestions').andCallThrough()
-      spyOn(autocompleteManager, 'displaySuggestions').andCallThrough()
+      return runs(function() {
+        atom.commands.dispatch(editorView, 'autocomplete-plus:confirm');
+        return expect(editor.getText()).not.toContain('@@');
+      });
+    });
 
-  describe 'writing the name of a color', ->
-    it 'returns suggestions for the matching colors', ->
-      runs ->
-        expect(editorView.querySelector('.autocomplete-plus')).not.toExist()
+    it('replaces the prefix even when it contains a $', function() {
+      runs(function() {
+        expect(editorView.querySelector('.autocomplete-plus')).not.toExist();
 
-        editor.moveToBottom()
-        editor.insertText('border: 1px solid ')
-        editor.moveToBottom()
-        editor.insertText('b')
-        editor.insertText('a')
+        editor.moveToBottom();
+        editor.insertText('$');
+        editor.insertText('o');
+        editor.insertText('t');
 
-        advanceClock(completionDelay)
+        return advanceClock(completionDelay);
+      });
 
-      waitsFor ->
-        autocompleteManager.displaySuggestions.calls.length is 1
+      waitsFor(() => autocompleteManager.displaySuggestions.calls.length === 1);
 
-      waitsFor -> editorView.querySelector('.autocomplete-plus li')?
+      waitsFor(() => editorView.querySelector('.autocomplete-plus li') != null);
 
-      runs ->
-        popup = editorView.querySelector('.autocomplete-plus')
-        expect(popup).toExist()
-        expect(popup.querySelector('span.word').textContent).toEqual('base-color')
+      return runs(function() {
+        atom.commands.dispatch(editorView, 'autocomplete-plus:confirm');
+        expect(editor.getText()).toContain('$other-color');
+        return expect(editor.getText()).not.toContain('$$');
+      });
+    });
 
-        preview = popup.querySelector('.color-suggestion-preview')
-        expect(preview).toExist()
-        expect(preview.style.background).toEqual('rgb(255, 255, 255)')
+    return describe('when the extendAutocompleteToColorValue setting is enabled', function() {
+      beforeEach(() => atom.config.set('pigments.extendAutocompleteToColorValue', true));
 
-    it 'replaces the prefix even when it contains a @', ->
-      runs ->
-        expect(editorView.querySelector('.autocomplete-plus')).not.toExist()
+      describe('with an opaque color', () => it('displays the color hexadecimal code in the completion item', function() {
+        runs(function() {
+          expect(editorView.querySelector('.autocomplete-plus')).not.toExist();
 
-        editor.moveToBottom()
-        editor.insertText('@')
-        editor.insertText('b')
-        editor.insertText('a')
+          editor.moveToBottom();
+          editor.insertText('b');
+          editor.insertText('a');
+          editor.insertText('s');
 
-        advanceClock(completionDelay)
+          return advanceClock(completionDelay);
+        });
 
-      waitsFor ->
-        autocompleteManager.displaySuggestions.calls.length is 1
+        waitsFor(() => autocompleteManager.displaySuggestions.calls.length === 1);
 
-      waitsFor -> editorView.querySelector('.autocomplete-plus li')?
+        waitsFor(() => editorView.querySelector('.autocomplete-plus li') != null);
 
-      runs ->
-        atom.commands.dispatch(editorView, 'autocomplete-plus:confirm')
-        expect(editor.getText()).not.toContain '@@'
+        return runs(function() {
+          const popup = editorView.querySelector('.autocomplete-plus');
+          expect(popup).toExist();
+          expect(popup.querySelector('span.word').textContent).toEqual('base-color');
 
-    it 'replaces the prefix even when it contains a $', ->
-      runs ->
-        expect(editorView.querySelector('.autocomplete-plus')).not.toExist()
+          return expect(popup.querySelector('span.right-label').textContent).toContain('#ffffff');
+        });
+      }));
 
-        editor.moveToBottom()
-        editor.insertText('$')
-        editor.insertText('o')
-        editor.insertText('t')
+      describe('when the autocompleteSuggestionsFromValue setting is enabled', function() {
+        beforeEach(() => atom.config.set('pigments.autocompleteSuggestionsFromValue', true));
 
-        advanceClock(completionDelay)
+        it('suggests color variables from hexadecimal values', function() {
+          runs(function() {
+            expect(editorView.querySelector('.autocomplete-plus')).not.toExist();
 
-      waitsFor ->
-        autocompleteManager.displaySuggestions.calls.length is 1
+            editor.moveToBottom();
+            editor.insertText('#');
+            editor.insertText('f');
+            editor.insertText('f');
 
-      waitsFor -> editorView.querySelector('.autocomplete-plus li')?
+            return advanceClock(completionDelay);
+          });
 
-      runs ->
-        atom.commands.dispatch(editorView, 'autocomplete-plus:confirm')
-        expect(editor.getText()).toContain '$other-color'
-        expect(editor.getText()).not.toContain '$$'
-
-    describe 'when the extendAutocompleteToColorValue setting is enabled', ->
-      beforeEach ->
-        atom.config.set('pigments.extendAutocompleteToColorValue', true)
+          waitsFor(() => autocompleteManager.displaySuggestions.calls.length === 1);
 
-      describe 'with an opaque color', ->
-        it 'displays the color hexadecimal code in the completion item', ->
-          runs ->
-            expect(editorView.querySelector('.autocomplete-plus')).not.toExist()
+          waitsFor(() => editorView.querySelector('.autocomplete-plus li') != null);
 
-            editor.moveToBottom()
-            editor.insertText('b')
-            editor.insertText('a')
-            editor.insertText('s')
+          return runs(function() {
+            const popup = editorView.querySelector('.autocomplete-plus');
+            expect(popup).toExist();
+            expect(popup.querySelector('span.word').textContent).toEqual('var1');
 
-            advanceClock(completionDelay)
+            return expect(popup.querySelector('span.right-label').textContent).toContain('#ffffff');
+          });
+        });
 
-          waitsFor ->
-            autocompleteManager.displaySuggestions.calls.length is 1
+        it('suggests color variables from hexadecimal values when in a CSS expression', function() {
+          runs(function() {
+            expect(editorView.querySelector('.autocomplete-plus')).not.toExist();
 
-          waitsFor ->
-            editorView.querySelector('.autocomplete-plus li')?
+            editor.moveToBottom();
+            editor.insertText('border: 1px solid ');
+            editor.moveToBottom();
+            editor.insertText('#');
+            editor.insertText('f');
+            editor.insertText('f');
 
-          runs ->
-            popup = editorView.querySelector('.autocomplete-plus')
-            expect(popup).toExist()
-            expect(popup.querySelector('span.word').textContent).toEqual('base-color')
+            return advanceClock(completionDelay);
+          });
 
-            expect(popup.querySelector('span.right-label').textContent).toContain('#ffffff')
+          waitsFor(() => autocompleteManager.displaySuggestions.calls.length === 1);
 
-      describe 'when the autocompleteSuggestionsFromValue setting is enabled', ->
-        beforeEach ->
-          atom.config.set('pigments.autocompleteSuggestionsFromValue', true)
+          waitsFor(() => editorView.querySelector('.autocomplete-plus li') != null);
 
-        it 'suggests color variables from hexadecimal values', ->
-          runs ->
-            expect(editorView.querySelector('.autocomplete-plus')).not.toExist()
+          return runs(function() {
+            const popup = editorView.querySelector('.autocomplete-plus');
+            expect(popup).toExist();
+            expect(popup.querySelector('span.word').textContent).toEqual('var1');
 
-            editor.moveToBottom()
-            editor.insertText('#')
-            editor.insertText('f')
-            editor.insertText('f')
+            return expect(popup.querySelector('span.right-label').textContent).toContain('#ffffff');
+          });
+        });
 
-            advanceClock(completionDelay)
+        it('suggests color variables from rgb values', function() {
+          runs(function() {
+            expect(editorView.querySelector('.autocomplete-plus')).not.toExist();
 
-          waitsFor ->
-            autocompleteManager.displaySuggestions.calls.length is 1
+            editor.moveToBottom();
+            editor.insertText('border: 1px solid ');
+            editor.moveToBottom();
+            editor.insertText('r');
+            editor.insertText('g');
+            editor.insertText('b');
+            editor.insertText('(');
+            editor.insertText('2');
+            editor.insertText('5');
+            editor.insertText('5');
+            editor.insertText(',');
+            editor.insertText(' ');
 
-          waitsFor ->
-            editorView.querySelector('.autocomplete-plus li')?
+            return advanceClock(completionDelay);
+          });
 
-          runs ->
-            popup = editorView.querySelector('.autocomplete-plus')
-            expect(popup).toExist()
-            expect(popup.querySelector('span.word').textContent).toEqual('var1')
+          waitsFor(() => autocompleteManager.displaySuggestions.calls.length === 1);
 
-            expect(popup.querySelector('span.right-label').textContent).toContain('#ffffff')
+          waitsFor(() => editorView.querySelector('.autocomplete-plus li') != null);
 
-        it 'suggests color variables from hexadecimal values when in a CSS expression', ->
-          runs ->
-            expect(editorView.querySelector('.autocomplete-plus')).not.toExist()
+          return runs(function() {
+            const popup = editorView.querySelector('.autocomplete-plus');
+            expect(popup).toExist();
+            expect(popup.querySelector('span.word').textContent).toEqual('var1');
 
-            editor.moveToBottom()
-            editor.insertText('border: 1px solid ')
-            editor.moveToBottom()
-            editor.insertText('#')
-            editor.insertText('f')
-            editor.insertText('f')
+            return expect(popup.querySelector('span.right-label').textContent).toContain('#ffffff');
+          });
+        });
 
-            advanceClock(completionDelay)
+        return describe('and when extendAutocompleteToVariables is true', function() {
+          beforeEach(() => atom.config.set('pigments.extendAutocompleteToVariables', true));
 
-          waitsFor ->
-            autocompleteManager.displaySuggestions.calls.length is 1
+          return it('returns suggestions for the matching variable value', function() {
+            runs(function() {
+              expect(editorView.querySelector('.autocomplete-plus')).not.toExist();
 
-          waitsFor ->
-            editorView.querySelector('.autocomplete-plus li')?
+              editor.moveToBottom();
+              editor.insertText('border: ');
+              editor.moveToBottom();
+              editor.insertText('6');
+              editor.insertText('p');
+              editor.insertText('x');
+              editor.insertText(' ');
 
-          runs ->
-            popup = editorView.querySelector('.autocomplete-plus')
-            expect(popup).toExist()
-            expect(popup.querySelector('span.word').textContent).toEqual('var1')
+              return advanceClock(completionDelay);
+            });
 
-            expect(popup.querySelector('span.right-label').textContent).toContain('#ffffff')
+            waitsFor(() => autocompleteManager.displaySuggestions.calls.length === 1);
 
-        it 'suggests color variables from rgb values', ->
-          runs ->
-            expect(editorView.querySelector('.autocomplete-plus')).not.toExist()
+            waitsFor(() => editorView.querySelector('.autocomplete-plus li') != null);
 
-            editor.moveToBottom()
-            editor.insertText('border: 1px solid ')
-            editor.moveToBottom()
-            editor.insertText('r')
-            editor.insertText('g')
-            editor.insertText('b')
-            editor.insertText('(')
-            editor.insertText('2')
-            editor.insertText('5')
-            editor.insertText('5')
-            editor.insertText(',')
-            editor.insertText(' ')
+            return runs(function() {
+              const popup = editorView.querySelector('.autocomplete-plus');
+              expect(popup).toExist();
+              expect(popup.querySelector('span.word').textContent).toEqual('button-padding');
 
-            advanceClock(completionDelay)
+              return expect(popup.querySelector('span.right-label').textContent).toEqual('6px 8px');
+            });
+          });
+        });
+      });
 
-          waitsFor ->
-            autocompleteManager.displaySuggestions.calls.length is 1
 
-          waitsFor ->
-            editorView.querySelector('.autocomplete-plus li')?
+      return describe('with a transparent color', () => it('displays the color hexadecimal code in the completion item', function() {
+        runs(function() {
+          expect(editorView.querySelector('.autocomplete-plus')).not.toExist();
 
-          runs ->
-            popup = editorView.querySelector('.autocomplete-plus')
-            expect(popup).toExist()
-            expect(popup.querySelector('span.word').textContent).toEqual('var1')
+          editor.moveToBottom();
+          editor.insertText('$');
+          editor.insertText('o');
+          editor.insertText('t');
 
-            expect(popup.querySelector('span.right-label').textContent).toContain('#ffffff')
+          return advanceClock(completionDelay);
+        });
 
-        describe 'and when extendAutocompleteToVariables is true', ->
-          beforeEach ->
-            atom.config.set('pigments.extendAutocompleteToVariables', true)
+        waitsFor(() => autocompleteManager.displaySuggestions.calls.length === 1);
 
-          it 'returns suggestions for the matching variable value', ->
-            runs ->
-              expect(editorView.querySelector('.autocomplete-plus')).not.toExist()
+        waitsFor(() => editorView.querySelector('.autocomplete-plus li') != null);
 
-              editor.moveToBottom()
-              editor.insertText('border: ')
-              editor.moveToBottom()
-              editor.insertText('6')
-              editor.insertText('p')
-              editor.insertText('x')
-              editor.insertText(' ')
+        return runs(function() {
+          const popup = editorView.querySelector('.autocomplete-plus');
+          expect(popup).toExist();
+          expect(popup.querySelector('span.word').textContent).toEqual('$other-color');
 
-              advanceClock(completionDelay)
+          return expect(popup.querySelector('span.right-label').textContent).toContain('rgba(255,0,0,0.5)');
+        });
+      }));
+    });
+  });
 
-            waitsFor ->
-              autocompleteManager.displaySuggestions.calls.length is 1
+  describe('writing the name of a non-color variable', () => it('returns suggestions for the matching variable', function() {
+    atom.config.set('pigments.extendAutocompleteToVariables', false);
+    runs(function() {
+      expect(editorView.querySelector('.autocomplete-plus')).not.toExist();
 
-            waitsFor -> editorView.querySelector('.autocomplete-plus li')?
+      editor.moveToBottom();
+      editor.insertText('f');
+      editor.insertText('o');
+      editor.insertText('o');
 
-            runs ->
-              popup = editorView.querySelector('.autocomplete-plus')
-              expect(popup).toExist()
-              expect(popup.querySelector('span.word').textContent).toEqual('button-padding')
+      return advanceClock(completionDelay);
+    });
 
-              expect(popup.querySelector('span.right-label').textContent).toEqual('6px 8px')
+    waitsFor(() => autocompleteManager.displaySuggestions.calls.length === 1);
 
+    return runs(() => expect(editorView.querySelector('.autocomplete-plus')).not.toExist());
+  }));
 
-      describe 'with a transparent color', ->
-        it 'displays the color hexadecimal code in the completion item', ->
-          runs ->
-            expect(editorView.querySelector('.autocomplete-plus')).not.toExist()
+  return describe('when extendAutocompleteToVariables is true', function() {
+    beforeEach(() => atom.config.set('pigments.extendAutocompleteToVariables', true));
 
-            editor.moveToBottom()
-            editor.insertText('$')
-            editor.insertText('o')
-            editor.insertText('t')
+    return describe('writing the name of a non-color variable', () => it('returns suggestions for the matching variable', function() {
+      runs(function() {
+        expect(editorView.querySelector('.autocomplete-plus')).not.toExist();
 
-            advanceClock(completionDelay)
+        editor.moveToBottom();
+        editor.insertText('b');
+        editor.insertText('u');
+        editor.insertText('t');
+        editor.insertText('t');
+        editor.insertText('o');
+        editor.insertText('n');
+        editor.insertText('-');
+        editor.insertText('p');
 
-          waitsFor ->
-            autocompleteManager.displaySuggestions.calls.length is 1
+        return advanceClock(completionDelay);
+      });
 
-          waitsFor ->
-            editorView.querySelector('.autocomplete-plus li')?
+      waitsFor(() => autocompleteManager.displaySuggestions.calls.length === 1);
 
-          runs ->
-            popup = editorView.querySelector('.autocomplete-plus')
-            expect(popup).toExist()
-            expect(popup.querySelector('span.word').textContent).toEqual('$other-color')
+      waitsFor(() => editorView.querySelector('.autocomplete-plus li') != null);
 
-            expect(popup.querySelector('span.right-label').textContent).toContain('rgba(255,0,0,0.5)')
+      return runs(function() {
+        const popup = editorView.querySelector('.autocomplete-plus');
+        expect(popup).toExist();
+        expect(popup.querySelector('span.word').textContent).toEqual('button-padding');
 
-  describe 'writing the name of a non-color variable', ->
-    it 'returns suggestions for the matching variable', ->
-      atom.config.set('pigments.extendAutocompleteToVariables', false)
-      runs ->
-        expect(editorView.querySelector('.autocomplete-plus')).not.toExist()
+        return expect(popup.querySelector('span.right-label').textContent).toEqual('6px 8px');
+      });
+    }));
+  });
+});
 
-        editor.moveToBottom()
-        editor.insertText('f')
-        editor.insertText('o')
-        editor.insertText('o')
+describe('autocomplete provider', function() {
+  let [completionDelay, editor, editorView, pigments, autocompleteMain, autocompleteManager, jasmineContent, project] = Array.from([]);
 
-        advanceClock(completionDelay)
+  return describe('for sass files', function() {
+    beforeEach(function() {
+      runs(function() {
+        jasmineContent = document.body.querySelector('#jasmine-content');
 
-      waitsFor ->
-        autocompleteManager.displaySuggestions.calls.length is 1
-
-      runs ->
-        expect(editorView.querySelector('.autocomplete-plus')).not.toExist()
-
-  describe 'when extendAutocompleteToVariables is true', ->
-    beforeEach ->
-      atom.config.set('pigments.extendAutocompleteToVariables', true)
-
-    describe 'writing the name of a non-color variable', ->
-      it 'returns suggestions for the matching variable', ->
-        runs ->
-          expect(editorView.querySelector('.autocomplete-plus')).not.toExist()
-
-          editor.moveToBottom()
-          editor.insertText('b')
-          editor.insertText('u')
-          editor.insertText('t')
-          editor.insertText('t')
-          editor.insertText('o')
-          editor.insertText('n')
-          editor.insertText('-')
-          editor.insertText('p')
-
-          advanceClock(completionDelay)
-
-        waitsFor ->
-          autocompleteManager.displaySuggestions.calls.length is 1
-
-        waitsFor -> editorView.querySelector('.autocomplete-plus li')?
-
-        runs ->
-          popup = editorView.querySelector('.autocomplete-plus')
-          expect(popup).toExist()
-          expect(popup.querySelector('span.word').textContent).toEqual('button-padding')
-
-          expect(popup.querySelector('span.right-label').textContent).toEqual('6px 8px')
-
-describe 'autocomplete provider', ->
-  [completionDelay, editor, editorView, pigments, autocompleteMain, autocompleteManager, jasmineContent, project] = []
-
-  describe 'for sass files', ->
-    beforeEach ->
-      runs ->
-        jasmineContent = document.body.querySelector('#jasmine-content')
-
-        atom.config.set('pigments.autocompleteScopes', ['*'])
+        atom.config.set('pigments.autocompleteScopes', ['*']);
         atom.config.set('pigments.sourceNames', [
-          '**/*.sass'
+          '**/*.sass',
           '**/*.scss'
-        ])
+        ]);
 
-        # Set to live completion
-        atom.config.set('autocomplete-plus.enableAutoActivation', true)
-        # Set the completion delay
-        completionDelay = 100
-        atom.config.set('autocomplete-plus.autoActivationDelay', completionDelay)
-        completionDelay += 100 # Rendering delay
-        workspaceElement = atom.views.getView(atom.workspace)
+        // Set to live completion
+        atom.config.set('autocomplete-plus.enableAutoActivation', true);
+        // Set the completion delay
+        completionDelay = 100;
+        atom.config.set('autocomplete-plus.autoActivationDelay', completionDelay);
+        completionDelay += 100; // Rendering delay
+        const workspaceElement = atom.views.getView(atom.workspace);
 
-        jasmineContent.appendChild(workspaceElement)
+        return jasmineContent.appendChild(workspaceElement);
+      });
 
-      waitsForPromise 'autocomplete-plus activation', ->
-        atom.packages.activatePackage('autocomplete-plus').then (pkg) ->
-          autocompleteMain = pkg.mainModule
+      waitsForPromise('autocomplete-plus activation', () => atom.packages.activatePackage('autocomplete-plus').then(pkg => autocompleteMain = pkg.mainModule));
 
-      waitsForPromise 'pigments activation', ->
-        atom.packages.activatePackage('pigments').then (pkg) ->
-          pigments = pkg.mainModule
+      waitsForPromise('pigments activation', () => atom.packages.activatePackage('pigments').then(pkg => pigments = pkg.mainModule));
 
-      runs ->
-        spyOn(autocompleteMain, 'consumeProvider').andCallThrough()
-        spyOn(pigments, 'provideAutocomplete').andCallThrough()
+      runs(function() {
+        spyOn(autocompleteMain, 'consumeProvider').andCallThrough();
+        return spyOn(pigments, 'provideAutocomplete').andCallThrough();
+      });
 
-      waitsForPromise 'open sample file', ->
-        atom.workspace.open('sample.styl').then (e) ->
-          editor = e
-          editorView = atom.views.getView(editor)
+      waitsForPromise('open sample file', () => atom.workspace.open('sample.styl').then(function(e) {
+        editor = e;
+        return editorView = atom.views.getView(editor);
+      }));
 
-      waitsForPromise 'pigments project initialized', ->
-        project = pigments.getProject()
-        project.initialize()
+      waitsForPromise('pigments project initialized', function() {
+        project = pigments.getProject();
+        return project.initialize();
+      });
 
-      runs ->
-        autocompleteManager = autocompleteMain.autocompleteManager
-        spyOn(autocompleteManager, 'findSuggestions').andCallThrough()
-        spyOn(autocompleteManager, 'displaySuggestions').andCallThrough()
+      return runs(function() {
+        ({
+          autocompleteManager
+        } = autocompleteMain);
+        spyOn(autocompleteManager, 'findSuggestions').andCallThrough();
+        return spyOn(autocompleteManager, 'displaySuggestions').andCallThrough();
+      });
+    });
 
-    it 'does not display the alternate sass version', ->
-      runs ->
-        expect(editorView.querySelector('.autocomplete-plus')).not.toExist()
+    return it('does not display the alternate sass version', function() {
+      runs(function() {
+        expect(editorView.querySelector('.autocomplete-plus')).not.toExist();
 
-        editor.moveToBottom()
-        editor.insertText('$')
-        editor.insertText('b')
-        editor.insertText('a')
+        editor.moveToBottom();
+        editor.insertText('$');
+        editor.insertText('b');
+        editor.insertText('a');
 
-        advanceClock(completionDelay)
+        return advanceClock(completionDelay);
+      });
 
-      waitsFor 'suggestions displayed callback', ->
-        autocompleteManager.displaySuggestions.calls.length is 1
+      waitsFor('suggestions displayed callback', () => autocompleteManager.displaySuggestions.calls.length === 1);
 
-      waitsFor 'autocomplete lis', ->
-        editorView.querySelector('.autocomplete-plus li')?
+      waitsFor('autocomplete lis', () => editorView.querySelector('.autocomplete-plus li') != null);
 
-      runs ->
-        lis = editorView.querySelectorAll('.autocomplete-plus li')
-        hasAlternate = Array::some.call lis, (li) ->
-          li.querySelector('span.word').textContent is '$base_color'
+      return runs(function() {
+        const lis = editorView.querySelectorAll('.autocomplete-plus li');
+        const hasAlternate = Array.prototype.some.call(lis, li => li.querySelector('span.word').textContent === '$base_color');
 
-        expect(hasAlternate).toBeFalsy()
+        return expect(hasAlternate).toBeFalsy();
+      });
+    });
+  });
+});

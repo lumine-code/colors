@@ -1,148 +1,156 @@
-path = require 'path'
-VariableScanner = require '../lib/variable-scanner'
-registry = require '../lib/variable-expressions'
-scopeFromFileName = require '../lib/scope-from-file-name'
+/*
+ * decaffeinate suggestions:
+ * DS101: Remove unnecessary use of Array.from
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const path = require('path');
+const VariableScanner = require('../lib/variable-scanner');
+const registry = require('../lib/variable-expressions');
+const scopeFromFileName = require('../lib/scope-from-file-name');
 
-describe 'VariableScanner', ->
-  [scanner, editor, text, scope] = []
+describe('VariableScanner', function() {
+  let [scanner, editor, text, scope] = Array.from([]);
 
-  withTextEditor = (fixture, block) ->
-    describe "with #{fixture} buffer", ->
-      beforeEach ->
-        waitsForPromise -> atom.workspace.open(fixture)
-        runs ->
-          editor = atom.workspace.getActiveTextEditor()
-          text = editor.getText()
-          scope = scopeFromFileName(editor.getPath())
+  const withTextEditor = (fixture, block) => describe(`with ${fixture} buffer`, function() {
+    beforeEach(function() {
+      waitsForPromise(() => atom.workspace.open(fixture));
+      return runs(function() {
+        editor = atom.workspace.getActiveTextEditor();
+        text = editor.getText();
+        return scope = scopeFromFileName(editor.getPath());
+      });
+    });
 
-      afterEach ->
-        editor = null
-        scope = null
+    afterEach(function() {
+      editor = null;
+      return scope = null;
+    });
 
-      do block
+    return block();
+  });
 
-  withScannerForTextEditor = (fixture, block) ->
-    withTextEditor fixture, ->
-      beforeEach -> scanner = new VariableScanner({registry, scope})
+  const withScannerForTextEditor = (fixture, block) => withTextEditor(fixture, function() {
+    beforeEach(() => scanner = new VariableScanner({registry, scope}));
 
-      afterEach -> scanner = null
+    afterEach(() => scanner = null);
 
-      do block
+    return block();
+  });
 
-  describe '::search', ->
-    [result] = []
+  return describe('::search', function() {
+    let [result] = Array.from([]);
 
-    withScannerForTextEditor 'four-variables.styl', ->
-      beforeEach ->
-        result = scanner.search(text)
+    withScannerForTextEditor('four-variables.styl', function() {
+      beforeEach(() => result = scanner.search(text));
 
-      it 'returns the first match', ->
-        expect(result).toBeDefined()
+      it('returns the first match', () => expect(result).toBeDefined());
 
-      describe 'the result object', ->
-        it 'has a match string', ->
-          expect(result.match).toEqual('base-color = #fff')
+      describe('the result object', function() {
+        it('has a match string', () => expect(result.match).toEqual('base-color = #fff'));
 
-        it 'has a lastIndex property', ->
-          expect(result.lastIndex).toEqual(17)
+        it('has a lastIndex property', () => expect(result.lastIndex).toEqual(17));
 
-        it 'has a range property', ->
-          expect(result.range).toEqual([0,17])
+        it('has a range property', () => expect(result.range).toEqual([0,17]));
 
-        it 'has a variable result', ->
-          expect(result[0].name).toEqual('base-color')
-          expect(result[0].value).toEqual('#fff')
-          expect(result[0].range).toEqual([0,17])
-          expect(result[0].line).toEqual(0)
+        return it('has a variable result', function() {
+          expect(result[0].name).toEqual('base-color');
+          expect(result[0].value).toEqual('#fff');
+          expect(result[0].range).toEqual([0,17]);
+          return expect(result[0].line).toEqual(0);
+        });
+      });
 
-      describe 'the second result object', ->
-        beforeEach ->
-          result = scanner.search(text, result.lastIndex)
+      describe('the second result object', function() {
+        beforeEach(() => result = scanner.search(text, result.lastIndex));
 
-        it 'has a match string', ->
-          expect(result.match).toEqual('other-color = transparentize(base-color, 50%)')
+        it('has a match string', () => expect(result.match).toEqual('other-color = transparentize(base-color, 50%)'));
 
-        it 'has a lastIndex property', ->
-          expect(result.lastIndex).toEqual(64)
+        it('has a lastIndex property', () => expect(result.lastIndex).toEqual(64));
 
-        it 'has a range property', ->
-          expect(result.range).toEqual([19,64])
+        it('has a range property', () => expect(result.range).toEqual([19,64]));
 
-        it 'has a variable result', ->
-          expect(result[0].name).toEqual('other-color')
-          expect(result[0].value).toEqual('transparentize(base-color, 50%)')
-          expect(result[0].range).toEqual([19,64])
-          expect(result[0].line).toEqual(2)
+        return it('has a variable result', function() {
+          expect(result[0].name).toEqual('other-color');
+          expect(result[0].value).toEqual('transparentize(base-color, 50%)');
+          expect(result[0].range).toEqual([19,64]);
+          return expect(result[0].line).toEqual(2);
+        });
+      });
 
-      describe 'successive searches', ->
-        it 'returns a result for each match and then undefined', ->
-          doSearch = ->
-            result = scanner.search(text, result.lastIndex)
+      return describe('successive searches', () => it('returns a result for each match and then undefined', function() {
+        const doSearch = () => result = scanner.search(text, result.lastIndex);
 
-          expect(doSearch()).toBeDefined()
-          expect(doSearch()).toBeDefined()
-          expect(doSearch()).toBeDefined()
-          expect(doSearch()).toBeUndefined()
+        expect(doSearch()).toBeDefined();
+        expect(doSearch()).toBeDefined();
+        expect(doSearch()).toBeDefined();
+        return expect(doSearch()).toBeUndefined();
+      }));
+    });
 
-    withScannerForTextEditor 'incomplete-stylus-hash.styl', ->
-      beforeEach ->
-        result = scanner.search(text)
+    withScannerForTextEditor('incomplete-stylus-hash.styl', function() {
+      beforeEach(() => result = scanner.search(text));
 
-      it 'does not find any variables', ->
-        expect(result).toBeUndefined()
+      return it('does not find any variables', () => expect(result).toBeUndefined());
+    });
 
-    withScannerForTextEditor 'variables-in-arguments.scss', ->
-      beforeEach ->
-        result = scanner.search(text)
+    withScannerForTextEditor('variables-in-arguments.scss', function() {
+      beforeEach(() => result = scanner.search(text));
 
-      it 'does not find any variables', ->
-        expect(result).toBeUndefined()
+      return it('does not find any variables', () => expect(result).toBeUndefined());
+    });
 
-    withScannerForTextEditor 'attribute-selectors.scss', ->
-      beforeEach ->
-        result = scanner.search(text)
+    withScannerForTextEditor('attribute-selectors.scss', function() {
+      beforeEach(() => result = scanner.search(text));
 
-      it 'does not find any variables', ->
-        expect(result).toBeUndefined()
+      return it('does not find any variables', () => expect(result).toBeUndefined());
+    });
 
-    withScannerForTextEditor 'variables-in-conditions.scss', ->
-      beforeEach ->
-        result = null
-        doSearch = -> result = scanner.search(text, result?.lastIndex)
+    withScannerForTextEditor('variables-in-conditions.scss', function() {
+      beforeEach(function() {
+        result = null;
+        const doSearch = () => result = scanner.search(text, result != null ? result.lastIndex : undefined);
 
-        doSearch()
-        doSearch()
+        doSearch();
+        return doSearch();
+      });
 
-      it 'does not find the variable in the if clause', ->
-        expect(result).toBeUndefined()
+      return it('does not find the variable in the if clause', () => expect(result).toBeUndefined());
+    });
 
-    withScannerForTextEditor 'variables-after-mixins.scss', ->
-      beforeEach ->
-        result = null
-        doSearch = -> result = scanner.search(text, result?.lastIndex)
+    withScannerForTextEditor('variables-after-mixins.scss', function() {
+      beforeEach(function() {
+        result = null;
+        const doSearch = () => result = scanner.search(text, result != null ? result.lastIndex : undefined);
 
-        doSearch()
+        return doSearch();
+      });
 
-      it 'finds the variable after the mixin', ->
-        expect(result).toBeDefined()
+      return it('finds the variable after the mixin', () => expect(result).toBeDefined());
+    });
 
-    withScannerForTextEditor 'variables-from-other-process.less', ->
-      beforeEach ->
-        result = null
-        doSearch = -> result = scanner.search(text, result?.lastIndex)
+    withScannerForTextEditor('variables-from-other-process.less', function() {
+      beforeEach(function() {
+        result = null;
+        const doSearch = () => result = scanner.search(text, result != null ? result.lastIndex : undefined);
 
-        doSearch()
+        return doSearch();
+      });
 
-      it 'finds the variable with an interpolation tag', ->
-        expect(result).toBeDefined()
+      return it('finds the variable with an interpolation tag', () => expect(result).toBeDefined());
+    });
 
-    withScannerForTextEditor 'crlf.styl', ->
-      beforeEach ->
-        result = null
-        doSearch = -> result = scanner.search(text, result?.lastIndex)
+    return withScannerForTextEditor('crlf.styl', function() {
+      beforeEach(function() {
+        result = null;
+        const doSearch = () => result = scanner.search(text, result != null ? result.lastIndex : undefined);
 
-        doSearch()
-        doSearch()
+        doSearch();
+        return doSearch();
+      });
 
-      it 'finds all the variables even with crlf mode', ->
-        expect(result).toBeDefined()
+      return it('finds all the variables even with crlf mode', () => expect(result).toBeDefined());
+    });
+  });
+});

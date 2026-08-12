@@ -1,177 +1,179 @@
-Color = require '../lib/color'
-ColorMarker = require '../lib/color-marker'
+/*
+ * decaffeinate suggestions:
+ * DS101: Remove unnecessary use of Array.from
+ * DS102: Remove unnecessary code created because of implicit returns
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const Color = require('../lib/color');
+const ColorMarker = require('../lib/color-marker');
 
-describe 'ColorMarker', ->
-  [editor, marker, colorMarker, jasmineContent] = []
+describe('ColorMarker', function() {
+  let [editor, marker, colorMarker, jasmineContent] = Array.from([]);
 
-  beforeEach ->
-    editor = atom.workspace.buildTextEditor({})
-    editor.setText("""
-    body {
-      color: hsva(0, 100%, 100%, 0.5);
-      bar: foo;
-      foo: bar;
-    }
-    """)
-    marker = editor.markBufferRange [[1,9],[1,33]]
-    color = new Color(255, 0, 0, 0.5)
-    text = 'hsva(0, 100%, 100%, 0.5)'
-    colorBuffer = {editor}
+  beforeEach(function() {
+    editor = atom.workspace.buildTextEditor({});
+    editor.setText(`\
+body {
+  color: hsva(0, 100%, 100%, 0.5);
+  bar: foo;
+  foo: bar;
+}\
+`);
+    marker = editor.markBufferRange([[1,9],[1,33]]);
+    const color = new Color(255, 0, 0, 0.5);
+    const text = 'hsva(0, 100%, 100%, 0.5)';
+    const colorBuffer = {editor};
 
-    colorMarker = new ColorMarker({marker, color, text, colorBuffer})
+    return colorMarker = new ColorMarker({marker, color, text, colorBuffer});
+  });
 
-  describe '::copyContentAsHex', ->
-    beforeEach ->
-      colorMarker.copyContentAsHex()
+  describe('::copyContentAsHex', function() {
+    beforeEach(() => colorMarker.copyContentAsHex());
 
-    it 'write the hexadecimal version in the clipboard', ->
-      expect(atom.clipboard.read()).toEqual("#ff0000")
+    return it('write the hexadecimal version in the clipboard', () => expect(atom.clipboard.read()).toEqual("#ff0000"));
+  });
 
-  describe '::copyContentAsRGB', ->
-    beforeEach ->
-      colorMarker.copyContentAsRGB()
+  describe('::copyContentAsRGB', function() {
+    beforeEach(() => colorMarker.copyContentAsRGB());
 
-    it 'write the rgb version in the clipboard', ->
-      expect(atom.clipboard.read()).toEqual("rgb(255, 0, 0)")
+    return it('write the rgb version in the clipboard', () => expect(atom.clipboard.read()).toEqual("rgb(255, 0, 0)"));
+  });
 
-  describe '::copyContentAsRGBA', ->
-    beforeEach ->
-      colorMarker.copyContentAsRGBA()
+  describe('::copyContentAsRGBA', function() {
+    beforeEach(() => colorMarker.copyContentAsRGBA());
 
-    it 'write the rgba version in the clipboard', ->
-      expect(atom.clipboard.read()).toEqual("rgba(255, 0, 0, 0.5)")
+    return it('write the rgba version in the clipboard', () => expect(atom.clipboard.read()).toEqual("rgba(255, 0, 0, 0.5)"));
+  });
 
-  describe '::copyContentAsHSL', ->
-    beforeEach ->
-      colorMarker.copyContentAsHSL()
+  describe('::copyContentAsHSL', function() {
+    beforeEach(() => colorMarker.copyContentAsHSL());
 
-    it 'write the hsl version in the clipboard', ->
-      expect(atom.clipboard.read()).toEqual("hsl(0, 100%, 50%)")
+    return it('write the hsl version in the clipboard', () => expect(atom.clipboard.read()).toEqual("hsl(0, 100%, 50%)"));
+  });
 
-  describe '::copyContentAsHSLA', ->
-    beforeEach ->
-      colorMarker.copyContentAsHSLA()
+  describe('::copyContentAsHSLA', function() {
+    beforeEach(() => colorMarker.copyContentAsHSLA());
 
-    it 'write the hsla version in the clipboard', ->
-      expect(atom.clipboard.read()).toEqual("hsla(0, 100%, 50%, 0.5)")
+    return it('write the hsla version in the clipboard', () => expect(atom.clipboard.read()).toEqual("hsla(0, 100%, 50%, 0.5)"));
+  });
 
-  describe '::convertContentToHex', ->
-    beforeEach ->
-      colorMarker.convertContentToHex()
+  describe('::convertContentToHex', function() {
+    beforeEach(() => colorMarker.convertContentToHex());
 
-    it 'replaces the text in the editor by the hexadecimal version', ->
-      expect(editor.getText()).toEqual("""
-      body {
-        color: #ff0000;
-        bar: foo;
-        foo: bar;
-      }
-      """)
+    return it('replaces the text in the editor by the hexadecimal version', () => expect(editor.getText()).toEqual(`\
+body {
+color: #ff0000;
+bar: foo;
+foo: bar;
+}\
+`));
+  });
 
-  describe '::convertContentToRGBA', ->
-    beforeEach ->
-      colorMarker.convertContentToRGBA()
+  describe('::convertContentToRGBA', function() {
+    beforeEach(() => colorMarker.convertContentToRGBA());
 
-    it 'replaces the text in the editor by the rgba version', ->
-      expect(editor.getText()).toEqual("""
-      body {
-        color: rgba(255, 0, 0, 0.5);
-        bar: foo;
-        foo: bar;
-      }
-      """)
+    it('replaces the text in the editor by the rgba version', () => expect(editor.getText()).toEqual(`\
+body {
+color: rgba(255, 0, 0, 0.5);
+bar: foo;
+foo: bar;
+}\
+`));
 
-    describe 'when the color alpha is 1', ->
-      beforeEach ->
-        colorMarker.color.alpha = 1
-        colorMarker.convertContentToRGBA()
+    return describe('when the color alpha is 1', function() {
+      beforeEach(function() {
+        colorMarker.color.alpha = 1;
+        return colorMarker.convertContentToRGBA();
+      });
 
-      it 'replaces the text in the editor by the rgba version', ->
-        expect(editor.getText()).toEqual("""
-        body {
-          color: rgba(255, 0, 0, 1);
-          bar: foo;
-          foo: bar;
-        }
-        """)
+      return it('replaces the text in the editor by the rgba version', () => expect(editor.getText()).toEqual(`\
+body {
+color: rgba(255, 0, 0, 1);
+bar: foo;
+foo: bar;
+}\
+`));
+    });
+  });
 
-  describe '::convertContentToRGB', ->
-    beforeEach ->
-      colorMarker.color.alpha = 1
-      colorMarker.convertContentToRGB()
+  describe('::convertContentToRGB', function() {
+    beforeEach(function() {
+      colorMarker.color.alpha = 1;
+      return colorMarker.convertContentToRGB();
+    });
 
-    it 'replaces the text in the editor by the rgb version', ->
-      expect(editor.getText()).toEqual("""
-      body {
-        color: rgb(255, 0, 0);
-        bar: foo;
-        foo: bar;
-      }
-      """)
+    it('replaces the text in the editor by the rgb version', () => expect(editor.getText()).toEqual(`\
+body {
+color: rgb(255, 0, 0);
+bar: foo;
+foo: bar;
+}\
+`));
 
-    describe 'when the color alpha is not 1', ->
-      beforeEach ->
-        colorMarker.convertContentToRGB()
+    return describe('when the color alpha is not 1', function() {
+      beforeEach(() => colorMarker.convertContentToRGB());
 
-      it 'replaces the text in the editor by the rgb version', ->
-        expect(editor.getText()).toEqual("""
-        body {
-          color: rgb(255, 0, 0);
-          bar: foo;
-          foo: bar;
-        }
-        """)
+      return it('replaces the text in the editor by the rgb version', () => expect(editor.getText()).toEqual(`\
+body {
+color: rgb(255, 0, 0);
+bar: foo;
+foo: bar;
+}\
+`));
+    });
+  });
 
-  describe '::convertContentToHSLA', ->
-    beforeEach ->
-      colorMarker.convertContentToHSLA()
+  describe('::convertContentToHSLA', function() {
+    beforeEach(() => colorMarker.convertContentToHSLA());
 
-    it 'replaces the text in the editor by the hsla version', ->
-      expect(editor.getText()).toEqual("""
-      body {
-        color: hsla(0, 100%, 50%, 0.5);
-        bar: foo;
-        foo: bar;
-      }
-      """)
+    it('replaces the text in the editor by the hsla version', () => expect(editor.getText()).toEqual(`\
+body {
+color: hsla(0, 100%, 50%, 0.5);
+bar: foo;
+foo: bar;
+}\
+`));
 
-    describe 'when the color alpha is 1', ->
-      beforeEach ->
-        colorMarker.color.alpha = 1
-        colorMarker.convertContentToHSLA()
+    return describe('when the color alpha is 1', function() {
+      beforeEach(function() {
+        colorMarker.color.alpha = 1;
+        return colorMarker.convertContentToHSLA();
+      });
 
-      it 'replaces the text in the editor by the hsla version', ->
-        expect(editor.getText()).toEqual("""
-        body {
-          color: hsla(0, 100%, 50%, 1);
-          bar: foo;
-          foo: bar;
-        }
-        """)
+      return it('replaces the text in the editor by the hsla version', () => expect(editor.getText()).toEqual(`\
+body {
+color: hsla(0, 100%, 50%, 1);
+bar: foo;
+foo: bar;
+}\
+`));
+    });
+  });
 
-  describe '::convertContentToHSL', ->
-    beforeEach ->
-      colorMarker.color.alpha = 1
-      colorMarker.convertContentToHSL()
+  return describe('::convertContentToHSL', function() {
+    beforeEach(function() {
+      colorMarker.color.alpha = 1;
+      return colorMarker.convertContentToHSL();
+    });
 
-    it 'replaces the text in the editor by the hsl version', ->
-      expect(editor.getText()).toEqual("""
-      body {
-        color: hsl(0, 100%, 50%);
-        bar: foo;
-        foo: bar;
-      }
-      """)
+    it('replaces the text in the editor by the hsl version', () => expect(editor.getText()).toEqual(`\
+body {
+color: hsl(0, 100%, 50%);
+bar: foo;
+foo: bar;
+}\
+`));
 
-    describe 'when the color alpha is not 1', ->
-      beforeEach ->
-        colorMarker.convertContentToHSL()
+    return describe('when the color alpha is not 1', function() {
+      beforeEach(() => colorMarker.convertContentToHSL());
 
-      it 'replaces the text in the editor by the hsl version', ->
-        expect(editor.getText()).toEqual("""
-        body {
-          color: hsl(0, 100%, 50%);
-          bar: foo;
-          foo: bar;
-        }
-        """)
+      return it('replaces the text in the editor by the hsl version', () => expect(editor.getText()).toEqual(`\
+body {
+color: hsl(0, 100%, 50%);
+bar: foo;
+foo: bar;
+}\
+`));
+    });
+  });
+});
