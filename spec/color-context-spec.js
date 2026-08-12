@@ -7,11 +7,10 @@
  */
 
 const ColorContext = require("../lib/color-context");
-const ColorParser = require("../lib/color-parser");
 const registry = require("../lib/color-expressions");
 
 describe("ColorContext", function () {
-  let [context, parser] = Array.from([]);
+  let [context, _parser] = Array.from([]);
 
   const itParses = (expression) => ({
     asUndefined() {
@@ -325,7 +324,7 @@ describe("ColorContext", function () {
       return { value, name, path };
     };
 
-    const createColorVar = function (name, value) {
+    const _createColorVar = function (name, value) {
       const v = createVar(name, value);
       v.isColor = true;
       return v;
@@ -387,7 +386,7 @@ describe("ColorContext", function () {
       return { value, name, path };
     };
 
-    const createColorVar = function (name, value) {
+    const _createColorVar = function (name, value) {
       const v = createVar(name, value);
       v.isColor = true;
       return v;

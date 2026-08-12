@@ -8,7 +8,7 @@ const Color = require("../lib/color");
 const ColorMarker = require("../lib/color-marker");
 
 describe("ColorMarker", function () {
-  let [editor, marker, colorMarker, jasmineContent] = Array.from([]);
+  let [editor, marker, colorMarker, _jasmineContent] = Array.from([]);
 
   beforeEach(function () {
     editor = lumine.workspace.buildTextEditor({});

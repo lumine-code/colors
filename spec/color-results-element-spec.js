@@ -6,10 +6,9 @@ const { runs, waitsFor, waitsForPromise } = require("./helpers/waiters"); /*
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
  */
 const { click } = require("./helpers/events");
-const ColorSearch = require("../lib/color-search");
 
 describe("ColorResultsElement", function () {
-  let [search, resultsElement, colors, project, completeSpy, findSpy] = Array.from([]);
+  let [search, resultsElement, colors, project, completeSpy, _findSpy] = Array.from([]);
 
   beforeEach(async function () {
     registerViewProvider();

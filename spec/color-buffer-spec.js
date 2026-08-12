@@ -8,15 +8,13 @@ const { runs, waitsFor, waitsForPromise } = require("./helpers/waiters"); /*
  * DS207: Consider shorter variations of null checks
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
  */
-const path = require("path");
 const ColorBuffer = require("../lib/color-buffer");
-const registry = require("../lib/color-expressions");
 const jsonFixture = require("./helpers/fixtures").jsonFixture(__dirname, "fixtures");
 
 describe("ColorBuffer", function () {
   let [editor, colorBuffer, colors, project] = Array.from([]);
 
-  const sleep = async function (ms) {
+  const _sleep = async function (ms) {
     const start = new Date();
     return () => new Date() - start >= ms;
   };
@@ -326,7 +324,7 @@ describe("ColorBuffer", function () {
       });
 
       describe("when a new variable is added", function () {
-        const [colorsUpdateSpy] = Array.from([]);
+        const [_colorsUpdateSpy] = Array.from([]);
 
         beforeEach(async function () {
           registerViewProvider();

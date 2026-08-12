@@ -6,7 +6,6 @@
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
  */
 const { Disposable } = require("lumine");
-const Colors = require("../lib/main");
 const ColorsAPI = require("../lib/colors-api");
 const registry = require("../lib/variable-expressions");
 
@@ -67,7 +66,6 @@ describe("Colors", function () {
       await waitsForPromise({ label: "text-editor opened" }, () =>
         lumine.workspace.open("four-variables.styl").then(function (e) {
           editor = e;
-          editorElement = lumine.views.getView(e);
           return (colorBuffer = project.colorBufferForEditor(editor));
         }),
       );
@@ -120,13 +118,12 @@ describe("Colors", function () {
   //#    ##     ## ##        ####
 
   describe("API provider", function () {
-    let [service, editor, editorElement, buffer] = Array.from([]);
+    let [service, editor] = Array.from([]);
     beforeEach(async function () {
       await waitsForPromise({ label: "text-editor opened" }, () =>
         lumine.workspace.open("four-variables.styl").then(function (e) {
           editor = e;
-          editorElement = lumine.views.getView(e);
-          return (buffer = project.colorBufferForEditor(editor));
+          return project.colorBufferForEditor(editor);
         }),
       );
 
@@ -207,7 +204,6 @@ describe("Colors", function () {
         await waitsForPromise({ label: "text-editor opened" }, () =>
           lumine.workspace.open("color-consumer-sample.txt").then(function (e) {
             editor = e;
-            editorElement = lumine.views.getView(e);
             return (colorBuffer = project.colorBufferForEditor(editor));
           }),
         );
@@ -256,7 +252,6 @@ describe("Colors", function () {
         await waitsForPromise({ label: "text-editor opened" }, () =>
           lumine.workspace.open("color-consumer-sample.txt").then(function (e) {
             editor = e;
-            editorElement = lumine.views.getView(e);
             return (colorBuffer = project.colorBufferForEditor(editor));
           }),
         );

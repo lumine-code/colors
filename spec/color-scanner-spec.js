@@ -1,4 +1,4 @@
-const { runs, waitsFor, waitsForPromise } = require("./helpers/waiters"); /*
+const { runs, _waitsFor, waitsForPromise } = require("./helpers/waiters"); /*
  * decaffeinate suggestions:
  * DS101: Remove unnecessary use of Array.from
  * DS102: Remove unnecessary code created because of implicit returns
@@ -9,7 +9,7 @@ const ColorContext = require("../lib/color-context");
 const registry = require("../lib/color-expressions");
 
 describe("ColorScanner", function () {
-  let [scanner, editor, text, result, lastIndex] = Array.from([]);
+  let [scanner, editor, text, result, _lastIndex] = Array.from([]);
 
   const withScannerForString = (string, block) =>
     describe(`with '${string.replace(/#/g, "+")}'`, function () {

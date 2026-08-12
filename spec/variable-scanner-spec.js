@@ -1,11 +1,10 @@
-const { runs, waitsFor, waitsForPromise } = require("./helpers/waiters"); /*
+const { runs, _waitsFor, waitsForPromise } = require("./helpers/waiters"); /*
  * decaffeinate suggestions:
  * DS101: Remove unnecessary use of Array.from
  * DS102: Remove unnecessary code created because of implicit returns
  * DS207: Consider shorter variations of null checks
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
  */
-const path = require("path");
 const VariableScanner = require("../lib/variable-scanner");
 const registry = require("../lib/variable-expressions");
 const scopeFromFileName = require("../lib/scope-from-file-name");

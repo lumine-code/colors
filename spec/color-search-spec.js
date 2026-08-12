@@ -6,7 +6,6 @@ const { runs, waitsFor, waitsForPromise } = require("./helpers/waiters"); /*
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
  */
 require("./helpers/matchers");
-const ColorSearch = require("../lib/color-search");
 
 describe("ColorSearch", function () {
   let [search, colors, project] = Array.from([]);

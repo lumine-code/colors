@@ -281,7 +281,9 @@ describe("autocomplete provider", function () {
 
             await waitsFor(() => autocompleteManager.displaySuggestions.calls.count() === 1);
 
-            await waitsFor(() => editorView.querySelector("autocomplete-suggestion-list li") != null);
+            await waitsFor(
+              () => editorView.querySelector("autocomplete-suggestion-list li") != null,
+            );
 
             await runs(async function () {
               const popup = editorView.querySelector("autocomplete-suggestion-list");
@@ -340,7 +342,9 @@ describe("autocomplete provider", function () {
 
       await waitsFor(() => autocompleteManager.displaySuggestions.calls.count() === 1);
 
-      await runs(() => expect(editorView.querySelector("autocomplete-suggestion-list")).not.toExist());
+      await runs(() =>
+        expect(editorView.querySelector("autocomplete-suggestion-list")).not.toExist(),
+      );
     }));
 
   return describe("when extendAutocompleteToVariables is true", function () {

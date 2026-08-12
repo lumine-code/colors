@@ -6,13 +6,12 @@ const { runs, waitsFor, waitsForPromise } = require("./helpers/waiters"); /*
  * DS207: Consider shorter variations of null checks
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
  */
+const fs = require("fs");
 const path = require("path");
 require("./helpers/spec-helper");
 const { mousedown } = require("./helpers/events");
 
-const ColorBufferElement = require("../lib/color-buffer-element");
-
-const sleep = async function (duration) {
+const _sleep = async function (duration) {
   const t = new Date();
   await waitsFor(() => new Date() - t > duration);
 };
@@ -41,7 +40,7 @@ describe("ColorBufferElement", function () {
     }
   };
 
-  const jsonFixture = function (fixture, data) {
+  const _jsonFixture = function (fixture, data) {
     const jsonPath = path.resolve(__dirname, "fixtures", fixture);
     let json = fs.readFileSync(jsonPath).toString();
     json = json.replace(/#\{(\w+)\}/g, (m, w) => data[w]);

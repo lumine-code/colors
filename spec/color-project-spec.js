@@ -14,13 +14,13 @@ const { SERIALIZE_VERSION, SERIALIZE_MARKERS_VERSION } = require("../lib/version
 const ColorProject = require("../lib/color-project");
 const ColorBuffer = require("../lib/color-buffer");
 const jsonFixture = require("./helpers/fixtures").jsonFixture(__dirname, "fixtures");
-const { click } = require("./helpers/events");
+const { _click } = require("./helpers/events");
 
 const TOTAL_VARIABLES_IN_PROJECT = 12;
 const TOTAL_COLORS_VARIABLES_IN_PROJECT = 10;
 
 describe("ColorProject", function () {
-  let [project, promise, rootPath, paths, eventSpy] = Array.from([]);
+  let [project, _promise, rootPath, paths, eventSpy] = Array.from([]);
 
   beforeEach(async function () {
     registerViewProvider();
@@ -230,7 +230,7 @@ describe("ColorProject", function () {
       registerViewProvider();
       lumine.config.set("colors.sourceNames", ["*.sass"]);
 
-      const [fixturesPath] = Array.from(lumine.project.getPaths());
+      const [_fixturesPath] = Array.from(lumine.project.getPaths());
 
       project = new ColorProject({ sourceNames: ["*.styl"] });
 
@@ -857,7 +857,7 @@ describe("ColorProject", function () {
     });
 
     describe("when the extendedSearchNames setting is changed", function () {
-      const [updateSpy] = Array.from([]);
+      const [_updateSpy] = Array.from([]);
 
       beforeEach(async () => project.setSearchNames(["*.foo"]));
 

@@ -7,9 +7,7 @@
  */
 require("./helpers/matchers");
 
-const ColorParser = require("../lib/color-parser");
 const ColorContext = require("../lib/color-context");
-const ColorExpression = require("../lib/color-expression");
 const registry = require("../lib/color-expressions");
 
 describe("ColorParser", function () {

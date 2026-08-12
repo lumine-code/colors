@@ -1,5 +1,5 @@
 ﻿const { registerViewProvider } = require("./helpers/view-provider");
-const { runs, waitsFor, waitsForPromise } = require("./helpers/waiters"); /*
+const { _runs, _waitsFor, waitsForPromise } = require("./helpers/waiters"); /*
  * decaffeinate suggestions:
  * DS101: Remove unnecessary use of Array.from
  * DS102: Remove unnecessary code created because of implicit returns
