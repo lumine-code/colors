@@ -22,6 +22,11 @@ const TOTAL_COLORS_VARIABLES_IN_PROJECT = 10;
 describe("ColorProject", function () {
   let [project, _promise, rootPath, paths, eventSpy] = Array.from([]);
 
+  // The project stores native paths, because they have to compare equal to
+  // editor.getPath() when a buffer is looked up by path, so expectations are
+  // built that way too rather than joined with a forward slash.
+  const p = (relative) => path.join(rootPath, ...relative.split("/"));
+
   beforeEach(async function () {
     registerViewProvider();
     lumine.config.set("colors.sourceNames", ["*.styl"]);
@@ -29,7 +34,7 @@ describe("ColorProject", function () {
     lumine.config.set("colors.filetypesForColorWords", ["*"]);
 
     const [fixturesPath] = Array.from(lumine.project.getPaths());
-    rootPath = `${fixturesPath}/project`;
+    rootPath = path.join(fixturesPath, "project");
     lumine.project.setPaths([rootPath]);
 
     return (project = new ColorProject({
@@ -54,10 +59,7 @@ describe("ColorProject", function () {
       project = ColorProject.deserialize(json);
 
       expect(project).toBeDefined();
-      expect(project.getPaths()).toEqual([
-        `${rootPath}/styles/buttons.styl`,
-        `${rootPath}/styles/variables.styl`,
-      ]);
+      expect(project.getPaths()).toEqual([p("styles/buttons.styl"), p("styles/variables.styl")]);
       expect(project.getVariables().length).toEqual(TOTAL_VARIABLES_IN_PROJECT);
       return expect(project.getColorVariables().length).toEqual(TOTAL_COLORS_VARIABLES_IN_PROJECT);
     }));
@@ -71,10 +73,7 @@ describe("ColorProject", function () {
     });
 
     it("loads the paths to scan in the project", async () =>
-      expect(project.getPaths()).toEqual([
-        `${rootPath}/styles/buttons.styl`,
-        `${rootPath}/styles/variables.styl`,
-      ]));
+      expect(project.getPaths()).toEqual([p("styles/buttons.styl"), p("styles/variables.styl")]));
 
     it("scans the loaded paths to retrieve the variables", async function () {
       expect(project.getVariables()).toBeDefined();
@@ -128,7 +127,7 @@ describe("ColorProject", function () {
 
     describe("::getVariablesForPath", () =>
       it("returns undefined", async () =>
-        expect(project.getVariablesForPath(`${rootPath}/styles/variables.styl`)).toEqual([])));
+        expect(project.getVariablesForPath(p("styles/variables.styl"))).toEqual([])));
 
     describe("::getVariableByName", () =>
       it("returns undefined", async () =>
@@ -154,9 +153,7 @@ describe("ColorProject", function () {
         registerViewProvider();
         spyOn(project, "initialize").and.callThrough();
 
-        await waitsForPromise(() =>
-          project.reloadVariablesForPath(`${rootPath}/styles/variables.styl`),
-        );
+        await waitsForPromise(() => project.reloadVariablesForPath(p("styles/variables.styl")));
       });
 
       return it("returns a promise hooked on the initialize promise", async () =>
@@ -281,7 +278,7 @@ describe("ColorProject", function () {
           timestamp: date,
           version: SERIALIZE_VERSION,
           markersVersion: SERIALIZE_MARKERS_VERSION,
-          paths: [`${rootPath}/styles/buttons.styl`, `${rootPath}/styles/variables.styl`],
+          paths: [p("styles/buttons.styl"), p("styles/variables.styl")],
           globalSourceNames: ["*.styl"],
           globalIgnoredNames: [],
           buffers: {},
@@ -291,22 +288,20 @@ describe("ColorProject", function () {
 
     describe("::getVariablesForPath", function () {
       it("returns the variables defined in the file", async () =>
-        expect(project.getVariablesForPath(`${rootPath}/styles/variables.styl`).length).toEqual(
+        expect(project.getVariablesForPath(p("styles/variables.styl")).length).toEqual(
           TOTAL_VARIABLES_IN_PROJECT,
         ));
 
       return describe("for a file that was ignored in the scanning process", () =>
         it("returns undefined", async () =>
-          expect(project.getVariablesForPath(`${rootPath}/vendor/css/variables.less`)).toEqual(
-            [],
-          )));
+          expect(project.getVariablesForPath(p("vendor/css/variables.less"))).toEqual([])));
     });
 
     describe("::deleteVariablesForPath", () =>
       it("removes all the variables coming from the specified file", async function () {
-        project.deleteVariablesForPath(`${rootPath}/styles/variables.styl`);
+        project.deleteVariablesForPath(p("styles/variables.styl"));
 
-        return expect(project.getVariablesForPath(`${rootPath}/styles/variables.styl`)).toEqual([]);
+        return expect(project.getVariablesForPath(p("styles/variables.styl"))).toEqual([]);
       }));
 
     describe("::getContext", () =>
@@ -345,13 +340,11 @@ describe("ColorProject", function () {
         describe("where the reload finds new variables", function () {
           beforeEach(async function () {
             registerViewProvider();
-            project.deleteVariablesForPath(`${rootPath}/styles/variables.styl`);
+            project.deleteVariablesForPath(p("styles/variables.styl"));
 
             eventSpy = jasmine.createSpy("did-update-variables");
             project.onDidUpdateVariables(eventSpy);
-            await waitsForPromise(() =>
-              project.reloadVariablesForPath(`${rootPath}/styles/variables.styl`),
-            );
+            await waitsForPromise(() => project.reloadVariablesForPath(p("styles/variables.styl")));
           });
 
           it("scans again the file to find variables", async () =>
@@ -366,9 +359,7 @@ describe("ColorProject", function () {
             registerViewProvider();
             eventSpy = jasmine.createSpy("did-update-variables");
             project.onDidUpdateVariables(eventSpy);
-            await waitsForPromise(() =>
-              project.reloadVariablesForPath(`${rootPath}/styles/variables.styl`),
-            );
+            await waitsForPromise(() => project.reloadVariablesForPath(p("styles/variables.styl")));
           });
 
           it("leaves the file variables intact", async () =>
@@ -384,16 +375,13 @@ describe("ColorProject", function () {
         describe("where the reload finds new variables", function () {
           beforeEach(async function () {
             registerViewProvider();
-            project.deleteVariablesForPaths([
-              `${rootPath}/styles/variables.styl`,
-              `${rootPath}/styles/buttons.styl`,
-            ]);
+            project.deleteVariablesForPaths([p("styles/variables.styl"), p("styles/buttons.styl")]);
             eventSpy = jasmine.createSpy("did-update-variables");
             project.onDidUpdateVariables(eventSpy);
             await waitsForPromise(() =>
               project.reloadVariablesForPaths([
-                `${rootPath}/styles/variables.styl`,
-                `${rootPath}/styles/buttons.styl`,
+                p("styles/variables.styl"),
+                p("styles/buttons.styl"),
               ]),
             );
           });
@@ -412,8 +400,8 @@ describe("ColorProject", function () {
             project.onDidUpdateVariables(eventSpy);
             await waitsForPromise(() =>
               project.reloadVariablesForPaths([
-                `${rootPath}/styles/variables.styl`,
-                `${rootPath}/styles/buttons.styl`,
+                p("styles/variables.styl"),
+                p("styles/buttons.styl"),
               ]),
             );
           });
@@ -432,7 +420,7 @@ describe("ColorProject", function () {
           spyOn(project, "loadVariablesForPath").and.callThrough();
 
           await waitsForPromise(() =>
-            project.reloadVariablesForPath(`${rootPath}/vendor/css/variables.less`),
+            project.reloadVariablesForPath(p("vendor/css/variables.less")),
           );
         });
 
@@ -495,14 +483,12 @@ describe("ColorProject", function () {
         });
 
         it("updates the text range of the other variables", async () =>
-          project
-            .getVariablesForPath(`${rootPath}/styles/variables.styl`)
-            .forEach(function (variable) {
-              if (variable.name !== "colors.red") {
-                expect(variable.range[0]).toEqual(variablesTextRanges[variable.name][0] - 3);
-                return expect(variable.range[1]).toEqual(variablesTextRanges[variable.name][1] - 3);
-              }
-            }));
+          project.getVariablesForPath(p("styles/variables.styl")).forEach(function (variable) {
+            if (variable.name !== "colors.red") {
+              expect(variable.range[0]).toEqual(variablesTextRanges[variable.name][0] - 3);
+              return expect(variable.range[1]).toEqual(variablesTextRanges[variable.name][1] - 3);
+            }
+          }));
 
         return it("dispatches a did-update-variables event", async () =>
           expect(eventSpy).toHaveBeenCalled());
@@ -537,17 +523,15 @@ describe("ColorProject", function () {
           expect(eventSpy.calls.count()).toEqual(0));
 
         return it("updates the range of the updated variables", async () =>
-          project
-            .getVariablesForPath(`${rootPath}/styles/variables.styl`)
-            .forEach(function (variable) {
-              if (variable.name !== "colors.red") {
-                expect(variable.range[0]).toEqual(variablesTextRanges[variable.name][0] + 2);
-                expect(variable.range[1]).toEqual(variablesTextRanges[variable.name][1] + 2);
-                return expect(
-                  variable.bufferRange.isEqual(variablesBufferRanges[variable.name]),
-                ).toBeFalsy();
-              }
-            }));
+          project.getVariablesForPath(p("styles/variables.styl")).forEach(function (variable) {
+            if (variable.name !== "colors.red") {
+              expect(variable.range[0]).toEqual(variablesTextRanges[variable.name][0] + 2);
+              expect(variable.range[1]).toEqual(variablesTextRanges[variable.name][1] + 2);
+              return expect(
+                variable.bufferRange.isEqual(variablesBufferRanges[variable.name]),
+              ).toBeFalsy();
+            }
+          }));
       });
 
       describe("when a color is removed", function () {
@@ -1111,18 +1095,13 @@ describe("ColorProject", function () {
       });
 
       it("drops drops the non-existing and reload the paths", async () =>
-        expect(project.getPaths()).toEqual([
-          `${rootPath}/styles/buttons.styl`,
-          `${rootPath}/styles/variables.styl`,
-        ]));
+        expect(project.getPaths()).toEqual([p("styles/buttons.styl"), p("styles/variables.styl")]));
 
       it("drops the variables from the removed paths", async () =>
-        expect(project.getVariablesForPath(`${rootPath}/styles/foo.styl`).length).toEqual(0));
+        expect(project.getVariablesForPath(p("styles/foo.styl")).length).toEqual(0));
 
       return it("loads the variables from the new file", async () =>
-        expect(project.getVariablesForPath(`${rootPath}/styles/variables.styl`).length).toEqual(
-          12,
-        ));
+        expect(project.getVariablesForPath(p("styles/variables.styl")).length).toEqual(12));
     });
 
     describe("with a sourceNames setting value different than when serialized", function () {
@@ -1155,8 +1134,8 @@ describe("ColorProject", function () {
       it("keeps the project related data", async function () {
         expect(project.ignoredNames).toEqual(["vendor/*"]);
         return expect(project.getPaths()).toEqual([
-          `${rootPath}/styles/buttons.styl`,
-          `${rootPath}/styles/variables.styl`,
+          p("styles/buttons.styl"),
+          p("styles/variables.styl"),
         ]);
       });
 
