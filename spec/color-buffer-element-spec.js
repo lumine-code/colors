@@ -49,9 +49,7 @@ describe("ColorBufferElement", function () {
   };
 
   const getEditorDecorations = (_type) =>
-    editor
-      .getDecorations()
-      .filter((d) => d.properties.class.startsWith("colors-native-background"));
+    editor.getDecorations().filter((d) => d.properties.class.startsWith("colors-background"));
 
   beforeEach(async function () {
     registerViewProvider();
@@ -107,12 +105,12 @@ describe("ColorBufferElement", function () {
       beforeEach(async () => await waitsForPromise(() => colorBuffer.initialize()));
 
       it("creates markers views for every visible buffer marker", async () =>
-        expect(getEditorDecorations("native-background").length).toEqual(3));
+        expect(getEditorDecorations("background").length).toEqual(3));
 
       describe("when the project variables are initialized", () =>
         it("creates markers for the new valid colors", async function () {
           await waitsForPromise(() => colorBuffer.variablesAvailable());
-          await runs(() => expect(getEditorDecorations("native-background").length).toEqual(4));
+          await runs(() => expect(getEditorDecorations("background").length).toEqual(4));
         }));
 
       describe("when a selection intersects a marker range", function () {
@@ -132,7 +130,7 @@ describe("ColorBufferElement", function () {
           });
 
           return it("hides the intersected marker", async function () {
-            const decorations = getEditorDecorations("native-background");
+            const decorations = getEditorDecorations("background");
 
             expect(isVisible(decorations[0])).toBeTruthy();
             expect(isVisible(decorations[1])).toBeTruthy();
@@ -154,7 +152,7 @@ describe("ColorBufferElement", function () {
           });
 
           it("hides the existing markers", async function () {
-            const decorations = getEditorDecorations("native-background");
+            const decorations = getEditorDecorations("background");
 
             expect(isVisible(decorations[0])).toBeFalsy();
             expect(isVisible(decorations[1])).toBeTruthy();
@@ -166,13 +164,13 @@ describe("ColorBufferElement", function () {
               registerViewProvider();
               await waitsForPromise("colors available", () => colorBuffer.variablesAvailable());
               await waitsFor("last marker visible", function () {
-                const decorations = getEditorDecorations("native-background");
+                const decorations = getEditorDecorations("background");
                 return isVisible(decorations[3]);
               });
             });
 
             return it("hides the created markers", async function () {
-              const decorations = getEditorDecorations("native-background");
+              const decorations = getEditorDecorations("background");
               expect(isVisible(decorations[0])).toBeFalsy();
               expect(isVisible(decorations[1])).toBeTruthy();
               expect(isVisible(decorations[2])).toBeTruthy();
@@ -197,7 +195,7 @@ describe("ColorBufferElement", function () {
         });
 
         return it("releases the unused markers", async () =>
-          expect(getEditorDecorations("native-background").length).toEqual(2));
+          expect(getEditorDecorations("background").length).toEqual(2));
       });
 
       describe("when the current pane is splitted to the right", function () {
@@ -220,7 +218,7 @@ describe("ColorBufferElement", function () {
           );
           await waitsFor(
             "color buffer element markers",
-            () => getEditorDecorations("native-background").length,
+            () => getEditorDecorations("background").length,
           );
         });
 
@@ -232,7 +230,7 @@ describe("ColorBufferElement", function () {
             colorBufferElement = editorElement.querySelector("colors-markers");
             expect(colorBufferElement).toExist();
 
-            return expect(getEditorDecorations("native-background").length).toEqual(4);
+            return expect(getEditorDecorations("background").length).toEqual(4);
           });
         });
       });
@@ -316,13 +314,13 @@ describe("ColorBufferElement", function () {
         });
 
         describe("when the marker is changed again", function () {
-          beforeEach(async () => lumine.config.set("colors.markerType", "native-background"));
+          beforeEach(async () => lumine.config.set("colors.markerType", "background"));
 
           it("removes the gutter", async () =>
             expect(editorElement.querySelector('[gutter-name="colors-gutter"]')).not.toExist());
 
           return it("recreates the markers", async () =>
-            expect(getEditorDecorations("native-background").length).toEqual(3));
+            expect(getEditorDecorations("background").length).toEqual(3));
         });
 
         return describe("when a new buffer is opened", function () {
@@ -367,11 +365,11 @@ describe("ColorBufferElement", function () {
 
         pane.moveItemToPane(editor, newPane, 0);
 
-        await waitsFor(() => getEditorDecorations("native-background").length);
+        await waitsFor(() => getEditorDecorations("background").length);
       });
 
       return it("moves the editor with the buffer to the new pane", async () =>
-        expect(getEditorDecorations("native-background").length).toEqual(3));
+        expect(getEditorDecorations("background").length).toEqual(3));
     });
 
     describe("when colors.supportedFiletypes settings is defined", function () {
@@ -401,10 +399,10 @@ describe("ColorBufferElement", function () {
 
         return it("supports every filetype", async function () {
           loadBuffer("scope-filter.coffee");
-          await runs(() => expect(getEditorDecorations("native-background").length).toEqual(2));
+          await runs(() => expect(getEditorDecorations("background").length).toEqual(2));
 
           loadBuffer("project/vendor/css/variables.less");
-          await runs(() => expect(getEditorDecorations("native-background").length).toEqual(20));
+          await runs(() => expect(getEditorDecorations("background").length).toEqual(20));
         });
       });
 
@@ -413,10 +411,10 @@ describe("ColorBufferElement", function () {
 
         return it("supports the specified file type", async function () {
           loadBuffer("scope-filter.coffee");
-          await runs(() => expect(getEditorDecorations("native-background").length).toEqual(2));
+          await runs(() => expect(getEditorDecorations("background").length).toEqual(2));
 
           loadBuffer("project/vendor/css/variables.less");
-          await runs(() => expect(getEditorDecorations("native-background").length).toEqual(0));
+          await runs(() => expect(getEditorDecorations("background").length).toEqual(0));
         });
       });
 
@@ -429,13 +427,13 @@ describe("ColorBufferElement", function () {
 
         it("supports the specified file types", async function () {
           loadBuffer("scope-filter.coffee");
-          await runs(() => expect(getEditorDecorations("native-background").length).toEqual(2));
+          await runs(() => expect(getEditorDecorations("background").length).toEqual(2));
 
           loadBuffer("project/vendor/css/variables.less");
-          await runs(() => expect(getEditorDecorations("native-background").length).toEqual(20));
+          await runs(() => expect(getEditorDecorations("background").length).toEqual(20));
 
           loadBuffer("four-variables.styl");
-          await runs(() => expect(getEditorDecorations("native-background").length).toEqual(0));
+          await runs(() => expect(getEditorDecorations("background").length).toEqual(0));
         });
 
         return describe("with global file types ignored", function () {
@@ -448,13 +446,13 @@ describe("ColorBufferElement", function () {
 
           return it("supports the specified file types", async function () {
             loadBuffer("scope-filter.coffee");
-            await runs(() => expect(getEditorDecorations("native-background").length).toEqual(0));
+            await runs(() => expect(getEditorDecorations("background").length).toEqual(0));
 
             loadBuffer("project/vendor/css/variables.less");
-            await runs(() => expect(getEditorDecorations("native-background").length).toEqual(20));
+            await runs(() => expect(getEditorDecorations("background").length).toEqual(20));
 
             loadBuffer("four-variables.styl");
-            await runs(() => expect(getEditorDecorations("native-background").length).toEqual(0));
+            await runs(() => expect(getEditorDecorations("background").length).toEqual(0));
           });
         });
       });
@@ -482,7 +480,7 @@ describe("ColorBufferElement", function () {
         beforeEach(async () => lumine.config.set("colors.ignoredScopes", ["\\.comment"]));
 
         return it("ignores the colors that matches the defined scopes", async () =>
-          expect(getEditorDecorations("native-background").length).toEqual(1));
+          expect(getEditorDecorations("background").length).toEqual(1));
       });
 
       describe("with two filters", function () {
@@ -491,14 +489,14 @@ describe("ColorBufferElement", function () {
         );
 
         return it("ignores the colors that matches the defined scopes", async () =>
-          expect(getEditorDecorations("native-background").length).toEqual(0));
+          expect(getEditorDecorations("background").length).toEqual(0));
       });
 
       describe("with an invalid filter", function () {
         beforeEach(async () => lumine.config.set("colors.ignoredScopes", ["\\"]));
 
         return it("ignores the filter", async () =>
-          expect(getEditorDecorations("native-background").length).toEqual(2));
+          expect(getEditorDecorations("background").length).toEqual(2));
       });
 
       return describe("when the project ignoredScopes is defined", function () {
@@ -509,7 +507,7 @@ describe("ColorBufferElement", function () {
         });
 
         return it("ignores the colors that matches the defined scopes", async () =>
-          expect(getEditorDecorations("native-background").length).toEqual(0));
+          expect(getEditorDecorations("background").length).toEqual(0));
       });
     });
   });

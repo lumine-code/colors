@@ -15,7 +15,7 @@ const deserializers = {
 };
 
 beforeEach(function () {
-  lumine.config.set("colors.markerType", "native-background");
+  lumine.config.set("colors.markerType", "background");
   lumine.views.addViewProvider(Colors.colorsViewProvider);
 
   for (var k in deserializers) {
