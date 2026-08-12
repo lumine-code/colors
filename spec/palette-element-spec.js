@@ -14,6 +14,21 @@ const { change, click } = require("./helpers/events");
 describe("PaletteElement", function () {
   let [nextID, palette, paletteElement, workspaceElement, colors, project] = Array.from([0]);
 
+  // The counts in the grouped-palette specs were a census of upstream's fixture
+  // tree and went stale as soon as a fixture was added or removed. What the
+  // element actually owes is one group per file that has color variables, and,
+  // with merging on, one row per distinct color in each of those groups -- plus
+  // the group headers, which are list items too. Both are derived from the
+  // project rather than restated as a number.
+  const colorsByFile = function () {
+    const byFile = new Map();
+    for (const variable of project.getColorVariables()) {
+      if (!byFile.has(variable.path)) byFile.set(variable.path, new Set());
+      byFile.get(variable.path).add(variable.color.toCSS());
+    }
+    return byFile;
+  };
+
   const createVar = (name, color, path, line, isAlternate = false) => ({
     name,
     color,
@@ -157,13 +172,16 @@ describe("PaletteElement", function () {
       beforeEach(async () => lumine.config.set("colors.groupPaletteColors", "by file"));
 
       it("renders the list with sublists for each files", async function () {
+        const files = colorsByFile().size;
+        expect(files).toBeGreaterThan(1);
+
         const ols = paletteElement.querySelectorAll("ol ol");
-        return expect(ols.length).toEqual(5);
+        return expect(ols.length).toEqual(files);
       });
 
       it("adds a header with the file path for each sublist", async function () {
         const ols = paletteElement.querySelectorAll(".colors-color-group-header");
-        return expect(ols.length).toEqual(5);
+        return expect(ols.length).toEqual(colorsByFile().size);
       });
 
       describe("and the sortPaletteColors is set to name", function () {
@@ -202,9 +220,13 @@ describe("PaletteElement", function () {
         beforeEach(async () => lumine.config.set("colors.mergeColorDuplicates", true));
 
         return it("groups identical colors together", async function () {
+          const byFile = colorsByFile();
+          const distinct = [...byFile.values()].reduce((total, set) => total + set.size, 0);
+          expect(distinct).toBeLessThan(project.getColorVariables().length);
+
           const lis = paletteElement.querySelectorAll("li");
 
-          return expect(lis.length).toEqual(40);
+          return expect(lis.length).toEqual(byFile.size + distinct);
         });
       });
     });
