@@ -20,7 +20,7 @@ const TOTAL_VARIABLES_IN_PROJECT = 12;
 const TOTAL_COLORS_VARIABLES_IN_PROJECT = 10;
 
 describe("ColorProject", function () {
-  let [project, _promise, rootPath, paths, eventSpy] = Array.from([]);
+  let [project, baseProject, _promise, rootPath, paths, eventSpy] = Array.from([]);
 
   // The project stores native paths, because they have to compare equal to
   // editor.getPath() when a buffer is looked up by path, so expectations are
@@ -58,14 +58,22 @@ describe("ColorProject", function () {
     rootPath = path.join(fixturesPath, "project");
     lumine.project.setPaths([rootPath]);
 
-    return (project = new ColorProject({
-      ignoredNames: ["vendor/*"],
-      sourceNames: ["*.less"],
-      ignoredScopes: ["\\.comment"],
-    }));
+    return (baseProject = project =
+      new ColorProject({
+        ignoredNames: ["vendor/*"],
+        sourceNames: ["*.less"],
+        ignoredScopes: ["\\.comment"],
+      }));
   });
 
-  afterEach(async () => project.destroy());
+  // Describes that restore a project reassign `project`, which used to orphan
+  // the one made above: still observing the workspace, still building a color
+  // buffer for every editor a later spec opens, and still calling through to
+  // prototype spies those specs installed.
+  afterEach(async function () {
+    await project.destroy();
+    if (baseProject !== project) await baseProject.destroy();
+  });
 
   describe(".deserialize", () =>
     it("restores the project in its previous state", async function () {
@@ -1195,6 +1203,12 @@ describe("ColorProject", function () {
       let [editor, colorBuffer] = Array.from([]);
       beforeEach(async function () {
         registerViewProvider();
+        // The suite's own project observes the workspace as well, and would
+        // build a second color buffer for the editor opened below -- one with
+        // no restored state, which does have to ask for the project variables.
+        // The spy is on the prototype and cannot tell the two apart.
+        await baseProject.destroy();
+
         await waitsForPromise(() =>
           lumine.workspace.open("variables.styl").then((o) => (editor = o)),
         );
