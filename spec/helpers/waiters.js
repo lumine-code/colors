@@ -26,4 +26,21 @@ function waitsFor(...args) {
   return conditionPromise(condition);
 }
 
-module.exports = { runs, waitsFor, waitsForPromise };
+// Resolves once `read` has returned the same value on two consecutive polls.
+//
+// A buffer's variables settle over more than one round: a spec emits
+// `did-stop-changing` by hand to drive the update it is about, and the editor's
+// own debounced event drives another behind it. Waiting for the first update to
+// arrive therefore says nothing about whether the second has, so a spec that
+// reads the collection wants this after it. It asserts nothing itself.
+function waitsForQuiet(read) {
+  let previous = null;
+  return conditionPromise(() => {
+    const current = read();
+    const quiet = previous !== null && current === previous;
+    previous = current;
+    return quiet;
+  });
+}
+
+module.exports = { runs, waitsFor, waitsForPromise, waitsForQuiet };

@@ -1,5 +1,5 @@
 ﻿const { registerViewProvider } = require("./helpers/view-provider");
-const { runs, waitsFor, waitsForPromise } = require("./helpers/waiters"); /*
+const { runs, waitsFor, waitsForPromise, waitsForQuiet } = require("./helpers/waiters"); /*
  * decaffeinate suggestions:
  * DS101: Remove unnecessary use of Array.from
  * DS102: Remove unnecessary code created because of implicit returns
@@ -463,6 +463,17 @@ describe("ColorProject", function () {
 
     describe("when a buffer with variables is open", function () {
       let [editor, colorBuffer] = Array.from([]);
+
+      // The first update to arrive after an edit is not necessarily the one the
+      // edit caused: the project reloads several files and emits one of these
+      // per collection change, so an update for another path can land first.
+      // Waiting on the update that names this buffer's file makes the specs
+      // read the collection only once their own edit has been applied to it.
+      const updateFor = (key) =>
+        eventSpy.calls
+          .all()
+          .map((call) => call.args[0])
+          .find((update) => update[key]?.some((variable) => variable.path === editor.getPath()));
       beforeEach(async function () {
         registerViewProvider();
 
@@ -507,8 +518,15 @@ describe("ColorProject", function () {
           editor.insertText("#336");
           editor.getBuffer().emitter.emit("did-stop-changing");
 
-          await waitsFor(() => eventSpy.calls.count() > 0);
+          // The edit rewrites a variable's value, so wait for the update that
+          // says one was updated rather than for any update at all: a buffer's
+          // colors settle over more than one round, and taking the first one to
+          // arrive read the ranges from before the edit was applied.
+          await waitsFor(() => modificationUpdate() != null);
+          await waitsForQuiet(() => eventSpy.calls.count());
         });
+
+        const modificationUpdate = () => updateFor("updated");
 
         it("reloads the variables with the buffer instead of the file", async function () {
           expect(colorBuffer.scanBufferForVariables).toHaveBeenCalled();
@@ -516,9 +534,9 @@ describe("ColorProject", function () {
         });
 
         it("uses the buffer ranges to detect which variables were really changed", async function () {
-          expect(eventSpy.calls.argsFor(0)[0].destroyed).toBeUndefined();
-          expect(eventSpy.calls.argsFor(0)[0].created).toBeUndefined();
-          return expect(eventSpy.calls.argsFor(0)[0].updated.length).toEqual(1);
+          expect(modificationUpdate().destroyed).toBeUndefined();
+          expect(modificationUpdate().created).toBeUndefined();
+          return expect(modificationUpdate().updated.length).toEqual(1);
         });
 
         it("updates the text range of the other variables", async () =>
@@ -591,8 +609,15 @@ describe("ColorProject", function () {
             return editor.getBuffer().emitter.emit("did-stop-changing");
           });
 
-          await waitsFor(() => eventSpy.calls.count() > 0);
+          // The edit removes a variable, so wait for the update that says so
+          // rather than for any update at all: a buffer's colors settle over
+          // more than one round, and taking the first one to arrive read the
+          // collection before the removal had been applied to it.
+          await waitsFor(() => removalUpdate() != null);
+          await waitsForQuiet(() => eventSpy.calls.count());
         });
+
+        const removalUpdate = () => updateFor("destroyed");
 
         it("reloads the variables with the buffer instead of the file", async function () {
           expect(colorBuffer.scanBufferForVariables).toHaveBeenCalled();
@@ -600,9 +625,9 @@ describe("ColorProject", function () {
         });
 
         it("uses the buffer ranges to detect which variables were really changed", async function () {
-          expect(eventSpy.calls.argsFor(0)[0].destroyed.length).toEqual(1);
-          expect(eventSpy.calls.argsFor(0)[0].created).toBeUndefined();
-          return expect(eventSpy.calls.argsFor(0)[0].updated).toBeUndefined();
+          expect(removalUpdate().destroyed.length).toEqual(1);
+          expect(removalUpdate().created).toBeUndefined();
+          return expect(removalUpdate().updated).toBeUndefined();
         });
 
         it("can no longer be found in the project variables", async function () {
@@ -634,16 +659,21 @@ describe("ColorProject", function () {
             return editor.getBuffer().emitter.emit("did-stop-changing");
           });
 
-          await waitsFor(() => eventSpy.calls.count() > 0);
+          // As above: wait for the update that reports the removals, not for
+          // whichever update arrives first.
+          await waitsFor(() => removalUpdate() != null);
+          await waitsForQuiet(() => eventSpy.calls.count());
         });
+
+        const removalUpdate = () => updateFor("destroyed");
 
         it("removes every variable from the file", async function () {
           expect(colorBuffer.scanBufferForVariables).toHaveBeenCalled();
           expect(project.getVariables().length).toEqual(0);
 
-          expect(eventSpy.calls.argsFor(0)[0].destroyed.length).toEqual(TOTAL_VARIABLES_IN_PROJECT);
-          expect(eventSpy.calls.argsFor(0)[0].created).toBeUndefined();
-          return expect(eventSpy.calls.argsFor(0)[0].updated).toBeUndefined();
+          expect(removalUpdate().destroyed.length).toEqual(TOTAL_VARIABLES_IN_PROJECT);
+          expect(removalUpdate().created).toBeUndefined();
+          return expect(removalUpdate().updated).toBeUndefined();
         });
 
         it("can no longer be found in the project variables", async function () {

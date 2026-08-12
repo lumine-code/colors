@@ -1,5 +1,5 @@
 ﻿const { registerViewProvider } = require("./helpers/view-provider");
-const { runs, waitsFor, waitsForPromise } = require("./helpers/waiters"); /*
+const { runs, waitsFor, waitsForPromise, waitsForQuiet } = require("./helpers/waiters"); /*
  * decaffeinate suggestions:
  * DS101: Remove unnecessary use of Array.from
  * DS102: Remove unnecessary code created because of implicit returns
@@ -316,6 +316,7 @@ describe("ColorBuffer", function () {
 
         return it("updates the modified colors", async function () {
           await waitsFor(() => colorsUpdateSpy.calls.count() > 0);
+          await waitsForQuiet(() => colorsUpdateSpy.calls.count());
           await runs(async function () {
             expect(colorsUpdateSpy.calls.argsFor(0)[0].destroyed.length).toEqual(2);
             return expect(colorsUpdateSpy.calls.argsFor(0)[0].created.length).toEqual(2);
@@ -336,6 +337,7 @@ describe("ColorBuffer", function () {
             editor.moveToBottom();
             editBuffer("\nfoo = base-color");
             await waitsFor(() => updateSpy.calls.count() > 0);
+            await waitsForQuiet(() => updateSpy.calls.count());
           });
         });
 
@@ -353,6 +355,7 @@ describe("ColorBuffer", function () {
           colorBuffer.onDidUpdateColorMarkers(colorsUpdateSpy);
           editBuffer("", { start: [0, 0], end: [0, 17] });
           await waitsFor(() => colorsUpdateSpy.calls.count() > 0);
+          await waitsForQuiet(() => colorsUpdateSpy.calls.count());
         });
 
         return it("invalidates colors that were relying on the deleted variables", async function () {
@@ -411,6 +414,7 @@ describe("ColorBuffer", function () {
             colorBuffer.onDidUpdateColorMarkers(colorsUpdateSpy);
             editBuffer("#336699", { start: [1, 13], end: [1, 23] });
             await waitsFor(() => colorsUpdateSpy.calls.count() > 0);
+            await waitsForQuiet(() => colorsUpdateSpy.calls.count());
           });
         });
 
@@ -438,6 +442,7 @@ describe("ColorBuffer", function () {
             colorBuffer.onDidUpdateColorMarkers(colorsUpdateSpy);
             editBuffer("#fff\n\n", { start: [0, 0], end: [0, 0] });
             await waitsFor(() => colorsUpdateSpy.calls.count() > 0);
+            await waitsForQuiet(() => colorsUpdateSpy.calls.count());
           });
         });
 
@@ -460,6 +465,7 @@ describe("ColorBuffer", function () {
             editor.moveToBottom();
             editBuffer("\n#336699");
             await waitsFor(() => colorsUpdateSpy.calls.count() > 0);
+            await waitsForQuiet(() => colorsUpdateSpy.calls.count());
           });
         });
 
@@ -489,6 +495,7 @@ describe("ColorBuffer", function () {
             colorBuffer.onDidUpdateColorMarkers(colorsUpdateSpy);
             editBuffer("", { start: [1, 2], end: [1, 23] });
             await waitsFor(() => colorsUpdateSpy.calls.count() > 0);
+            await waitsForQuiet(() => colorsUpdateSpy.calls.count());
           });
         });
 
@@ -606,6 +613,7 @@ describe("ColorBuffer", function () {
         editor.moveToBottom();
         editBuffer("\n\n@new-color: @base0;\n");
         await waitsFor(() => colorsUpdateSpy.calls.count() > 0);
+        await waitsForQuiet(() => colorsUpdateSpy.calls.count());
       });
 
       return it("finds the newly added color", async function () {
@@ -659,6 +667,7 @@ describe("ColorBuffer", function () {
         editor.moveToBottom();
         editBuffer("\n\n@new-color = red;\n");
         await waitsFor(() => colorsUpdateSpy.calls.count() > 0);
+        await waitsForQuiet(() => colorsUpdateSpy.calls.count());
       });
 
       it("finds the newly added color", async function () {
