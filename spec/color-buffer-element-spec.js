@@ -56,6 +56,7 @@ describe("ColorBufferElement", function () {
   beforeEach(async function () {
     registerViewProvider();
     const workspaceElement = lumine.views.getView(lumine.workspace);
+    jasmine.attachToDOM(workspaceElement);
     jasmineContent = document.body.querySelector("#jasmine-content");
 
     jasmineContent.appendChild(workspaceElement);
