@@ -12,6 +12,7 @@ describe("ColorSearch", function () {
 
   beforeEach(async function () {
     registerViewProvider();
+    lumine.config.set("colors.delayBeforeScan", 0);
     lumine.config.set("colors.sourceNames", ["**/*.styl", "**/*.less"]);
     lumine.config.set("colors.extendedSearchNames", ["**/*.css"]);
     lumine.config.set("colors.ignoredNames", ["project/vendor/**"]);

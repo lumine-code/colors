@@ -12,6 +12,7 @@ describe("ColorResultsElement", function () {
 
   beforeEach(async function () {
     registerViewProvider();
+    lumine.config.set("colors.delayBeforeScan", 0);
     lumine.config.set("colors.sourceNames", ["**/*.styl", "**/*.less"]);
 
     await waitsForPromise(() =>

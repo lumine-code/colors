@@ -18,6 +18,8 @@ describe("Colors", function () {
     workspaceElement = lumine.views.getView(lumine.workspace);
     jasmine.attachToDOM(workspaceElement);
 
+    lumine.config.set("colors.delayBeforeScan", 0);
+
     lumine.config.set("colors.sourceNames", ["**/*.sass", "**/*.styl"]);
     lumine.config.set("colors.ignoredNames", []);
     lumine.config.set("colors.ignoredScopes", []);
@@ -329,6 +331,8 @@ describe("Colors", function () {
 
         project.onDidUpdateVariables(variableSpy);
 
+        lumine.config.set("colors.delayBeforeScan", 0);
+
         lumine.config.set("colors.sourceNames", ["**/*.txt"]);
 
         await waitsFor("variables updated", () => variableSpy.calls.count() > 1);
@@ -353,6 +357,8 @@ describe("Colors", function () {
           const variableSpy = jasmine.createSpy("did-update-variables");
 
           project.onDidUpdateVariables(variableSpy);
+
+          lumine.config.set("colors.delayBeforeScan", 0);
 
           lumine.config.set("colors.sourceNames", ["**/*.txt"]);
 
@@ -426,6 +432,8 @@ describe("Colors", function () {
 
       project.onDidUpdateVariables(variableSpy);
 
+      lumine.config.set("colors.delayBeforeScan", 0);
+
       lumine.config.set("colors.sourceNames", ["**/*.txt"]);
 
       await waitsFor("variables updated", () => variableSpy.calls.count() > 1);
@@ -463,6 +471,7 @@ describe("Colors", function () {
     return describe("when an array of expressions is passed", () =>
       it("updates the project variables when consumed", async function () {
         let previousVariablesCount = null;
+        lumine.config.set("colors.delayBeforeScan", 0);
         lumine.config.set("colors.sourceNames", ["**/*.txt"]);
 
         await waitsFor("variables initialized", () => project.getVariables().length === 45);

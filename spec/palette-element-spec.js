@@ -26,6 +26,7 @@ describe("PaletteElement", function () {
   beforeEach(async function () {
     registerViewProvider();
     workspaceElement = lumine.views.getView(lumine.workspace);
+    lumine.config.set("colors.delayBeforeScan", 0);
     lumine.config.set("colors.sourceNames", ["*.styl", "*.less"]);
 
     await waitsForPromise(() =>
