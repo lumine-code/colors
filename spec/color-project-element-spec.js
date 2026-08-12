@@ -1,3 +1,4 @@
+﻿const { registerViewProvider } = require("./helpers/view-provider");
 const { runs, waitsFor, waitsForPromise } = require("./helpers/waiters"); /*
  * decaffeinate suggestions:
  * DS101: Remove unnecessary use of Array.from
@@ -10,6 +11,7 @@ describe("ColorProjectElement", function () {
   let [colors, project, projectElement] = Array.from([]);
 
   beforeEach(async function () {
+    registerViewProvider();
     const jasmineContent = document.body.querySelector("#jasmine-content");
 
     await waitsForPromise(() =>

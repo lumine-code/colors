@@ -1,4 +1,5 @@
-﻿const { runs, waitsFor, waitsForPromise } = require("./helpers/waiters"); /*
+﻿const { registerViewProvider } = require("./helpers/view-provider");
+const { runs, waitsFor, waitsForPromise } = require("./helpers/waiters"); /*
  * decaffeinate suggestions:
  * DS101: Remove unnecessary use of Array.from
  * DS102: Remove unnecessary code created because of implicit returns
@@ -54,6 +55,7 @@ describe("ColorBufferElement", function () {
       .filter((d) => d.properties.class.startsWith("colors-native-background"));
 
   beforeEach(async function () {
+    registerViewProvider();
     const workspaceElement = lumine.views.getView(lumine.workspace);
     jasmineContent = document.body.querySelector("#jasmine-content");
 
@@ -85,6 +87,7 @@ describe("ColorBufferElement", function () {
 
   return describe("when an editor is opened", function () {
     beforeEach(async function () {
+      registerViewProvider();
       colorBuffer = project.colorBufferForEditor(editor);
       colorBufferElement = lumine.views.getView(colorBuffer);
       return colorBufferElement.attach();
@@ -117,6 +120,7 @@ describe("ColorBufferElement", function () {
 
         describe("after the markers views was created", function () {
           beforeEach(async function () {
+            registerViewProvider();
             await waitsForPromise(() => colorBuffer.variablesAvailable());
             await runs(() =>
               editor.setSelectedBufferRange([
@@ -139,6 +143,7 @@ describe("ColorBufferElement", function () {
 
         return describe("before all the markers views was created", function () {
           beforeEach(async function () {
+            registerViewProvider();
             await runs(() =>
               editor.setSelectedBufferRange([
                 [0, 0],
@@ -158,6 +163,7 @@ describe("ColorBufferElement", function () {
 
           return describe("and the markers are updated", function () {
             beforeEach(async function () {
+              registerViewProvider();
               await waitsForPromise("colors available", () => colorBuffer.variablesAvailable());
               await waitsFor("last marker visible", function () {
                 const decorations = getEditorDecorations("native-background");
@@ -179,6 +185,7 @@ describe("ColorBufferElement", function () {
       describe("when some markers are destroyed", function () {
         let [spy] = Array.from([]);
         beforeEach(async function () {
+          registerViewProvider();
           for (var el of colorBufferElement.usedMarkers) {
             spyOn(el, "release").and.callThrough();
           }
@@ -195,6 +202,7 @@ describe("ColorBufferElement", function () {
 
       describe("when the current pane is splitted to the right", function () {
         beforeEach(async function () {
+          registerViewProvider();
           const version = parseFloat(
             lumine.application.getVersion().split(".").slice(1, 2).join("."),
           );
@@ -233,6 +241,7 @@ describe("ColorBufferElement", function () {
         let [gutter] = Array.from([]);
 
         beforeEach(async function () {
+          registerViewProvider();
           await waitsForPromise(() => colorBuffer.initialize());
           await runs(async function () {
             lumine.config.set("colors.markerType", "gutter");
@@ -265,6 +274,7 @@ describe("ColorBufferElement", function () {
 
           return describe("when many markers are added on the same line", function () {
             beforeEach(async function () {
+              registerViewProvider();
               const updateSpy = jasmine.createSpy("did-update");
               colorBufferElement.onDidUpdate(updateSpy);
 
@@ -286,6 +296,7 @@ describe("ColorBufferElement", function () {
 
             return describe("clicking on a gutter decoration", function () {
               beforeEach(async function () {
+                registerViewProvider();
                 project.colorPickerAPI = { open: jasmine.createSpy("color-picker.open") };
 
                 const decoration = editorElement.querySelector(".colors-gutter-marker span");
@@ -316,6 +327,7 @@ describe("ColorBufferElement", function () {
 
         return describe("when a new buffer is opened", function () {
           beforeEach(async function () {
+            registerViewProvider();
             await waitsForPromise(() =>
               lumine.workspace.open("project/styles/variables.styl").then(function (e) {
                 editor = e;
@@ -347,6 +359,7 @@ describe("ColorBufferElement", function () {
     describe("when the editor is moved to another pane", function () {
       let [pane, newPane] = Array.from([]);
       beforeEach(async function () {
+        registerViewProvider();
         pane = lumine.workspace.getActivePane();
         newPane = pane.splitDown({ copyActiveItem: false });
         colorBuffer = project.colorBufferForEditor(editor);
@@ -378,6 +391,7 @@ describe("ColorBufferElement", function () {
       };
 
       beforeEach(async function () {
+        registerViewProvider();
         await waitsForPromise(() => lumine.packages.activatePackage("language-coffee-script"));
         await waitsForPromise(() => lumine.packages.activatePackage("language-less"));
       });
@@ -408,6 +422,7 @@ describe("ColorBufferElement", function () {
 
       return describe("with many filetypes", function () {
         beforeEach(async function () {
+          registerViewProvider();
           lumine.config.set("colors.supportedFiletypes", ["coffee"]);
           return project.setSupportedFiletypes(["less"]);
         });
@@ -425,6 +440,7 @@ describe("ColorBufferElement", function () {
 
         return describe("with global file types ignored", function () {
           beforeEach(async function () {
+            registerViewProvider();
             lumine.config.set("colors.supportedFiletypes", ["coffee"]);
             project.setIgnoreGlobalSupportedFiletypes(true);
             return project.setSupportedFiletypes(["less"]);
@@ -446,6 +462,7 @@ describe("ColorBufferElement", function () {
 
     return describe("when colors.ignoredScopes settings is defined", function () {
       beforeEach(async function () {
+        registerViewProvider();
         await waitsForPromise(() => lumine.packages.activatePackage("language-coffee-script"));
 
         await waitsForPromise(() =>
@@ -486,6 +503,7 @@ describe("ColorBufferElement", function () {
 
       return describe("when the project ignoredScopes is defined", function () {
         beforeEach(async function () {
+          registerViewProvider();
           lumine.config.set("colors.ignoredScopes", ["\\.string"]);
           return project.setIgnoredScopes(["\\.comment"]);
         });

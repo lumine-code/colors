@@ -1,4 +1,5 @@
-﻿const { runs, waitsFor, waitsForPromise } = require("./helpers/waiters"); /*
+﻿const { registerViewProvider } = require("./helpers/view-provider");
+const { runs, waitsFor, waitsForPromise } = require("./helpers/waiters"); /*
  * decaffeinate suggestions:
  * DS101: Remove unnecessary use of Array.from
  * DS102: Remove unnecessary code created because of implicit returns
@@ -11,6 +12,7 @@ describe("ColorSearch", function () {
   let [search, colors, project] = Array.from([]);
 
   beforeEach(async function () {
+    registerViewProvider();
     lumine.config.set("colors.sourceNames", ["**/*.styl", "**/*.less"]);
     lumine.config.set("colors.extendedSearchNames", ["**/*.css"]);
     lumine.config.set("colors.ignoredNames", ["project/vendor/**"]);

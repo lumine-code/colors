@@ -1,4 +1,5 @@
-﻿const { runs, waitsFor, waitsForPromise } = require("./helpers/waiters"); /*
+﻿const { registerViewProvider } = require("./helpers/view-provider");
+const { runs, waitsFor, waitsForPromise } = require("./helpers/waiters"); /*
  * decaffeinate suggestions:
  * DS101: Remove unnecessary use of Array.from
  * DS102: Remove unnecessary code created because of implicit returns
@@ -11,6 +12,7 @@ describe("ColorResultsElement", function () {
   let [search, resultsElement, colors, project, completeSpy, findSpy] = Array.from([]);
 
   beforeEach(async function () {
+    registerViewProvider();
     lumine.config.set("colors.sourceNames", ["**/*.styl", "**/*.less"]);
 
     await waitsForPromise(() =>
@@ -54,6 +56,7 @@ describe("ColorResultsElement", function () {
     describe("when a file item is clicked", function () {
       let [fileItem] = Array.from([]);
       beforeEach(async function () {
+        registerViewProvider();
         fileItem = resultsElement.querySelector(".list-nested-item > .list-item");
         return click(fileItem);
       });
@@ -65,6 +68,7 @@ describe("ColorResultsElement", function () {
     return describe("when a matches item is clicked", function () {
       let [matchItem, spy] = Array.from([]);
       beforeEach(async function () {
+        registerViewProvider();
         spy = jasmine.createSpy("did-add-text-editor");
 
         lumine.workspace.onDidAddTextEditor(spy);

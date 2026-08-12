@@ -1,4 +1,5 @@
-﻿const { runs, waitsFor, waitsForPromise } = require("./helpers/waiters"); /*
+﻿const { registerViewProvider } = require("./helpers/view-provider");
+const { runs, waitsFor, waitsForPromise } = require("./helpers/waiters"); /*
  * decaffeinate suggestions:
  * DS101: Remove unnecessary use of Array.from
  * DS102: Remove unnecessary code created because of implicit returns
@@ -23,6 +24,7 @@ describe("PaletteElement", function () {
   });
 
   beforeEach(async function () {
+    registerViewProvider();
     workspaceElement = lumine.views.getView(lumine.workspace);
     lumine.config.set("colors.sourceNames", ["*.styl", "*.less"]);
 
@@ -40,6 +42,7 @@ describe("PaletteElement", function () {
 
   describe("as a view provider", function () {
     beforeEach(async function () {
+      registerViewProvider();
       palette = new Palette([
         createVar("red", new Color("#ff0000"), "file.styl", 0),
         createVar("green", new Color("#00ff00"), "file.styl", 1),
@@ -66,6 +69,7 @@ describe("PaletteElement", function () {
 
   describe("when colors:show-palette commands is triggered", function () {
     beforeEach(async function () {
+      registerViewProvider();
       lumine.commands.dispatch(workspaceElement, "colors:show-palette");
 
       await waitsFor(() => (paletteElement = workspaceElement.querySelector("colors-palette")));
@@ -208,6 +212,7 @@ describe("PaletteElement", function () {
 
       return describe("when changed", function () {
         beforeEach(async function () {
+          registerViewProvider();
           sortSelect = paletteElement.querySelector("#sort-palette-colors");
           sortSelect.querySelector('option[value="by name"]').setAttribute("selected", "selected");
 
@@ -224,6 +229,7 @@ describe("PaletteElement", function () {
 
       return describe("when changed", function () {
         beforeEach(async function () {
+          registerViewProvider();
           groupSelect = paletteElement.querySelector("#group-palette-colors");
           groupSelect.querySelector('option[value="by file"]').setAttribute("selected", "selected");
 
@@ -238,6 +244,7 @@ describe("PaletteElement", function () {
 
   describe("when the palette settings differs from defaults", function () {
     beforeEach(async function () {
+      registerViewProvider();
       lumine.config.set("colors.sortPaletteColors", "by name");
       lumine.config.set("colors.groupPaletteColors", "by file");
       return lumine.config.set("colors.mergeColorDuplicates", true);
@@ -245,6 +252,7 @@ describe("PaletteElement", function () {
 
     return describe("when colors:show-palette commands is triggered", function () {
       beforeEach(async function () {
+        registerViewProvider();
         lumine.commands.dispatch(workspaceElement, "colors:show-palette");
 
         await waitsFor(() => (paletteElement = workspaceElement.querySelector("colors-palette")));
@@ -274,6 +282,7 @@ describe("PaletteElement", function () {
   return describe("when the project variables are modified", function () {
     let [spy, initialColorCount] = Array.from([]);
     beforeEach(async function () {
+      registerViewProvider();
       lumine.commands.dispatch(workspaceElement, "colors:show-palette");
 
       await waitsFor(() => (paletteElement = workspaceElement.querySelector("colors-palette")));

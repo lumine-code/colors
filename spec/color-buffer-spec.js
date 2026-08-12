@@ -1,4 +1,5 @@
-﻿const { runs, waitsFor, waitsForPromise } = require("./helpers/waiters"); /*
+﻿const { registerViewProvider } = require("./helpers/view-provider");
+const { runs, waitsFor, waitsForPromise } = require("./helpers/waiters"); /*
  * decaffeinate suggestions:
  * DS101: Remove unnecessary use of Array.from
  * DS102: Remove unnecessary code created because of implicit returns
@@ -39,6 +40,7 @@ describe("ColorBuffer", function () {
   };
 
   beforeEach(async function () {
+    registerViewProvider();
     lumine.config.set("colors.delayBeforeScan", 0);
     lumine.config.set("colors.ignoredBufferNames", []);
     lumine.config.set("colors.filetypesForColorWords", ["*"]);
@@ -68,6 +70,7 @@ describe("ColorBuffer", function () {
 
   describe("when the file path matches an entry in ignoredBufferNames", function () {
     beforeEach(async function () {
+      registerViewProvider();
       expect(project.hasColorBufferForEditor(editor)).toBeTruthy();
 
       return lumine.config.set("colors.ignoredBufferNames", ["**/*.styl"]);
@@ -117,6 +120,7 @@ describe("ColorBuffer", function () {
 
     return describe("when the file is not yet saved on disk", function () {
       beforeEach(async function () {
+        registerViewProvider();
         await waitsForPromise(() =>
           lumine.workspace.open("foo-de-fafa.styl").then(function (o) {
             editor = o;
@@ -144,6 +148,7 @@ describe("ColorBuffer", function () {
 
   describe("when an editor without path is opened", function () {
     beforeEach(async function () {
+      registerViewProvider();
       await waitsForPromise(() =>
         lumine.workspace.open().then(function (o) {
           editor = o;
@@ -160,6 +165,7 @@ describe("ColorBuffer", function () {
     return describe("when the file is saved and aquires a path", function () {
       describe("that is legible", function () {
         beforeEach(async function () {
+          registerViewProvider();
           spyOn(colorBuffer, "update").and.callThrough();
           spyOn(editor, "getPath").and.returnValue("new-path.styl");
           editor.emitter.emit("did-change-path", editor.getPath());
@@ -177,6 +183,7 @@ describe("ColorBuffer", function () {
 
       describe("that is not legible", function () {
         beforeEach(async function () {
+          registerViewProvider();
           spyOn(colorBuffer, "update").and.callThrough();
           spyOn(editor, "getPath").and.returnValue("new-path.sass");
           editor.emitter.emit("did-change-path", editor.getPath());
@@ -194,6 +201,7 @@ describe("ColorBuffer", function () {
 
       return describe("that is ignored", function () {
         beforeEach(async function () {
+          registerViewProvider();
           spyOn(colorBuffer, "update").and.callThrough();
           spyOn(editor, "getPath").and.returnValue("project/vendor/new-path.styl");
           editor.emitter.emit("did-change-path", editor.getPath());
@@ -215,6 +223,7 @@ describe("ColorBuffer", function () {
   // a better solution.
   describe("with rapid changes that triggers a rescan", function () {
     beforeEach(async function () {
+      registerViewProvider();
       colorBuffer = project.colorBufferForEditor(editor);
       await waitsFor(() => colorBuffer.initialized && colorBuffer.variableInitialized);
 
@@ -240,6 +249,7 @@ describe("ColorBuffer", function () {
 
   describe("when created without a previous state", function () {
     beforeEach(async function () {
+      registerViewProvider();
       colorBuffer = project.colorBufferForEditor(editor);
       await waitsForPromise(() => colorBuffer.initialize());
     });
@@ -285,6 +295,7 @@ describe("ColorBuffer", function () {
     describe("when the project variables becomes available", function () {
       let [updateSpy] = Array.from([]);
       beforeEach(async function () {
+        registerViewProvider();
         updateSpy = jasmine.createSpy("did-update-color-markers");
         colorBuffer.onDidUpdateColorMarkers(updateSpy);
         await waitsForPromise(() => colorBuffer.variablesAvailable());
@@ -299,6 +310,7 @@ describe("ColorBuffer", function () {
       describe("when a variable is edited", function () {
         let [colorsUpdateSpy] = Array.from([]);
         beforeEach(async function () {
+          registerViewProvider();
           colorsUpdateSpy = jasmine.createSpy("did-update-color-markers");
           colorBuffer.onDidUpdateColorMarkers(colorsUpdateSpy);
           return editBuffer("#336699", { start: [0, 13], end: [0, 17] });
@@ -317,6 +329,7 @@ describe("ColorBuffer", function () {
         const [colorsUpdateSpy] = Array.from([]);
 
         beforeEach(async function () {
+          registerViewProvider();
           await waitsForPromise(() => colorBuffer.variablesAvailable());
 
           await runs(async function () {
@@ -337,6 +350,7 @@ describe("ColorBuffer", function () {
       describe("when a variable is removed", function () {
         let [colorsUpdateSpy] = Array.from([]);
         beforeEach(async function () {
+          registerViewProvider();
           colorsUpdateSpy = jasmine.createSpy("did-update-color-markers");
           colorBuffer.onDidUpdateColorMarkers(colorsUpdateSpy);
           editBuffer("", { start: [0, 0], end: [0, 17] });
@@ -374,6 +388,7 @@ describe("ColorBuffer", function () {
 
     describe("with a buffer with only colors", function () {
       beforeEach(async function () {
+        registerViewProvider();
         await waitsForPromise(() =>
           lumine.workspace.open("buttons.styl").then((o) => (editor = o)),
         );
@@ -390,6 +405,7 @@ describe("ColorBuffer", function () {
         let [colorsUpdateSpy] = Array.from([]);
 
         beforeEach(async function () {
+          registerViewProvider();
           await waitsForPromise(() => colorBuffer.variablesAvailable());
 
           await runs(async function () {
@@ -416,6 +432,7 @@ describe("ColorBuffer", function () {
         let [colorsUpdateSpy] = Array.from([]);
 
         beforeEach(async function () {
+          registerViewProvider();
           await waitsForPromise(() => colorBuffer.variablesAvailable());
 
           await runs(async function () {
@@ -436,6 +453,7 @@ describe("ColorBuffer", function () {
         let [colorsUpdateSpy] = Array.from([]);
 
         beforeEach(async function () {
+          registerViewProvider();
           await waitsForPromise(() => colorBuffer.variablesAvailable());
 
           await runs(async function () {
@@ -465,6 +483,7 @@ describe("ColorBuffer", function () {
         let [colorsUpdateSpy] = Array.from([]);
 
         beforeEach(async function () {
+          registerViewProvider();
           await waitsForPromise(() => colorBuffer.variablesAvailable());
 
           await runs(async function () {
@@ -490,6 +509,7 @@ describe("ColorBuffer", function () {
 
     describe("with a buffer whose scope is not one of source files", function () {
       beforeEach(async function () {
+        registerViewProvider();
         await waitsForPromise(() =>
           lumine.workspace.open("project/lib/main.coffee").then((o) => (editor = o)),
         );
@@ -505,6 +525,7 @@ describe("ColorBuffer", function () {
 
     return describe("with a buffer in crlf mode", function () {
       beforeEach(async function () {
+        registerViewProvider();
         await waitsForPromise(() => lumine.workspace.open("crlf.styl").then((o) => (editor = o)));
 
         await runs(() => (colorBuffer = project.colorBufferForEditor(editor)));
@@ -527,6 +548,7 @@ describe("ColorBuffer", function () {
 
   describe("with a buffer part of the global ignored files", function () {
     beforeEach(async function () {
+      registerViewProvider();
       project.setIgnoredNames([]);
       lumine.config.set("colors.ignoredNames", ["project/vendor/*"]);
 
@@ -555,6 +577,7 @@ describe("ColorBuffer", function () {
 
   describe("with a buffer part of the project ignored files", function () {
     beforeEach(async function () {
+      registerViewProvider();
       await waitsForPromise(() =>
         lumine.workspace.open("project/vendor/css/variables.less").then((o) => (editor = o)),
       );
@@ -579,6 +602,7 @@ describe("ColorBuffer", function () {
 
     return describe("when the buffer is edited", function () {
       beforeEach(async function () {
+        registerViewProvider();
         const colorsUpdateSpy = jasmine.createSpy("did-update-color-markers");
         colorBuffer.onDidUpdateColorMarkers(colorsUpdateSpy);
         editor.moveToBottom();
@@ -605,6 +629,7 @@ describe("ColorBuffer", function () {
 
   describe("with a buffer not being a variable source", function () {
     beforeEach(async function () {
+      registerViewProvider();
       await waitsForPromise(() =>
         lumine.workspace.open("project/lib/main.coffee").then((o) => (editor = o)),
       );
@@ -629,6 +654,7 @@ describe("ColorBuffer", function () {
 
     return describe("when the buffer is edited", function () {
       beforeEach(async function () {
+        registerViewProvider();
         const colorsUpdateSpy = jasmine.createSpy("did-update-color-markers");
         spyOn(project, "reloadVariablesForPath").and.callThrough();
         colorBuffer.onDidUpdateColorMarkers(colorsUpdateSpy);
@@ -667,6 +693,7 @@ describe("ColorBuffer", function () {
   return describe("when created with a previous state", function () {
     describe("with variables and colors", function () {
       beforeEach(async function () {
+        registerViewProvider();
         await waitsForPromise(() => project.initialize());
         await runs(async function () {
           project.colorBufferForEditor(editor).destroy();
@@ -703,6 +730,7 @@ describe("ColorBuffer", function () {
 
     return describe("with an invalid color", function () {
       beforeEach(async function () {
+        registerViewProvider();
         await waitsForPromise(() =>
           lumine.workspace.open("invalid-color.styl").then((o) => (editor = o)),
         );

@@ -1,4 +1,5 @@
-﻿const { runs, waitsFor, waitsForPromise } = require("./helpers/waiters"); /*
+﻿const { registerViewProvider } = require("./helpers/view-provider");
+const { runs, waitsFor, waitsForPromise } = require("./helpers/waiters"); /*
  * decaffeinate suggestions:
  * DS101: Remove unnecessary use of Array.from
  * DS102: Remove unnecessary code created because of implicit returns
@@ -22,6 +23,7 @@ describe("ColorProject", function () {
   let [project, promise, rootPath, paths, eventSpy] = Array.from([]);
 
   beforeEach(async function () {
+    registerViewProvider();
     lumine.config.set("colors.sourceNames", ["*.styl"]);
     lumine.config.set("colors.ignoredNames", []);
     lumine.config.set("colors.filetypesForColorWords", ["*"]);
@@ -62,6 +64,7 @@ describe("ColorProject", function () {
 
   describe("::initialize", function () {
     beforeEach(async function () {
+      registerViewProvider();
       eventSpy = jasmine.createSpy("did-initialize");
       project.onDidInitialize(eventSpy);
       await waitsForPromise(() => project.initialize());
@@ -148,6 +151,7 @@ describe("ColorProject", function () {
 
     describe("::reloadVariablesForPath", function () {
       beforeEach(async function () {
+        registerViewProvider();
         spyOn(project, "initialize").and.callThrough();
 
         await waitsForPromise(() =>
@@ -161,6 +165,7 @@ describe("ColorProject", function () {
 
     describe("::setIgnoredNames", function () {
       beforeEach(async function () {
+        registerViewProvider();
         project.setIgnoredNames([]);
 
         await waitsForPromise(() => project.initialize());
@@ -172,6 +177,7 @@ describe("ColorProject", function () {
 
     return describe("::setSourceNames", function () {
       beforeEach(async function () {
+        registerViewProvider();
         project.setSourceNames([]);
 
         await waitsForPromise(() => project.initialize());
@@ -200,6 +206,7 @@ describe("ColorProject", function () {
 
   describe("when the project has no variables source files", function () {
     beforeEach(async function () {
+      registerViewProvider();
       lumine.config.set("colors.sourceNames", ["*.sass"]);
 
       const [fixturesPath] = Array.from(lumine.project.getPaths());
@@ -220,6 +227,7 @@ describe("ColorProject", function () {
 
   describe("when the project has custom source names defined", function () {
     beforeEach(async function () {
+      registerViewProvider();
       lumine.config.set("colors.sourceNames", ["*.sass"]);
 
       const [fixturesPath] = Array.from(lumine.project.getPaths());
@@ -240,6 +248,7 @@ describe("ColorProject", function () {
 
   describe("when the project has looping variable definition", function () {
     beforeEach(async function () {
+      registerViewProvider();
       lumine.config.set("colors.sourceNames", ["*.sass"]);
 
       const [fixturesPath] = Array.from(lumine.project.getPaths());
@@ -335,6 +344,7 @@ describe("ColorProject", function () {
       describe("for a file that is part of the loaded paths", function () {
         describe("where the reload finds new variables", function () {
           beforeEach(async function () {
+            registerViewProvider();
             project.deleteVariablesForPath(`${rootPath}/styles/variables.styl`);
 
             eventSpy = jasmine.createSpy("did-update-variables");
@@ -353,6 +363,7 @@ describe("ColorProject", function () {
 
         return describe("where the reload finds nothing new", function () {
           beforeEach(async function () {
+            registerViewProvider();
             eventSpy = jasmine.createSpy("did-update-variables");
             project.onDidUpdateVariables(eventSpy);
             await waitsForPromise(() =>
@@ -372,6 +383,7 @@ describe("ColorProject", function () {
       describe("for a file that is part of the loaded paths", function () {
         describe("where the reload finds new variables", function () {
           beforeEach(async function () {
+            registerViewProvider();
             project.deleteVariablesForPaths([
               `${rootPath}/styles/variables.styl`,
               `${rootPath}/styles/buttons.styl`,
@@ -395,6 +407,7 @@ describe("ColorProject", function () {
 
         return describe("where the reload finds nothing new", function () {
           beforeEach(async function () {
+            registerViewProvider();
             eventSpy = jasmine.createSpy("did-update-variables");
             project.onDidUpdateVariables(eventSpy);
             await waitsForPromise(() =>
@@ -415,6 +428,7 @@ describe("ColorProject", function () {
 
       return describe("for a file that is not part of the loaded paths", function () {
         beforeEach(async function () {
+          registerViewProvider();
           spyOn(project, "loadVariablesForPath").and.callThrough();
 
           await waitsForPromise(() =>
@@ -430,6 +444,7 @@ describe("ColorProject", function () {
     describe("when a buffer with variables is open", function () {
       let [editor, colorBuffer] = Array.from([]);
       beforeEach(async function () {
+        registerViewProvider();
         eventSpy = jasmine.createSpy("did-update-variables");
         project.onDidUpdateVariables(eventSpy);
 
@@ -452,6 +467,7 @@ describe("ColorProject", function () {
       describe("when a color is modified that does not affect other variables ranges", function () {
         let [variablesTextRanges] = Array.from([]);
         beforeEach(async function () {
+          registerViewProvider();
           variablesTextRanges = {};
           project
             .getVariablesForPath(editor.getPath())
@@ -495,6 +511,7 @@ describe("ColorProject", function () {
       describe("when a text is inserted that affects other variables ranges", function () {
         let [variablesTextRanges, variablesBufferRanges] = Array.from([]);
         beforeEach(async function () {
+          registerViewProvider();
           await runs(async function () {
             variablesTextRanges = {};
             variablesBufferRanges = {};
@@ -536,6 +553,7 @@ describe("ColorProject", function () {
       describe("when a color is removed", function () {
         let [variablesTextRanges] = Array.from([]);
         beforeEach(async function () {
+          registerViewProvider();
           await runs(async function () {
             variablesTextRanges = {};
             project
@@ -578,6 +596,7 @@ describe("ColorProject", function () {
       return describe("when all the colors are removed", function () {
         let [variablesTextRanges] = Array.from([]);
         beforeEach(async function () {
+          registerViewProvider();
           await runs(async function () {
             variablesTextRanges = {};
             project
@@ -619,6 +638,7 @@ describe("ColorProject", function () {
     describe("::setIgnoredNames", function () {
       describe("with an empty array", function () {
         beforeEach(async function () {
+          registerViewProvider();
           expect(project.getVariables().length).toEqual(12);
 
           const spy = jasmine.createSpy("did-update-variables");
@@ -634,6 +654,7 @@ describe("ColorProject", function () {
 
       return describe("with a more restrictive array", function () {
         beforeEach(async function () {
+          registerViewProvider();
           expect(project.getVariables().length).toEqual(12);
 
           const spy = jasmine.createSpy("did-update-variables");
@@ -648,6 +669,7 @@ describe("ColorProject", function () {
 
     describe("when the project has multiple root directory", function () {
       beforeEach(async function () {
+        registerViewProvider();
         lumine.config.set("colors.sourceNames", ["**/*.sass", "**/*.styl"]);
 
         const [fixturesPath] = Array.from(lumine.project.getPaths());
@@ -665,6 +687,7 @@ describe("ColorProject", function () {
     describe("when the project has VCS ignored files", function () {
       let [projectPath] = Array.from([]);
       beforeEach(async function () {
+        registerViewProvider();
         lumine.config.set("colors.sourceNames", ["*.sass"]);
 
         const fixture = path.join(__dirname, "fixtures", "project-with-gitignore");
@@ -698,6 +721,7 @@ describe("ColorProject", function () {
 
       describe("when the ignoreVcsIgnoredPaths setting is enabled", function () {
         beforeEach(async function () {
+          registerViewProvider();
           lumine.config.set("colors.ignoreVcsIgnoredPaths", true);
           project = new ColorProject({});
 
@@ -711,6 +735,7 @@ describe("ColorProject", function () {
 
         return describe("and then disabled", function () {
           beforeEach(async function () {
+            registerViewProvider();
             const spy = jasmine.createSpy("did-update-variables");
             project.onDidUpdateVariables(spy);
             lumine.config.set("colors.ignoreVcsIgnoredPaths", false);
@@ -727,6 +752,7 @@ describe("ColorProject", function () {
 
       return describe("when the ignoreVcsIgnoredPaths setting is disabled", function () {
         beforeEach(async function () {
+          registerViewProvider();
           lumine.config.set("colors.ignoreVcsIgnoredPaths", false);
           project = new ColorProject({});
 
@@ -740,6 +766,7 @@ describe("ColorProject", function () {
 
         return describe("and then enabled", function () {
           beforeEach(async function () {
+            registerViewProvider();
             const spy = jasmine.createSpy("did-update-variables");
             project.onDidUpdateVariables(spy);
             lumine.config.set("colors.ignoreVcsIgnoredPaths", true);
@@ -767,6 +794,7 @@ describe("ColorProject", function () {
       let [updateSpy] = Array.from([]);
 
       beforeEach(async function () {
+        registerViewProvider();
         const originalPaths = project.getPaths();
         lumine.config.set("colors.sourceNames", []);
 
@@ -778,6 +806,7 @@ describe("ColorProject", function () {
 
       return describe("so that new paths are found", function () {
         beforeEach(async function () {
+          registerViewProvider();
           updateSpy = jasmine.createSpy("did-update-variables");
 
           const originalPaths = project.getPaths();
@@ -798,6 +827,7 @@ describe("ColorProject", function () {
       let [updateSpy] = Array.from([]);
 
       beforeEach(async function () {
+        registerViewProvider();
         const originalPaths = project.getPaths();
         lumine.config.set("colors.ignoredNames", ["**/*.styl"]);
 
@@ -809,6 +839,7 @@ describe("ColorProject", function () {
 
       return describe("so that new paths are found", function () {
         beforeEach(async function () {
+          registerViewProvider();
           updateSpy = jasmine.createSpy("did-update-variables");
 
           const originalPaths = project.getPaths();
@@ -840,6 +871,7 @@ describe("ColorProject", function () {
     describe("when the ignore global config settings are enabled", function () {
       describe("for the sourceNames field", function () {
         beforeEach(async function () {
+          registerViewProvider();
           project.sourceNames = ["*.foo"];
           await waitsForPromise(() => project.setIgnoreGlobalSourceNames(true));
         });
@@ -853,6 +885,7 @@ describe("ColorProject", function () {
 
       describe("for the ignoredNames field", function () {
         beforeEach(async function () {
+          registerViewProvider();
           lumine.config.set("colors.ignoredNames", ["*.foo"]);
           project.ignoredNames = ["*.bar"];
 
@@ -868,6 +901,7 @@ describe("ColorProject", function () {
 
       describe("for the ignoredScopes field", function () {
         beforeEach(async function () {
+          registerViewProvider();
           lumine.config.set("colors.ignoredScopes", ["\\.comment"]);
           project.ignoredScopes = ["\\.source"];
 
@@ -883,6 +917,7 @@ describe("ColorProject", function () {
 
       return describe("for the searchNames field", function () {
         beforeEach(async function () {
+          registerViewProvider();
           lumine.config.set("colors.extendedSearchNames", ["*.css"]);
           project.searchNames = ["*.foo"];
 
@@ -899,6 +934,7 @@ describe("ColorProject", function () {
 
     describe("::loadThemesVariables", function () {
       beforeEach(async function () {
+        registerViewProvider();
         lumine.packages.activatePackage("one-theme");
         lumine.packages.activatePackage("one-theme");
 
@@ -924,6 +960,7 @@ describe("ColorProject", function () {
       let spy;
       [paths, spy] = Array.from([]);
       beforeEach(async function () {
+        registerViewProvider();
         paths = project.getPaths();
         expect(project.getColorVariables().length).toEqual(10);
 
@@ -972,6 +1009,7 @@ describe("ColorProject", function () {
 
         return describe("when the core.themes setting is modified", function () {
           beforeEach(async function () {
+            registerViewProvider();
             spyOn(project, "loadThemesVariables").and.callThrough();
             lumine.config.set("core.themes", ["one-day-ui", "one-day-syntax"]);
 
@@ -985,6 +1023,7 @@ describe("ColorProject", function () {
 
       return describe("when the core.themes setting is modified", function () {
         beforeEach(async function () {
+          registerViewProvider();
           spyOn(project, "loadThemesVariables").and.callThrough();
           lumine.config.set("core.themes", ["one-day-ui", "one-day-syntax"]);
 
@@ -1034,6 +1073,7 @@ describe("ColorProject", function () {
 
     describe("with a timestamp more recent than the files last modification date", function () {
       beforeEach(async function () {
+        registerViewProvider();
         project = createProject({
           stateFixture: "empty-project.json",
         });
@@ -1047,6 +1087,7 @@ describe("ColorProject", function () {
 
     describe("with a version different that the current one", function () {
       beforeEach(async function () {
+        registerViewProvider();
         project = createProject({
           stateFixture: "empty-project.json",
           version: "0.0.0",
@@ -1061,6 +1102,7 @@ describe("ColorProject", function () {
 
     describe("with a serialized path that no longer exist", function () {
       beforeEach(async function () {
+        registerViewProvider();
         project = createProject({
           stateFixture: "rename-file-project.json",
         });
@@ -1085,6 +1127,7 @@ describe("ColorProject", function () {
 
     describe("with a sourceNames setting value different than when serialized", function () {
       beforeEach(async function () {
+        registerViewProvider();
         lumine.config.set("colors.sourceNames", []);
 
         project = createProject({
@@ -1100,6 +1143,7 @@ describe("ColorProject", function () {
 
     describe("with a markers version different that the current one", function () {
       beforeEach(async function () {
+        registerViewProvider();
         project = createProject({
           stateFixture: "empty-project.json",
           markersVersion: "0.0.0",
@@ -1122,6 +1166,7 @@ describe("ColorProject", function () {
 
     describe("with a timestamp older than the files last modification date", function () {
       beforeEach(async function () {
+        registerViewProvider();
         project = createProject({
           timestamp: new Date(0).toJSON(),
           stateFixture: "empty-project.json",
@@ -1136,6 +1181,7 @@ describe("ColorProject", function () {
 
     describe("with some files not saved in the project state", function () {
       beforeEach(async function () {
+        registerViewProvider();
         project = createProject({
           stateFixture: "partial-project.json",
         });
@@ -1150,6 +1196,7 @@ describe("ColorProject", function () {
     describe("with an open editor and the corresponding buffer state", function () {
       let [editor, colorBuffer] = Array.from([]);
       beforeEach(async function () {
+        registerViewProvider();
         await waitsForPromise(() =>
           lumine.workspace.open("variables.styl").then((o) => (editor = o)),
         );
@@ -1180,6 +1227,7 @@ describe("ColorProject", function () {
     return describe("with an open editor, the corresponding buffer state and a old timestamp", function () {
       let [editor, colorBuffer] = Array.from([]);
       beforeEach(async function () {
+        registerViewProvider();
         await waitsForPromise(() =>
           lumine.workspace.open("variables.styl").then((o) => (editor = o)),
         );
@@ -1216,6 +1264,7 @@ describe("ColorProject", function () {
   let [project, rootPath] = Array.from([]);
   return describe("when the project has a colors defaults file", function () {
     beforeEach(async function () {
+      registerViewProvider();
       lumine.config.set("colors.sourceNames", ["*.sass"]);
 
       const [fixturesPath] = Array.from(lumine.project.getPaths());
