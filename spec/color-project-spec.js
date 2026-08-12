@@ -465,8 +465,6 @@ describe("ColorProject", function () {
       let [editor, colorBuffer] = Array.from([]);
       beforeEach(async function () {
         registerViewProvider();
-        eventSpy = jasmine.createSpy("did-update-variables");
-        project.onDidUpdateVariables(eventSpy);
 
         await waitsForPromise(() =>
           lumine.workspace.open("styles/variables.styl").then((o) => (editor = o)),
@@ -479,6 +477,15 @@ describe("ColorProject", function () {
 
         await waitsForPromise(() => project.initialize());
         await waitsForPromise(() => colorBuffer.variablesAvailable());
+
+        // Only now: opening the buffer and initializing the project each update
+        // the variables themselves. A spy installed before them starts the spec
+        // already satisfied, so `waitsFor(count > 0)` returns before the edit
+        // below has been processed and `argsFor(0)` describes the wrong update.
+        await runs(function () {
+          eventSpy = jasmine.createSpy("did-update-variables");
+          project.onDidUpdateVariables(eventSpy);
+        });
       });
 
       it("updates the project variable with the buffer ranges", async () =>

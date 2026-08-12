@@ -31,7 +31,29 @@ module.exports = {
         return JSON.stringify(value).slice(1, -1);
       });
 
-      return JSON.parse(json);
+      return normalizePaths(JSON.parse(json), data && data.root);
     };
   },
 };
+
+// The fixtures compose their paths as `#{root}` followed by a literal `/`,
+// which is only this platform's separator on POSIX. Everything they are
+// compared against -- what the scanner reports, what a buffer serializes --
+// carries the platform's own spelling, so anything under the root is
+// normalised on the way out. Values that are not paths are left alone.
+function normalizePaths(value, root) {
+  if (!root) return value;
+
+  if (typeof value === "string") {
+    return value.startsWith(root) ? path.normalize(value) : value;
+  }
+  if (Array.isArray(value)) {
+    return value.map((entry) => normalizePaths(entry, root));
+  }
+  if (value != null && typeof value === "object") {
+    for (const key of Object.keys(value)) {
+      value[key] = normalizePaths(value[key], root);
+    }
+  }
+  return value;
+}
