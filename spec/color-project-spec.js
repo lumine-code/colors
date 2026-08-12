@@ -31,7 +31,22 @@ describe("ColorProject", function () {
   // and the JSON fixtures compose theirs as `#{root}` plus a literal `/`. So an
   // expectation about restored state has to be built the fixture's way, not the
   // loader's.
-  const fromFixture = (relative) => `${rootPath}/${relative}`;
+  // The themes the editor ships are not on the spec runner's package path, but
+  // core's own theme fixtures are, and what these specs need is a real ui/syntax
+  // pair to sample -- not any particular one. The mode is pinned because the
+  // default follows the OS, and `theme.dark` would be the live key on a dark
+  // machine.
+  const FIXTURE_THEMES = ["theme-modern-ui", "theme-modern-syntax"];
+
+  function activateFixtureThemes() {
+    lumine.config.set("theme.mode", "light");
+    lumine.config.set("theme.light", FIXTURE_THEMES);
+  }
+
+  // Resolved, not concatenated: the project holds the paths the scanner found,
+  // which are this platform's spelling, and a `/` joined onto a Windows root
+  // matches none of them.
+  const fromFixture = (relative) => path.resolve(rootPath, relative);
 
   beforeEach(async function () {
     registerViewProvider();
@@ -928,10 +943,9 @@ describe("ColorProject", function () {
     describe("::loadThemesVariables", function () {
       beforeEach(async function () {
         registerViewProvider();
-        lumine.packages.activatePackage("one-theme");
-        lumine.packages.activatePackage("one-theme");
-
-        lumine.config.set("core.themes", ["one-day-ui", "one-day-syntax"]);
+        // A theme switch waits on real timers, and the spec clock is frozen.
+        jasmine.useRealClock();
+        activateFixtureThemes();
 
         await waitsForPromise(() => lumine.themes.activateThemes());
 
@@ -957,12 +971,8 @@ describe("ColorProject", function () {
         paths = project.getPaths();
         expect(project.getColorVariables().length).toEqual(10);
 
-        lumine.packages.activatePackage("one-theme");
-        lumine.packages.activatePackage("one-theme");
-        lumine.packages.activatePackage("one-theme");
-        lumine.packages.activatePackage("one-theme");
-
-        lumine.config.set("core.themes", ["one-day-ui", "one-day-syntax"]);
+        jasmine.useRealClock();
+        activateFixtureThemes();
 
         await waitsForPromise(() => lumine.themes.activateThemes());
 
@@ -1000,11 +1010,11 @@ describe("ColorProject", function () {
         it("removes all the paths to the themes stylesheets", async () =>
           expect(project.getColorVariables().length).toEqual(10));
 
-        return describe("when the core.themes setting is modified", function () {
+        return describe("when the active themes setting is modified", function () {
           beforeEach(async function () {
             registerViewProvider();
             spyOn(project, "loadThemesVariables").and.callThrough();
-            lumine.config.set("core.themes", ["one-day-ui", "one-day-syntax"]);
+            lumine.config.set("theme.light", [FIXTURE_THEMES[0]]);
 
             await waitsFor(() => spy.calls.count() > 0);
           });
@@ -1014,11 +1024,11 @@ describe("ColorProject", function () {
         });
       });
 
-      return describe("when the core.themes setting is modified", function () {
+      return describe("when the active themes setting is modified", function () {
         beforeEach(async function () {
           registerViewProvider();
           spyOn(project, "loadThemesVariables").and.callThrough();
-          lumine.config.set("core.themes", ["one-day-ui", "one-day-syntax"]);
+          lumine.config.set("theme.light", [FIXTURE_THEMES[0]]);
 
           await waitsFor(() => spy.calls.count() > 0);
         });
