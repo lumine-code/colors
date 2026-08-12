@@ -27,6 +27,12 @@ describe("ColorProject", function () {
   // built that way too rather than joined with a forward slash.
   const p = (relative) => path.join(rootPath, ...relative.split("/"));
 
+  // A deserialized project holds exactly the strings it was serialized with,
+  // and the JSON fixtures compose theirs as `#{root}` plus a literal `/`. So an
+  // expectation about restored state has to be built the fixture's way, not the
+  // loader's.
+  const fromFixture = (relative) => `${rootPath}/${relative}`;
+
   beforeEach(async function () {
     registerViewProvider();
     lumine.config.set("colors.sourceNames", ["*.styl"]);
@@ -59,7 +65,10 @@ describe("ColorProject", function () {
       project = ColorProject.deserialize(json);
 
       expect(project).toBeDefined();
-      expect(project.getPaths()).toEqual([p("styles/buttons.styl"), p("styles/variables.styl")]);
+      expect(project.getPaths()).toEqual([
+        fromFixture("styles/buttons.styl"),
+        fromFixture("styles/variables.styl"),
+      ]);
       expect(project.getVariables().length).toEqual(TOTAL_VARIABLES_IN_PROJECT);
       return expect(project.getColorVariables().length).toEqual(TOTAL_COLORS_VARIABLES_IN_PROJECT);
     }));
