@@ -68,6 +68,7 @@ describe("Colors", function () {
       await waitsForPromise({ label: "text-editor opened" }, () =>
         lumine.workspace.open("four-variables.styl").then(function (e) {
           editor = e;
+          editorElement = lumine.views.getView(e);
           return (colorBuffer = project.colorBufferForEditor(editor));
         }),
       );
