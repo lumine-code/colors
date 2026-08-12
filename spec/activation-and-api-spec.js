@@ -157,7 +157,7 @@ describe("Colors", function () {
 
       it("calls the callback for every existing color buffer", async function () {
         expect(spy).toHaveBeenCalled();
-        return expect(spy.calls.length).toEqual(1);
+        return expect(spy.calls.count()).toEqual(1);
       });
 
       return it("calls the callback on every new buffer creation", async function () {
@@ -165,7 +165,7 @@ describe("Colors", function () {
           lumine.workspace.open("buttons.styl"),
         );
 
-        await runs(() => expect(spy.calls.length).toEqual(2));
+        await runs(() => expect(spy.calls.count()).toEqual(2));
       });
     });
   });

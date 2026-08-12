@@ -1,4 +1,4 @@
-/*
+﻿/*
  * decaffeinate suggestions:
  * DS101: Remove unnecessary use of Array.from
  * DS102: Remove unnecessary code created because of implicit returns
@@ -60,51 +60,10 @@ describe("ExpressionsRegistry", function () {
       return expect(registry.getExpressions()).toEqual([]);
     }));
 
-  describe("::serialize", () =>
-    it("serializes the registry with the function content", function () {
-      registry.createExpression("dummy", "foo");
-      registry.createExpression("dummy2", "bar", (a, b, c) => a + b - c);
-
-      const serialized = registry.serialize();
-
-      expect(serialized.regexpString).toEqual("(foo)|(bar)");
-      expect(serialized.expressions.dummy).toEqual({
-        name: "dummy",
-        regexpString: "foo",
-        handle: undefined,
-        priority: 0,
-        scopes: ["*"],
-      });
-
-      return expect(serialized.expressions.dummy2).toEqual({
-        name: "dummy2",
-        regexpString: "bar",
-        handle: registry.getExpression("dummy2").handle.toString(),
-        priority: 0,
-        scopes: ["*"],
-      });
-    }));
-
-  return describe(".deserialize", () =>
-    it("deserializes the provided expressions using the specified model", function () {
-      const serialized = {
-        regexpString: "foo|bar",
-        expressions: {
-          dummy: {
-            name: "dummy",
-            regexpString: "foo",
-            handle: "function (a,b,c) { return a + b - c; }",
-            priority: 0,
-            scopes: ["*"],
-          },
-        },
-      };
-
-      const deserialized = ExpressionsRegistry.deserialize(serialized, Dummy);
-
-      expect(deserialized.getRegExp()).toEqual("foo|bar");
-      expect(deserialized.getExpression("dummy").name).toEqual("dummy");
-      expect(deserialized.getExpression("dummy").regexpString).toEqual("foo");
-      return expect(deserialized.getExpression("dummy").handle(1, 2, 3)).toEqual(0);
-    }));
+  // The registry once had a serialize/deserialize pair, and these specs
+  // pinned it: the handle was serialized by calling toString() on the
+  // function and rebuilt with vm.runInNewContext. Both directions existed
+  // only to carry the registry into a forked Task, and neither could
+  // reconstruct a handler that closed over anything, so the scanning moved
+  // into the renderer and the pair went with it.
 });

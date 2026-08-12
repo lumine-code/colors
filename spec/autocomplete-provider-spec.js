@@ -73,7 +73,7 @@ describe("autocomplete provider", function () {
   describe("writing the name of a color", function () {
     it("returns suggestions for the matching colors", async function () {
       await runs(async function () {
-        expect(editorView.querySelector(".autocomplete-plus")).not.toExist();
+        expect(editorView.querySelector("autocomplete-suggestion-list")).not.toExist();
 
         editor.moveToBottom();
         editor.insertText("border: 1px solid ");
@@ -84,12 +84,12 @@ describe("autocomplete provider", function () {
         return advanceClock(completionDelay);
       });
 
-      await waitsFor(() => autocompleteManager.displaySuggestions.calls.length === 1);
+      await waitsFor(() => autocompleteManager.displaySuggestions.calls.count() === 1);
 
-      await waitsFor(() => editorView.querySelector(".autocomplete-plus li") != null);
+      await waitsFor(() => editorView.querySelector("autocomplete-suggestion-list li") != null);
 
       await runs(async function () {
-        const popup = editorView.querySelector(".autocomplete-plus");
+        const popup = editorView.querySelector("autocomplete-suggestion-list");
         expect(popup).toExist();
         expect(popup.querySelector("span.word").textContent).toEqual("base-color");
 
@@ -101,7 +101,7 @@ describe("autocomplete provider", function () {
 
     it("replaces the prefix even when it contains a @", async function () {
       await runs(async function () {
-        expect(editorView.querySelector(".autocomplete-plus")).not.toExist();
+        expect(editorView.querySelector("autocomplete-suggestion-list")).not.toExist();
 
         editor.moveToBottom();
         editor.insertText("@");
@@ -111,9 +111,9 @@ describe("autocomplete provider", function () {
         return advanceClock(completionDelay);
       });
 
-      await waitsFor(() => autocompleteManager.displaySuggestions.calls.length === 1);
+      await waitsFor(() => autocompleteManager.displaySuggestions.calls.count() === 1);
 
-      await waitsFor(() => editorView.querySelector(".autocomplete-plus li") != null);
+      await waitsFor(() => editorView.querySelector("autocomplete-suggestion-list li") != null);
 
       await runs(async function () {
         lumine.commands.dispatch(editorView, "autocomplete-plus:confirm");
@@ -123,7 +123,7 @@ describe("autocomplete provider", function () {
 
     it("replaces the prefix even when it contains a $", async function () {
       await runs(async function () {
-        expect(editorView.querySelector(".autocomplete-plus")).not.toExist();
+        expect(editorView.querySelector("autocomplete-suggestion-list")).not.toExist();
 
         editor.moveToBottom();
         editor.insertText("$");
@@ -133,9 +133,9 @@ describe("autocomplete provider", function () {
         return advanceClock(completionDelay);
       });
 
-      await waitsFor(() => autocompleteManager.displaySuggestions.calls.length === 1);
+      await waitsFor(() => autocompleteManager.displaySuggestions.calls.count() === 1);
 
-      await waitsFor(() => editorView.querySelector(".autocomplete-plus li") != null);
+      await waitsFor(() => editorView.querySelector("autocomplete-suggestion-list li") != null);
 
       await runs(async function () {
         lumine.commands.dispatch(editorView, "autocomplete-plus:confirm");
@@ -150,7 +150,7 @@ describe("autocomplete provider", function () {
       describe("with an opaque color", () =>
         it("displays the color hexadecimal code in the completion item", async function () {
           await runs(async function () {
-            expect(editorView.querySelector(".autocomplete-plus")).not.toExist();
+            expect(editorView.querySelector("autocomplete-suggestion-list")).not.toExist();
 
             editor.moveToBottom();
             editor.insertText("b");
@@ -160,12 +160,12 @@ describe("autocomplete provider", function () {
             return advanceClock(completionDelay);
           });
 
-          await waitsFor(() => autocompleteManager.displaySuggestions.calls.length === 1);
+          await waitsFor(() => autocompleteManager.displaySuggestions.calls.count() === 1);
 
-          await waitsFor(() => editorView.querySelector(".autocomplete-plus li") != null);
+          await waitsFor(() => editorView.querySelector("autocomplete-suggestion-list li") != null);
 
           await runs(async function () {
-            const popup = editorView.querySelector(".autocomplete-plus");
+            const popup = editorView.querySelector("autocomplete-suggestion-list");
             expect(popup).toExist();
             expect(popup.querySelector("span.word").textContent).toEqual("base-color");
 
@@ -178,7 +178,7 @@ describe("autocomplete provider", function () {
 
         it("suggests color variables from hexadecimal values", async function () {
           await runs(async function () {
-            expect(editorView.querySelector(".autocomplete-plus")).not.toExist();
+            expect(editorView.querySelector("autocomplete-suggestion-list")).not.toExist();
 
             editor.moveToBottom();
             editor.insertText("#");
@@ -188,12 +188,12 @@ describe("autocomplete provider", function () {
             return advanceClock(completionDelay);
           });
 
-          await waitsFor(() => autocompleteManager.displaySuggestions.calls.length === 1);
+          await waitsFor(() => autocompleteManager.displaySuggestions.calls.count() === 1);
 
-          await waitsFor(() => editorView.querySelector(".autocomplete-plus li") != null);
+          await waitsFor(() => editorView.querySelector("autocomplete-suggestion-list li") != null);
 
           await runs(async function () {
-            const popup = editorView.querySelector(".autocomplete-plus");
+            const popup = editorView.querySelector("autocomplete-suggestion-list");
             expect(popup).toExist();
             expect(popup.querySelector("span.word").textContent).toEqual("var1");
 
@@ -203,7 +203,7 @@ describe("autocomplete provider", function () {
 
         it("suggests color variables from hexadecimal values when in a CSS expression", async function () {
           await runs(async function () {
-            expect(editorView.querySelector(".autocomplete-plus")).not.toExist();
+            expect(editorView.querySelector("autocomplete-suggestion-list")).not.toExist();
 
             editor.moveToBottom();
             editor.insertText("border: 1px solid ");
@@ -215,12 +215,12 @@ describe("autocomplete provider", function () {
             return advanceClock(completionDelay);
           });
 
-          await waitsFor(() => autocompleteManager.displaySuggestions.calls.length === 1);
+          await waitsFor(() => autocompleteManager.displaySuggestions.calls.count() === 1);
 
-          await waitsFor(() => editorView.querySelector(".autocomplete-plus li") != null);
+          await waitsFor(() => editorView.querySelector("autocomplete-suggestion-list li") != null);
 
           await runs(async function () {
-            const popup = editorView.querySelector(".autocomplete-plus");
+            const popup = editorView.querySelector("autocomplete-suggestion-list");
             expect(popup).toExist();
             expect(popup.querySelector("span.word").textContent).toEqual("var1");
 
@@ -230,7 +230,7 @@ describe("autocomplete provider", function () {
 
         it("suggests color variables from rgb values", async function () {
           await runs(async function () {
-            expect(editorView.querySelector(".autocomplete-plus")).not.toExist();
+            expect(editorView.querySelector("autocomplete-suggestion-list")).not.toExist();
 
             editor.moveToBottom();
             editor.insertText("border: 1px solid ");
@@ -248,12 +248,12 @@ describe("autocomplete provider", function () {
             return advanceClock(completionDelay);
           });
 
-          await waitsFor(() => autocompleteManager.displaySuggestions.calls.length === 1);
+          await waitsFor(() => autocompleteManager.displaySuggestions.calls.count() === 1);
 
-          await waitsFor(() => editorView.querySelector(".autocomplete-plus li") != null);
+          await waitsFor(() => editorView.querySelector("autocomplete-suggestion-list li") != null);
 
           await runs(async function () {
-            const popup = editorView.querySelector(".autocomplete-plus");
+            const popup = editorView.querySelector("autocomplete-suggestion-list");
             expect(popup).toExist();
             expect(popup.querySelector("span.word").textContent).toEqual("var1");
 
@@ -266,7 +266,7 @@ describe("autocomplete provider", function () {
 
           return it("returns suggestions for the matching variable value", async function () {
             await runs(async function () {
-              expect(editorView.querySelector(".autocomplete-plus")).not.toExist();
+              expect(editorView.querySelector("autocomplete-suggestion-list")).not.toExist();
 
               editor.moveToBottom();
               editor.insertText("border: ");
@@ -279,12 +279,12 @@ describe("autocomplete provider", function () {
               return advanceClock(completionDelay);
             });
 
-            await waitsFor(() => autocompleteManager.displaySuggestions.calls.length === 1);
+            await waitsFor(() => autocompleteManager.displaySuggestions.calls.count() === 1);
 
-            await waitsFor(() => editorView.querySelector(".autocomplete-plus li") != null);
+            await waitsFor(() => editorView.querySelector("autocomplete-suggestion-list li") != null);
 
             await runs(async function () {
-              const popup = editorView.querySelector(".autocomplete-plus");
+              const popup = editorView.querySelector("autocomplete-suggestion-list");
               expect(popup).toExist();
               expect(popup.querySelector("span.word").textContent).toEqual("button-padding");
 
@@ -297,7 +297,7 @@ describe("autocomplete provider", function () {
       return describe("with a transparent color", () =>
         it("displays the color hexadecimal code in the completion item", async function () {
           await runs(async function () {
-            expect(editorView.querySelector(".autocomplete-plus")).not.toExist();
+            expect(editorView.querySelector("autocomplete-suggestion-list")).not.toExist();
 
             editor.moveToBottom();
             editor.insertText("$");
@@ -307,12 +307,12 @@ describe("autocomplete provider", function () {
             return advanceClock(completionDelay);
           });
 
-          await waitsFor(() => autocompleteManager.displaySuggestions.calls.length === 1);
+          await waitsFor(() => autocompleteManager.displaySuggestions.calls.count() === 1);
 
-          await waitsFor(() => editorView.querySelector(".autocomplete-plus li") != null);
+          await waitsFor(() => editorView.querySelector("autocomplete-suggestion-list li") != null);
 
           await runs(async function () {
-            const popup = editorView.querySelector(".autocomplete-plus");
+            const popup = editorView.querySelector("autocomplete-suggestion-list");
             expect(popup).toExist();
             expect(popup.querySelector("span.word").textContent).toEqual("$other-color");
 
@@ -328,7 +328,7 @@ describe("autocomplete provider", function () {
     it("returns suggestions for the matching variable", async function () {
       lumine.config.set("colors.extendAutocompleteToVariables", false);
       await runs(async function () {
-        expect(editorView.querySelector(".autocomplete-plus")).not.toExist();
+        expect(editorView.querySelector("autocomplete-suggestion-list")).not.toExist();
 
         editor.moveToBottom();
         editor.insertText("f");
@@ -338,9 +338,9 @@ describe("autocomplete provider", function () {
         return advanceClock(completionDelay);
       });
 
-      await waitsFor(() => autocompleteManager.displaySuggestions.calls.length === 1);
+      await waitsFor(() => autocompleteManager.displaySuggestions.calls.count() === 1);
 
-      await runs(() => expect(editorView.querySelector(".autocomplete-plus")).not.toExist());
+      await runs(() => expect(editorView.querySelector("autocomplete-suggestion-list")).not.toExist());
     }));
 
   return describe("when extendAutocompleteToVariables is true", function () {
@@ -349,7 +349,7 @@ describe("autocomplete provider", function () {
     return describe("writing the name of a non-color variable", () =>
       it("returns suggestions for the matching variable", async function () {
         await runs(async function () {
-          expect(editorView.querySelector(".autocomplete-plus")).not.toExist();
+          expect(editorView.querySelector("autocomplete-suggestion-list")).not.toExist();
 
           editor.moveToBottom();
           editor.insertText("b");
@@ -364,12 +364,12 @@ describe("autocomplete provider", function () {
           return advanceClock(completionDelay);
         });
 
-        await waitsFor(() => autocompleteManager.displaySuggestions.calls.length === 1);
+        await waitsFor(() => autocompleteManager.displaySuggestions.calls.count() === 1);
 
-        await waitsFor(() => editorView.querySelector(".autocomplete-plus li") != null);
+        await waitsFor(() => editorView.querySelector("autocomplete-suggestion-list li") != null);
 
         await runs(async function () {
-          const popup = editorView.querySelector(".autocomplete-plus");
+          const popup = editorView.querySelector("autocomplete-suggestion-list");
           expect(popup).toExist();
           expect(popup.querySelector("span.word").textContent).toEqual("button-padding");
 
@@ -446,7 +446,7 @@ describe("autocomplete provider", function () {
 
     return it("does not display the alternate sass version", async function () {
       await runs(async function () {
-        expect(editorView.querySelector(".autocomplete-plus")).not.toExist();
+        expect(editorView.querySelector("autocomplete-suggestion-list")).not.toExist();
 
         editor.moveToBottom();
         editor.insertText("$");
@@ -458,16 +458,16 @@ describe("autocomplete provider", function () {
 
       await waitsFor(
         "suggestions displayed callback",
-        () => autocompleteManager.displaySuggestions.calls.length === 1,
+        () => autocompleteManager.displaySuggestions.calls.count() === 1,
       );
 
       await waitsFor(
         "autocomplete lis",
-        () => editorView.querySelector(".autocomplete-plus li") != null,
+        () => editorView.querySelector("autocomplete-suggestion-list li") != null,
       );
 
       await runs(async function () {
-        const lis = editorView.querySelectorAll(".autocomplete-plus li");
+        const lis = editorView.querySelectorAll("autocomplete-suggestion-list li");
         const hasAlternate = Array.prototype.some.call(
           lis,
           (li) => li.querySelector("span.word").textContent === "$base_color",
