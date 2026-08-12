@@ -1,6 +1,6 @@
 ﻿## Extending Colors
 
-A package can extends Colors definitions using two consumer services: `colors.expressions.colors` and `colors.expressions.variables`. These two services allow to register new color and variable expressions respectively.
+A package can extends Colors definitions using two consumer services: `colors.color-expressions` and `colors.variable-expressions`. These two services allow to register new color and variable expressions respectively.
 
 ### Adding Color Expressions
 
@@ -8,7 +8,7 @@ First, you'll need to define a service provider in your `package.json` file:
 
 ```json
 "providedServices": {
-  "colors.expressions.colors": {
+  "colors.color-expressions": {
     "versions": {
       "1.0.0": "provideColorExpressions"
     }
@@ -101,7 +101,7 @@ First, you'll need to define a service provider in your `package.json` file:
 
 ```json
 "providedServices": {
-  "colors.expressions.variables": {
+  "colors.variable-expressions": {
     "versions": {
       "1.0.0": "provideVariableExpressions"
     }

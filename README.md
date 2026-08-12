@@ -71,13 +71,13 @@ lumine-text-editor .colors-background {
 
 ## Services
 
-- **colors.project** (`1.0.0`): provided to expose the scanned colour project, its palette, its variables and its buffers.
+- **[colors.project](docs/1_colors-project.md)** (`1.0.0`): provided to expose the scanned colour project, its palette, its variables and its buffers.
 - **autocomplete.provider** (`1.0.0`): provided to complete colour names and colour variables while typing.
-- **colors.color-expressions** (`^1.0.0`): consumed so other packages can add colour expressions.
-- **colors.variable-expressions** (`^1.0.0`): consumed so other packages can add variable expressions.
+- **[colors.color-expressions](docs/2_colors-color-expressions.md)** (`^1.0.0`): consumed so other packages can add colour expressions.
+- **[colors.variable-expressions](docs/3_colors-variable-expressions.md)** (`^1.0.0`): consumed so other packages can add variable expressions.
 - **color-picker** (`^1.0.0`): consumed to open a picker on the colour under the cursor.
 
-Extending the colour and variable expressions is described in [docs/extending-colors.md](docs/extending-colors.md), and the parsing context in [docs/color-context-api.md](docs/color-context-api.md).
+Extending the colour and variable expressions is described in [docs/4_extending-colors.md](docs/4_extending-colors.md), and the parsing context in [docs/5_color-context-api.md](docs/5_color-context-api.md).
 
 ## Contributing
 
