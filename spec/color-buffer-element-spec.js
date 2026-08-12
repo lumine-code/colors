@@ -398,10 +398,10 @@ describe("ColorBufferElement", function () {
         beforeEach(async () => lumine.config.set("colors.supportedFiletypes", ["*"]));
 
         return it("supports every filetype", async function () {
-          loadBuffer("scope-filter.coffee");
+          await loadBuffer("scope-filter.coffee");
           await runs(() => expect(getEditorDecorations("background").length).toEqual(2));
 
-          loadBuffer("project/vendor/css/variables.less");
+          await loadBuffer("project/vendor/css/variables.less");
           await runs(() => expect(getEditorDecorations("background").length).toEqual(20));
         });
       });
@@ -410,10 +410,10 @@ describe("ColorBufferElement", function () {
         beforeEach(async () => lumine.config.set("colors.supportedFiletypes", ["coffee"]));
 
         return it("supports the specified file type", async function () {
-          loadBuffer("scope-filter.coffee");
+          await loadBuffer("scope-filter.coffee");
           await runs(() => expect(getEditorDecorations("background").length).toEqual(2));
 
-          loadBuffer("project/vendor/css/variables.less");
+          await loadBuffer("project/vendor/css/variables.less");
           await runs(() => expect(getEditorDecorations("background").length).toEqual(0));
         });
       });
@@ -426,13 +426,13 @@ describe("ColorBufferElement", function () {
         });
 
         it("supports the specified file types", async function () {
-          loadBuffer("scope-filter.coffee");
+          await loadBuffer("scope-filter.coffee");
           await runs(() => expect(getEditorDecorations("background").length).toEqual(2));
 
-          loadBuffer("project/vendor/css/variables.less");
+          await loadBuffer("project/vendor/css/variables.less");
           await runs(() => expect(getEditorDecorations("background").length).toEqual(20));
 
-          loadBuffer("four-variables.styl");
+          await loadBuffer("four-variables.styl");
           await runs(() => expect(getEditorDecorations("background").length).toEqual(0));
         });
 
@@ -445,13 +445,13 @@ describe("ColorBufferElement", function () {
           });
 
           return it("supports the specified file types", async function () {
-            loadBuffer("scope-filter.coffee");
+            await loadBuffer("scope-filter.coffee");
             await runs(() => expect(getEditorDecorations("background").length).toEqual(0));
 
-            loadBuffer("project/vendor/css/variables.less");
+            await loadBuffer("project/vendor/css/variables.less");
             await runs(() => expect(getEditorDecorations("background").length).toEqual(20));
 
-            loadBuffer("four-variables.styl");
+            await loadBuffer("four-variables.styl");
             await runs(() => expect(getEditorDecorations("background").length).toEqual(0));
           });
         });
