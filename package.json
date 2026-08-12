@@ -1,48 +1,69 @@
 {
-  "name": "pigments",
-  "main": "./lib/pigments",
-  "version": "0.40.6",
-  "description": "A package to display colors in project and files.",
-  "keywords": [
-    "colors",
-    "palette",
-    "less",
-    "sass",
-    "scss",
-    "css",
-    "stylus"
-  ],
-  "repository": "git@github.com:abe33/atom-pigments.git",
+  "name": "colors",
+  "author": "lumine-code",
+  "description": "Show the colors written in a file and across the project.",
+  "repository": "https://github.com/lumine-code/colors",
+  "bugs": {
+    "url": "https://github.com/lumine-code/colors/issues"
+  },
+  "keywords": ["swatch", "palette", "hex", "rgb", "hsl", "sass", "stylus"],
+  "version": "1.0.0",
   "license": "MIT",
   "engines": {
-    "atom": ">=1.19.0 <2.0.0"
+    "lumine": "^1.0.0"
+  },
+  "backgroundTips": [
+    "You can see every colour a project defines, grouped and sorted, with {{ 'colors:show-palette' | keystroke }}",
+    "You can find every use of a colour across the project with {{ 'colors:find-colors' | keystroke }}"
+  ],
+  "main": "./lib/main",
+  "files": ["docs", "keymaps", "lib", "menus", "spec", "styles"],
+  "scripts": {
+    "test": "lumine --test spec",
+    "lint": "eslint . --max-warnings 0",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
+  },
+  "dependencies": {
+    "css-color-function": "^1.3.3",
+    "picomatch": "^4.0.5"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.8.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-n": "^18.2.2",
+    "globals": "^17.9.0",
+    "prettier": "^3.9.6"
   },
   "providedServices": {
     "autocomplete.provider": {
+      "description": "Completes colour names and colour variables while typing.",
       "versions": {
-        "2.0.0": "provideAutocomplete"
+        "1.0.0": "provideAutocomplete"
       }
     },
-    "pigments.api": {
+    "colors.project": {
+      "description": "Exposes the scanned colour project: its palette, its variables and its buffers.",
       "versions": {
-        "1.0.0": "provideAPI"
+        "1.0.0": "provideColorsProject"
       }
     }
   },
   "consumedServices": {
     "color-picker": {
       "versions": {
-        "1.0.0": "consumeColorPicker"
+        "^1.0.0": "consumeColorPicker"
       }
     },
-    "pigments.expressions.colors": {
+    "colors.color-expressions": {
       "versions": {
-        "1.0.0": "consumeColorExpressions"
+        "^1.0.0": "consumeColorExpressions"
       }
     },
-    "pigments.expressions.variables": {
+    "colors.variable-expressions": {
       "versions": {
-        "1.0.0": "consumeVariableExpressions"
+        "^1.0.0": "consumeVariableExpressions"
       }
     }
   },
@@ -53,31 +74,76 @@
     "ColorProjectElement": "deserializeColorProjectElement",
     "VariablesCollection": "deserializeVariablesCollection"
   },
-  "viewProviders": [
-    "pigmentsViewProvider"
-  ],
   "configSchema": {
-    "traverseIntoSymlinkDirectories": {
-      "type": "boolean",
-      "default": false
+    "markerType": {
+      "title": "Marker Type",
+      "description": "How a colour is drawn in the editor.",
+      "type": "string",
+      "enum": [
+        { "value": "background", "description": "Background — the text sits on the colour" },
+        { "value": "underline", "description": "Underline — a rule beneath the text" },
+        { "value": "outline", "description": "Outline — a box around the text" },
+        { "value": "dot", "description": "Dot — a round mark before the text" },
+        { "value": "square-dot", "description": "Square dot — a square mark before the text" },
+        { "value": "gutter", "description": "Gutter — a mark in its own gutter" }
+      ],
+      "default": "background"
+    },
+    "supportedFiletypes": {
+      "title": "Supported File Types",
+      "description": "File extensions whose colours are marked. A `*` marks colours everywhere.",
+      "type": "array",
+      "items": { "type": "string" },
+      "default": ["*"]
+    },
+    "filetypesForColorWords": {
+      "title": "File Types for Colour Words",
+      "description": "File extensions where a bare name such as `red` or `whitesmoke` counts as a colour. Use a value matching no extension to switch colour words off entirely.",
+      "type": "array",
+      "items": { "type": "string" },
+      "default": ["css", "less", "styl", "stylus", "sass", "scss"]
+    },
+    "ignoredScopes": {
+      "title": "Ignored Scopes",
+      "description": "Regular expressions matching scopes whose colours are left unmarked. `\\.comment` skips every comment.",
+      "type": "array",
+      "items": { "type": "string" },
+      "default": []
+    },
+    "ignoredBufferNames": {
+      "title": "Ignored Buffer Names",
+      "description": "Glob patterns of files that get no colour marks at all.",
+      "type": "array",
+      "items": { "type": "string" },
+      "default": []
+    },
+    "maxDecorationsInGutter": {
+      "title": "Maximum Marks per Gutter Row",
+      "description": "How many colours one row of the gutter may show.",
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 100,
+      "default": 100
+    },
+    "delayBeforeScan": {
+      "title": "Delay Before Scan",
+      "description": "Milliseconds of quiet after typing before the buffer is scanned again. The wait restarts on every keystroke.",
+      "type": "integer",
+      "minimum": 0,
+      "default": 500
     },
     "sourceNames": {
+      "title": "Source Names",
+      "description": "Glob patterns of the files scanned for colour variables.",
       "type": "array",
-      "default": [
-        "**/*.css",
-        "**/*.styl",
-        "**/*.stylus",
-        "**/*.less",
-        "**/*.sass",
-        "**/*.scss"
-      ],
-      "description": "Glob patterns of files to scan for variables.",
-      "items": {
-        "type": "string"
-      }
+      "items": { "type": "string" },
+      "default": ["**/*.css", "**/*.styl", "**/*.stylus", "**/*.less", "**/*.sass", "**/*.scss"]
     },
     "ignoredNames": {
+      "title": "Ignored Names",
+      "description": "Glob patterns skipped when scanning the project for variables.",
       "type": "array",
+      "items": { "type": "string" },
       "default": [
         "**/vendor",
         "**/node_modules",
@@ -86,164 +152,106 @@
         "**/font",
         "**/img",
         "**/icon"
-      ],
-      "description": "Glob patterns of files to ignore when scanning the project for variables.",
-      "items": {
-        "type": "string"
-      }
-    },
-    "ignoredBufferNames": {
-      "type": "array",
-      "default": [],
-      "description": "Glob patterns of files that won't get any colors highlighted",
-      "items": {
-        "type": "string"
-      }
+      ]
     },
     "extendedSearchNames": {
+      "title": "Extended Search Names",
+      "description": "Extra glob patterns searched by Find Colors, on top of the source names.",
       "type": "array",
-      "default": [
-        "**/*.css"
-      ],
-      "description": "When performing the `find-colors` command, the search will scans all the files that match the `sourceNames` glob patterns and the one defined in this setting."
+      "items": { "type": "string" },
+      "default": ["**/*.css"]
     },
-    "supportedFiletypes": {
-      "type": "array",
-      "default": [
-        "*"
-      ],
-      "description": "An array of file extensions where colors will be highlighted. If the wildcard `*` is present in this array then colors in every file will be highlighted."
+    "ignoreVcsIgnoredPaths": {
+      "title": "Ignore VCS Ignored Paths",
+      "description": "Skip files the repository ignores.",
+      "type": "boolean",
+      "default": true
     },
-    "filetypesForColorWords": {
-      "type": "array",
-      "default": [
-        "css",
-        "less",
-        "styl",
-        "stylus",
-        "sass",
-        "scss"
-      ],
-      "description": "An array of file extensions where color values such as `red`, `azure` or `whitesmoke` will be highlighted. By default CSS and CSS pre-processors files are supported.\n\nYou can use `none` or whatever value that doesn't match a file extension to completely prevent color words from being highlighted."
-    },
-    "ignoredScopes": {
-      "type": "array",
-      "default": [],
-      "description": "Regular expressions of scopes in which colors are ignored. For example, to ignore all colors in comments you can use `\\.comment`.",
-      "items": {
-        "type": "string"
-      }
+    "traverseIntoSymlinkDirectories": {
+      "title": "Traverse Into Symlinked Directories",
+      "description": "Follow symlinked directories when scanning the project.",
+      "type": "boolean",
+      "default": false
     },
     "autocompleteScopes": {
+      "title": "Autocomplete Scopes",
+      "description": "Scopes in which colour names and variables are offered as completions.",
       "type": "array",
+      "items": { "type": "string" },
       "default": [
         ".source.css",
         ".source.css.less",
         ".source.sass",
         ".source.css.scss",
         ".source.stylus"
-      ],
-      "description": "The autocomplete provider will only complete color names in editors whose scope is present in this list.",
-      "items": {
-        "type": "string"
-      }
+      ]
     },
     "extendAutocompleteToVariables": {
-      "type": "boolean",
-      "default": false,
-      "description": "When enabled, the autocomplete provider will also provide completion for non-color variables."
-    },
-    "extendAutocompleteToColorValue": {
-      "type": "boolean",
-      "default": false,
-      "description": "When enabled, the autocomplete provider will also provide color value."
-    },
-    "autocompleteSuggestionsFromValue": {
-      "type": "boolean",
-      "default": false,
-      "description": "When enabled, the autocomplete provider will suggest color variables from hexadecimal values."
-    },
-    "maxDecorationsInGutter": {
-      "type": "integer",
-      "default": 100,
-      "min": 1,
-      "max": 100,
-      "description": "Sets a limit on how many decorations can be displayed in the gutter for the same row"
-    },
-    "markerType": {
-      "type": "string",
-      "default": "native-background",
-      "enum": [
-        "native-background",
-        "native-underline",
-        "native-outline",
-        "native-dot",
-        "native-square-dot",
-        "gutter"
-      ]
-    },
-    "sassShadeAndTintImplementation": {
-      "type": "string",
-      "default": "compass",
-      "enum": [
-        "compass",
-        "bourbon"
-      ],
-      "description": "Sass doesn't provide any implementation for shade and tint function, and Compass and Bourbon have different implementation for these two methods. This setting allow you to chose which implementation to use."
-    },
-    "sortPaletteColors": {
-      "type": "string",
-      "default": "none",
-      "enum": [
-        "none",
-        "by name",
-        "by color"
-      ]
-    },
-    "groupPaletteColors": {
-      "type": "string",
-      "default": "none",
-      "enum": [
-        "none",
-        "by file"
-      ]
-    },
-    "mergeColorDuplicates": {
+      "title": "Complete Non-Colour Variables",
+      "description": "Offer variables that do not hold a colour as completions too.",
       "type": "boolean",
       "default": false
     },
-    "delayBeforeScan": {
-      "type": "integer",
-      "default": 500,
-      "description": "Number of milliseconds after which the current buffer will be scanned for changes in the colors. This delay starts at the end of the text input and will be aborted if you start typing again during the interval."
-    },
-    "ignoreVcsIgnoredPaths": {
+    "extendAutocompleteToColorValue": {
+      "title": "Complete Colour Values",
+      "description": "Offer the colour's value alongside its name.",
       "type": "boolean",
-      "default": true,
-      "title": "Ignore VCS Ignored Paths"
+      "default": false
+    },
+    "autocompleteSuggestionsFromValue": {
+      "title": "Complete Variables From a Value",
+      "description": "Suggest colour variables when a hexadecimal value is typed.",
+      "type": "boolean",
+      "default": false
+    },
+    "sortPaletteColors": {
+      "title": "Sort Palette Colours",
+      "description": "The order colours appear in the palette.",
+      "type": "string",
+      "enum": [
+        { "value": "none", "description": "None — the order they were found in" },
+        { "value": "by name", "description": "By name" },
+        { "value": "by color", "description": "By colour" }
+      ],
+      "default": "none"
+    },
+    "groupPaletteColors": {
+      "title": "Group Palette Colours",
+      "description": "How the palette is divided up.",
+      "type": "string",
+      "enum": [
+        { "value": "none", "description": "None — one flat list" },
+        { "value": "by file", "description": "By the file each colour is declared in" }
+      ],
+      "default": "none"
+    },
+    "mergeColorDuplicates": {
+      "title": "Merge Duplicate Colours",
+      "description": "Show one entry for colours whose value is the same.",
+      "type": "boolean",
+      "default": false
+    },
+    "sassShadeAndTintImplementation": {
+      "title": "Sass Shade and Tint Implementation",
+      "description": "Sass ships no `shade` or `tint`, and the two common libraries define them differently.",
+      "type": "string",
+      "enum": [
+        { "value": "compass", "description": "Compass" },
+        { "value": "bourbon", "description": "Bourbon" }
+      ],
+      "default": "compass"
     },
     "notifyReloads": {
+      "title": "Notify on Reload",
+      "description": "Report what changed when the Reload command finishes.",
       "type": "boolean",
-      "default": true,
-      "description": "Whether Pigments will use a notification once the `Pigments: Reload` command completes or not. The notification includes informations about the result of the reload."
+      "default": true
     },
     "dismissableReloadNotifications": {
+      "title": "Reload Notifications Stay Until Dismissed",
+      "description": "Keep the reload notification on screen until it is closed by hand.",
       "type": "boolean",
-      "default": true,
-      "description": "Whether the reload notifications should be dismissed by a user action or not."
+      "default": true
     }
-  },
-  "dependencies": {
-    "underscore-plus": "1.x",
-    "event-kit": "2.x",
-    "fs-plus": "2.x",
-    "async": "0.2.6",
-    "css-color-function": "0.1.x",
-    "minimatch": "3.0.x",
-    "delegato": "^1.0.0",
-    "atom-utils": ">=0.9.2"
-  },
-  "devDependencies": {
-    "temp": "~0.8.1"
   }
 }
