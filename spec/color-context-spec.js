@@ -1,4 +1,4 @@
-/*
+﻿/*
  * decaffeinate suggestions:
  * DS101: Remove unnecessary use of Array.from
  * DS102: Remove unnecessary code created because of implicit returns
@@ -206,7 +206,7 @@ describe('ColorContext', function() {
 
     describe('when there is another valid value', function() {
       beforeEach(function() {
-        projectPath = atom.project.getPaths()[0];
+        projectPath = lumine.project.getPaths()[0];
         referenceVariable = createVar('a', 'b', `${projectPath}/a.styl`);
 
         const variables = [
@@ -231,7 +231,7 @@ describe('ColorContext', function() {
 
     describe('when there is no another valid value', function() {
       beforeEach(function() {
-        projectPath = atom.project.getPaths()[0];
+        projectPath = lumine.project.getPaths()[0];
         referenceVariable = createVar('a', 'b', `${projectPath}/a.styl`);
 
         const variables = [
@@ -256,7 +256,7 @@ describe('ColorContext', function() {
 
     describe('when there is another valid color', function() {
       beforeEach(function() {
-        projectPath = atom.project.getPaths()[0];
+        projectPath = lumine.project.getPaths()[0];
         referenceVariable = createColorVar('a', 'b', `${projectPath}/a.styl`);
 
         const variables = [
@@ -281,7 +281,7 @@ describe('ColorContext', function() {
 
     return describe('when there is no another valid color', function() {
       beforeEach(function() {
-        projectPath = atom.project.getPaths()[0];
+        projectPath = lumine.project.getPaths()[0];
         referenceVariable = createColorVar('a', 'b', `${projectPath}/a.styl`);
 
         const variables = [
@@ -320,7 +320,7 @@ describe('ColorContext', function() {
 
     describe('when there is a single root path', function() {
       beforeEach(function() {
-        projectPath = atom.project.getPaths()[0];
+        projectPath = lumine.project.getPaths()[0];
         referenceVariable = createVar('a', '10', `${projectPath}/a.styl`);
 
         const variables = [
@@ -344,7 +344,7 @@ describe('ColorContext', function() {
 
     return describe('when there are many root paths', function() {
       beforeEach(function() {
-        projectPath = atom.project.getPaths()[0];
+        projectPath = lumine.project.getPaths()[0];
         referenceVariable = createVar('a', 'b', `${projectPath}/a.styl`);
 
         const variables = [
@@ -383,7 +383,7 @@ describe('ColorContext', function() {
 
     describe('when there is a single root path', function() {
       beforeEach(function() {
-        projectPath = atom.project.getPaths()[0];
+        projectPath = lumine.project.getPaths()[0];
         referenceVariable = createVar('a', '10', `${projectPath}/a.styl`);
 
         const variables = [
@@ -407,7 +407,7 @@ describe('ColorContext', function() {
 
     return describe('when there are many root paths', function() {
       beforeEach(function() {
-        projectPath = atom.project.getPaths()[0];
+        projectPath = lumine.project.getPaths()[0];
         referenceVariable = createVar('a', 'b', `${projectPath}/a.styl`);
 
         const variables = [

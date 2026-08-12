@@ -1,4 +1,4 @@
-/*
+﻿/*
  * decaffeinate suggestions:
  * DS101: Remove unnecessary use of Array.from
  * DS102: Remove unnecessary code created because of implicit returns
@@ -17,7 +17,7 @@ const sleep = function(duration) {
 };
 
 describe('ColorBufferElement', function() {
-  let [editor, editorElement, colorBuffer, pigments, project, colorBufferElement, jasmineContent] = Array.from([]);
+  let [editor, editorElement, colorBuffer, colors, project, colorBufferElement, jasmineContent] = Array.from([]);
 
   const isVisible = decoration => !/-in-selection/.test(decoration.properties.class);
 
@@ -46,32 +46,32 @@ describe('ColorBufferElement', function() {
   };
 
   const getEditorDecorations = type => editor.getDecorations()
-  .filter(d => d.properties.class.startsWith('pigments-native-background'));
+  .filter(d => d.properties.class.startsWith('colors-native-background'));
 
   beforeEach(function() {
-    const workspaceElement = atom.views.getView(atom.workspace);
+    const workspaceElement = lumine.views.getView(lumine.workspace);
     jasmineContent = document.body.querySelector('#jasmine-content');
 
     jasmineContent.appendChild(workspaceElement);
 
-    atom.config.set('editor.softWrap', true);
-    atom.config.set('editor.softWrapAtPreferredLineLength', true);
-    atom.config.set('editor.preferredLineLength', 40);
+    lumine.config.set('editor.softWrap', true);
+    lumine.config.set('editor.softWrapAtPreferredLineLength', true);
+    lumine.config.set('editor.preferredLineLength', 40);
 
-    atom.config.set('pigments.delayBeforeScan', 0);
-    atom.config.set('pigments.sourceNames', [
+    lumine.config.set('colors.delayBeforeScan', 0);
+    lumine.config.set('colors.sourceNames', [
       '*.styl',
       '*.less'
     ]);
 
-    waitsForPromise(() => atom.workspace.open('four-variables.styl').then(function(o) {
+    waitsForPromise(() => lumine.workspace.open('four-variables.styl').then(function(o) {
       editor = o;
-      return editorElement = atom.views.getView(editor);
+      return editorElement = lumine.views.getView(editor);
     }));
 
-    return waitsForPromise(() => atom.packages.activatePackage('pigments').then(function(pkg) {
-      pigments = pkg.mainModule;
-      return project = pigments.getProject();
+    return waitsForPromise(() => lumine.packages.activatePackage('colors').then(function(pkg) {
+      colors = pkg.mainModule;
+      return project = colors.getProject();
     }));
   });
 
@@ -80,7 +80,7 @@ describe('ColorBufferElement', function() {
   return describe('when an editor is opened', function() {
     beforeEach(function() {
       colorBuffer = project.colorBufferForEditor(editor);
-      colorBufferElement = atom.views.getView(colorBuffer);
+      colorBufferElement = lumine.views.getView(colorBuffer);
       return colorBufferElement.attach();
     });
 
@@ -91,7 +91,7 @@ describe('ColorBufferElement', function() {
 
     it('attaches itself in the target text editor element', function() {
       expect(colorBufferElement.parentNode).toExist();
-      return expect(editorElement.querySelector('.lines pigments-markers')).toExist();
+      return expect(editorElement.querySelector('.lines colors-markers')).toExist();
     });
 
     describe('when the color buffer is initialized', function() {
@@ -176,25 +176,25 @@ describe('ColorBufferElement', function() {
 
       describe('when the current pane is splitted to the right', function() {
         beforeEach(function() {
-          const version = parseFloat(atom.getVersion().split('.').slice(1,2).join('.'));
+          const version = parseFloat(lumine.getVersion().split('.').slice(1,2).join('.'));
           if (version > 5) {
-            atom.commands.dispatch(editorElement, 'pane:split-right-and-copy-active-item');
+            lumine.commands.dispatch(editorElement, 'pane:split-right-and-copy-active-item');
           } else {
-            atom.commands.dispatch(editorElement, 'pane:split-right');
+            lumine.commands.dispatch(editorElement, 'pane:split-right');
           }
 
-          waitsFor('text editor', () => editor = atom.workspace.getTextEditors()[1]);
+          waitsFor('text editor', () => editor = lumine.workspace.getTextEditors()[1]);
 
-          waitsFor('color buffer element', () => colorBufferElement = atom.views.getView(project.colorBufferForEditor(editor)));
+          waitsFor('color buffer element', () => colorBufferElement = lumine.views.getView(project.colorBufferForEditor(editor)));
           return waitsFor('color buffer element markers', () => getEditorDecorations('native-background').length);
         });
 
         return it('should keep all the buffer elements attached', function() {
-          const editors = atom.workspace.getTextEditors();
+          const editors = lumine.workspace.getTextEditors();
 
           return editors.forEach(function(editor) {
-            editorElement = atom.views.getView(editor);
-            colorBufferElement = editorElement.querySelector('pigments-markers');
+            editorElement = lumine.views.getView(editor);
+            colorBufferElement = editorElement.querySelector('colors-markers');
             expect(colorBufferElement).toExist();
 
             return expect(getEditorDecorations('native-background').length).toEqual(4);
@@ -208,12 +208,12 @@ describe('ColorBufferElement', function() {
         beforeEach(function() {
           waitsForPromise(() => colorBuffer.initialize());
           return runs(function() {
-            atom.config.set('pigments.markerType', 'gutter');
-            return gutter = editorElement.querySelector('[gutter-name="pigments-gutter"]');
+            lumine.config.set('colors.markerType', 'gutter');
+            return gutter = editorElement.querySelector('[gutter-name="colors-gutter"]');
           });
         });
 
-        it('removes the markers', () => expect(colorBufferElement.querySelectorAll('pigments-color-marker').length).toEqual(0));
+        it('removes the markers', () => expect(colorBufferElement.querySelectorAll('colors-color-marker').length).toEqual(0));
 
         it('adds a custom gutter to the text editor', () => expect(gutter).toExist());
 
@@ -255,7 +255,7 @@ describe('ColorBufferElement', function() {
                 project.colorPickerAPI =
                   {open: jasmine.createSpy('color-picker.open')};
 
-                const decoration = editorElement.querySelector('.pigments-gutter-marker span');
+                const decoration = editorElement.querySelector('.colors-gutter-marker span');
                 return mousedown(decoration);
               });
 
@@ -267,26 +267,26 @@ describe('ColorBufferElement', function() {
         });
 
         describe('when the marker is changed again', function() {
-          beforeEach(() => atom.config.set('pigments.markerType', 'native-background'));
+          beforeEach(() => lumine.config.set('colors.markerType', 'native-background'));
 
-          it('removes the gutter', () => expect(editorElement.querySelector('[gutter-name="pigments-gutter"]')).not.toExist());
+          it('removes the gutter', () => expect(editorElement.querySelector('[gutter-name="colors-gutter"]')).not.toExist());
 
           return it('recreates the markers', () => expect(getEditorDecorations('native-background').length).toEqual(3));
         });
 
         return describe('when a new buffer is opened', function() {
           beforeEach(function() {
-            waitsForPromise(() => atom.workspace.open('project/styles/variables.styl').then(function(e) {
+            waitsForPromise(() => lumine.workspace.open('project/styles/variables.styl').then(function(e) {
               editor = e;
-              editorElement = atom.views.getView(editor);
+              editorElement = lumine.views.getView(editor);
               colorBuffer = project.colorBufferForEditor(editor);
-              return colorBufferElement = atom.views.getView(colorBuffer);
+              return colorBufferElement = lumine.views.getView(colorBuffer);
             }));
 
             waitsForPromise(() => colorBuffer.initialize());
             waitsForPromise(() => colorBuffer.variablesAvailable());
 
-            return runs(() => gutter = editorElement.querySelector('[gutter-name="pigments-gutter"]'));
+            return runs(() => gutter = editorElement.querySelector('[gutter-name="colors-gutter"]'));
           });
 
           return it('creates the decorations in the new buffer gutter', function() {
@@ -301,10 +301,10 @@ describe('ColorBufferElement', function() {
     describe('when the editor is moved to another pane', function() {
       let [pane, newPane] = Array.from([]);
       beforeEach(function() {
-        pane = atom.workspace.getActivePane();
+        pane = lumine.workspace.getActivePane();
         newPane = pane.splitDown({copyActiveItem: false});
         colorBuffer = project.colorBufferForEditor(editor);
-        colorBufferElement = atom.views.getView(colorBuffer);
+        colorBufferElement = lumine.views.getView(colorBuffer);
 
         pane.moveItemToPane(editor, newPane, 0);
 
@@ -314,13 +314,13 @@ describe('ColorBufferElement', function() {
       return it('moves the editor with the buffer to the new pane', () => expect(getEditorDecorations('native-background').length).toEqual(3));
     });
 
-    describe('when pigments.supportedFiletypes settings is defined', function() {
+    describe('when colors.supportedFiletypes settings is defined', function() {
       const loadBuffer = function(filePath) {
-        waitsForPromise(() => atom.workspace.open(filePath).then(function(o) {
+        waitsForPromise(() => lumine.workspace.open(filePath).then(function(o) {
           editor = o;
-          editorElement = atom.views.getView(editor);
+          editorElement = lumine.views.getView(editor);
           colorBuffer = project.colorBufferForEditor(editor);
-          colorBufferElement = atom.views.getView(colorBuffer);
+          colorBufferElement = lumine.views.getView(colorBuffer);
           return colorBufferElement.attach();
         }));
 
@@ -329,12 +329,12 @@ describe('ColorBufferElement', function() {
       };
 
       beforeEach(function() {
-        waitsForPromise(() => atom.packages.activatePackage('language-coffee-script'));
-        return waitsForPromise(() => atom.packages.activatePackage('language-less'));
+        waitsForPromise(() => lumine.packages.activatePackage('language-coffee-script'));
+        return waitsForPromise(() => lumine.packages.activatePackage('language-less'));
       });
 
       describe('with the default wildcard', function() {
-        beforeEach(() => atom.config.set('pigments.supportedFiletypes', ['*']));
+        beforeEach(() => lumine.config.set('colors.supportedFiletypes', ['*']));
 
         return it('supports every filetype', function() {
           loadBuffer('scope-filter.coffee');
@@ -346,7 +346,7 @@ describe('ColorBufferElement', function() {
       });
 
       describe('with a filetype', function() {
-        beforeEach(() => atom.config.set('pigments.supportedFiletypes', ['coffee']));
+        beforeEach(() => lumine.config.set('colors.supportedFiletypes', ['coffee']));
 
         return it('supports the specified file type', function() {
           loadBuffer('scope-filter.coffee');
@@ -359,7 +359,7 @@ describe('ColorBufferElement', function() {
 
       return describe('with many filetypes', function() {
         beforeEach(function() {
-          atom.config.set('pigments.supportedFiletypes', ['coffee']);
+          lumine.config.set('colors.supportedFiletypes', ['coffee']);
           return project.setSupportedFiletypes(['less']);
         });
 
@@ -376,7 +376,7 @@ describe('ColorBufferElement', function() {
 
         return describe('with global file types ignored', function() {
           beforeEach(function() {
-            atom.config.set('pigments.supportedFiletypes', ['coffee']);
+            lumine.config.set('colors.supportedFiletypes', ['coffee']);
             project.setIgnoreGlobalSupportedFiletypes(true);
             return project.setSupportedFiletypes(['less']);
           });
@@ -395,15 +395,15 @@ describe('ColorBufferElement', function() {
       });
     });
 
-    return describe('when pigments.ignoredScopes settings is defined', function() {
+    return describe('when colors.ignoredScopes settings is defined', function() {
       beforeEach(function() {
-        waitsForPromise(() => atom.packages.activatePackage('language-coffee-script'));
+        waitsForPromise(() => lumine.packages.activatePackage('language-coffee-script'));
 
-        waitsForPromise(() => atom.workspace.open('scope-filter.coffee').then(function(o) {
+        waitsForPromise(() => lumine.workspace.open('scope-filter.coffee').then(function(o) {
           editor = o;
-          editorElement = atom.views.getView(editor);
+          editorElement = lumine.views.getView(editor);
           colorBuffer = project.colorBufferForEditor(editor);
-          colorBufferElement = atom.views.getView(colorBuffer);
+          colorBufferElement = lumine.views.getView(colorBuffer);
           return colorBufferElement.attach();
         }));
 
@@ -411,26 +411,26 @@ describe('ColorBufferElement', function() {
       });
 
       describe('with one filter', function() {
-        beforeEach(() => atom.config.set('pigments.ignoredScopes', ['\\.comment']));
+        beforeEach(() => lumine.config.set('colors.ignoredScopes', ['\\.comment']));
 
         return it('ignores the colors that matches the defined scopes', () => expect(getEditorDecorations('native-background').length).toEqual(1));
       });
 
       describe('with two filters', function() {
-        beforeEach(() => atom.config.set('pigments.ignoredScopes', ['\\.string', '\\.comment']));
+        beforeEach(() => lumine.config.set('colors.ignoredScopes', ['\\.string', '\\.comment']));
 
         return it('ignores the colors that matches the defined scopes', () => expect(getEditorDecorations('native-background').length).toEqual(0));
       });
 
       describe('with an invalid filter', function() {
-        beforeEach(() => atom.config.set('pigments.ignoredScopes', ['\\']));
+        beforeEach(() => lumine.config.set('colors.ignoredScopes', ['\\']));
 
         return it('ignores the filter', () => expect(getEditorDecorations('native-background').length).toEqual(2));
       });
 
       return describe('when the project ignoredScopes is defined', function() {
         beforeEach(function() {
-          atom.config.set('pigments.ignoredScopes', ['\\.string']);
+          lumine.config.set('colors.ignoredScopes', ['\\.string']);
           return project.setIgnoredScopes(['\\.comment']);
         });
 

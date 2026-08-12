@@ -1,48 +1,48 @@
-/*
+﻿/*
  * decaffeinate suggestions:
  * DS101: Remove unnecessary use of Array.from
  * DS102: Remove unnecessary code created because of implicit returns
  * DS207: Consider shorter variations of null checks
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
  */
-const {Disposable} = require('atom');
-const Pigments = require('../lib/pigments');
-const PigmentsAPI = require('../lib/pigments-api');
+const {Disposable} = require("lumine");
+const Colors = require("../lib/main");
+const ColorsAPI = require('../lib/colors-api');
 const registry = require('../lib/variable-expressions');
 
 const {SERIALIZE_VERSION, SERIALIZE_MARKERS_VERSION} = require('../lib/versions');
 
-describe("Pigments", function() {
-  let [workspaceElement, pigments, project] = Array.from([]);
+describe("Colors", function() {
+  let [workspaceElement, colors, project] = Array.from([]);
 
   beforeEach(function() {
-    workspaceElement = atom.views.getView(atom.workspace);
+    workspaceElement = lumine.views.getView(lumine.workspace);
     jasmine.attachToDOM(workspaceElement);
 
-    atom.config.set('pigments.sourceNames', ['**/*.sass', '**/*.styl']);
-    atom.config.set('pigments.ignoredNames', []);
-    atom.config.set('pigments.ignoredScopes', []);
-    atom.config.set('pigments.autocompleteScopes', []);
+    lumine.config.set('colors.sourceNames', ['**/*.sass', '**/*.styl']);
+    lumine.config.set('colors.ignoredNames', []);
+    lumine.config.set('colors.ignoredScopes', []);
+    lumine.config.set('colors.autocompleteScopes', []);
 
-    registry.createExpression('pigments:txt_vars', '^[ \\t]*([a-zA-Z_$][a-zA-Z0-9\\-_]*)\\s*=(?!=)\\s*([^\\n\\r;]*);?$', ['txt']);
+    registry.createExpression('colors:txt_vars', '^[ \\t]*([a-zA-Z_$][a-zA-Z0-9\\-_]*)\\s*=(?!=)\\s*([^\\n\\r;]*);?$', ['txt']);
 
-    return waitsForPromise({label: 'pigments activation'}, () => atom.packages.activatePackage('pigments').then(function(pkg) {
-      pigments = pkg.mainModule;
-      return project = pigments.getProject();
+    return waitsForPromise({label: 'colors activation'}, () => lumine.packages.activatePackage('colors').then(function(pkg) {
+      colors = pkg.mainModule;
+      return project = colors.getProject();
     }));
   });
 
   afterEach(function() {
-    registry.removeExpression('pigments:txt_vars');
+    registry.removeExpression('colors:txt_vars');
     return (project != null ? project.destroy() : undefined);
   });
 
-  it('instanciates a ColorProject instance', () => expect(pigments.getProject()).toBeDefined());
+  it('instanciates a ColorProject instance', () => expect(colors.getProject()).toBeDefined());
 
   it('serializes the project', function() {
     const date = new Date;
-    spyOn(pigments.getProject(), 'getTimestamp').andCallFake(() => date);
-    return expect(pigments.serialize()).toEqual({
+    spyOn(colors.getProject(), 'getTimestamp').andCallFake(() => date);
+    return expect(colors.serialize()).toEqual({
       project: {
         deserializer: 'ColorProject',
         timestamp: date,
@@ -58,23 +58,23 @@ describe("Pigments", function() {
   describe('when deactivated', function() {
     let [editor, editorElement, colorBuffer] = Array.from([]);
     beforeEach(function() {
-      waitsForPromise({label: 'text-editor opened'}, () => atom.workspace.open('four-variables.styl').then(function(e) {
+      waitsForPromise({label: 'text-editor opened'}, () => lumine.workspace.open('four-variables.styl').then(function(e) {
         editor = e;
-        editorElement = atom.views.getView(e);
+        editorElement = lumine.views.getView(e);
         return colorBuffer = project.colorBufferForEditor(editor);
       }));
 
-      waitsFor('pigments markers appended to the DOM', () => editorElement.querySelector('pigments-markers'));
+      waitsFor('colors markers appended to the DOM', () => editorElement.querySelector('colors-markers'));
 
       return runs(function() {
         spyOn(project, 'destroy').andCallThrough();
         spyOn(colorBuffer, 'destroy').andCallThrough();
 
-        return pigments.deactivate();
+        return colors.deactivate();
       });
     });
 
-    it('destroys the pigments project', () => expect(project.destroy).toHaveBeenCalled());
+    it('destroys the colors project', () => expect(project.destroy).toHaveBeenCalled());
 
     it('destroys all the color buffers that were created', function() {
       expect(project.colorBufferForEditor(editor)).toBeUndefined();
@@ -82,21 +82,21 @@ describe("Pigments", function() {
       return expect(colorBuffer.destroy).toHaveBeenCalled();
     });
 
-    return it('destroys the color buffer element that were added to the DOM', () => expect(editorElement.querySelector('pigments-markers')).not.toExist());
+    return it('destroys the color buffer element that were added to the DOM', () => expect(editorElement.querySelector('colors-markers')).not.toExist());
   });
 
-  describe('pigments:project-settings', function() {
+  describe('colors:project-settings', function() {
     let item = null;
     beforeEach(function() {
-      atom.commands.dispatch(workspaceElement, 'pigments:project-settings');
+      lumine.commands.dispatch(workspaceElement, 'colors:project-settings');
 
       return waitsFor('active pane item', function() {
-        item = atom.workspace.getActivePaneItem();
+        item = lumine.workspace.getActivePaneItem();
         return (item != null);
       });
     });
 
-    return it('opens a settings view in the active pane', () => item.matches('pigments-color-project'));
+    return it('opens a settings view in the active pane', () => item.matches('colors-color-project'));
   });
 
   //#       ###    ########  ####
@@ -110,19 +110,19 @@ describe("Pigments", function() {
   describe('API provider', function() {
     let [service, editor, editorElement, buffer] = Array.from([]);
     beforeEach(function() {
-      waitsForPromise({label: 'text-editor opened'}, () => atom.workspace.open('four-variables.styl').then(function(e) {
+      waitsForPromise({label: 'text-editor opened'}, () => lumine.workspace.open('four-variables.styl').then(function(e) {
         editor = e;
-        editorElement = atom.views.getView(e);
+        editorElement = lumine.views.getView(e);
         return buffer = project.colorBufferForEditor(editor);
       }));
 
-      runs(() => service = pigments.provideAPI());
+      runs(() => service = colors.provideAPI());
 
       return waitsForPromise({label: 'project initialized'}, () => project.initialize());
     });
 
     it('returns an object conforming to the API', function() {
-      expect(service instanceof PigmentsAPI).toBeTruthy();
+      expect(service instanceof ColorsAPI).toBeTruthy();
 
       expect(service.getProject()).toBe(project);
 
@@ -147,7 +147,7 @@ describe("Pigments", function() {
       });
 
       return it('calls the callback on every new buffer creation', function() {
-        waitsForPromise({label: 'text-editor opened'}, () => atom.workspace.open('buttons.styl'));
+        waitsForPromise({label: 'text-editor opened'}, () => lumine.workspace.open('buttons.styl'));
 
         return runs(() => expect(spy.calls.length).toEqual(2));
       });
@@ -185,11 +185,11 @@ describe("Pigments", function() {
 
     describe('when consumed before opening a text editor', function() {
       beforeEach(function() {
-        consumerDisposable = pigments.consumeColorExpressions(colorProvider);
+        consumerDisposable = colors.consumeColorExpressions(colorProvider);
 
-        waitsForPromise({label: 'text-editor opened'}, () => atom.workspace.open('color-consumer-sample.txt').then(function(e) {
+        waitsForPromise({label: 'text-editor opened'}, () => lumine.workspace.open('color-consumer-sample.txt').then(function(e) {
           editor = e;
-          editorElement = atom.views.getView(e);
+          editorElement = lumine.views.getView(e);
           return colorBuffer = project.colorBufferForEditor(editor);
         }));
 
@@ -223,9 +223,9 @@ describe("Pigments", function() {
 
     describe('when consumed after opening a text editor', function() {
       beforeEach(function() {
-        waitsForPromise({label: 'text-editor opened'}, () => atom.workspace.open('color-consumer-sample.txt').then(function(e) {
+        waitsForPromise({label: 'text-editor opened'}, () => lumine.workspace.open('color-consumer-sample.txt').then(function(e) {
           editor = e;
-          editorElement = atom.views.getView(e);
+          editorElement = lumine.views.getView(e);
           return colorBuffer = project.colorBufferForEditor(editor);
         }));
 
@@ -237,7 +237,7 @@ describe("Pigments", function() {
         const updateSpy = jasmine.createSpy('did-update-color-markers');
 
         colorBuffer.onDidUpdateColorMarkers(updateSpy);
-        consumerDisposable = pigments.consumeColorExpressions(colorProvider);
+        consumerDisposable = colors.consumeColorExpressions(colorProvider);
 
         waitsFor('did-update-color-markers event dispatched', () => updateSpy.callCount > 0);
 
@@ -256,7 +256,7 @@ describe("Pigments", function() {
         const updateSpy = jasmine.createSpy('did-update-color-markers');
 
         colorBuffer.onDidUpdateColorMarkers(updateSpy);
-        consumerDisposable = pigments.consumeColorExpressions({
+        consumerDisposable = colors.consumeColorExpressions({
           expressions: [colorProvider]
         });
 
@@ -282,7 +282,7 @@ describe("Pigments", function() {
 
         project.onDidUpdateVariables(variableSpy);
 
-        atom.config.set('pigments.sourceNames', ['**/*.txt']);
+        lumine.config.set('colors.sourceNames', ['**/*.txt']);
 
         waitsFor('variables updated', () => variableSpy.callCount > 1);
 
@@ -290,7 +290,7 @@ describe("Pigments", function() {
           expect(project.getVariables().length).toEqual(6);
           expect(project.getColorVariables().length).toEqual(4);
 
-          return consumerDisposable = pigments.consumeColorExpressions(colorProvider);
+          return consumerDisposable = colors.consumeColorExpressions(colorProvider);
         });
 
         waitsFor('variables updated', () => variableSpy.callCount > 2);
@@ -306,12 +306,12 @@ describe("Pigments", function() {
 
         project.onDidUpdateVariables(variableSpy);
 
-        atom.config.set('pigments.sourceNames', ['**/*.txt']);
+        lumine.config.set('colors.sourceNames', ['**/*.txt']);
 
         waitsFor('variables updated', () => variableSpy.callCount > 1);
 
         return runs(function() {
-          otherConsumerDisposable = pigments.consumeColorExpressions({
+          otherConsumerDisposable = colors.consumeColorExpressions({
             name: 'bar',
             regexpString: 'baz\\s+(\\w+)',
             handle(match, expression, context) {
@@ -325,7 +325,7 @@ describe("Pigments", function() {
             }
           });
 
-          consumerDisposable = pigments.consumeColorExpressions(colorProvider);
+          consumerDisposable = colors.consumeColorExpressions(colorProvider);
 
           waitsFor('variables updated', () => variableSpy.callCount > 2);
 
@@ -376,7 +376,7 @@ describe("Pigments", function() {
 
       project.onDidUpdateVariables(variableSpy);
 
-      atom.config.set('pigments.sourceNames', ['**/*.txt']);
+      lumine.config.set('colors.sourceNames', ['**/*.txt']);
 
       waitsFor('variables updated', () => variableSpy.callCount > 1);
 
@@ -384,7 +384,7 @@ describe("Pigments", function() {
         expect(project.getVariables().length).toEqual(6);
         expect(project.getColorVariables().length).toEqual(4);
 
-        return consumerDisposable = pigments.consumeVariableExpressions(variableProvider);
+        return consumerDisposable = colors.consumeVariableExpressions(variableProvider);
       });
 
       waitsFor('variables updated after service consumed', () => variableSpy.callCount > 2);
@@ -406,7 +406,7 @@ describe("Pigments", function() {
 
     return describe('when an array of expressions is passed', () => it('updates the project variables when consumed', function() {
       let previousVariablesCount = null;
-      atom.config.set('pigments.sourceNames', ['**/*.txt']);
+      lumine.config.set('colors.sourceNames', ['**/*.txt']);
 
       waitsFor('variables initialized', () => project.getVariables().length === 45);
 
@@ -420,7 +420,7 @@ describe("Pigments", function() {
 
         previousVariablesCount = project.getVariables().length;
 
-        return consumerDisposable = pigments.consumeVariableExpressions({
+        return consumerDisposable = colors.consumeVariableExpressions({
           expressions: [variableProvider]
         });
       });

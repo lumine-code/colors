@@ -67,6 +67,7 @@
       }
     }
   },
+  "viewProviders": ["colorsViewProvider"],
   "deserializers": {
     "Palette": "deserializePalette",
     "ColorSearch": "deserializeColorSearch",

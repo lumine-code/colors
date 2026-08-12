@@ -1,4 +1,4 @@
-/*
+﻿/*
  * decaffeinate suggestions:
  * DS101: Remove unnecessary use of Array.from
  * DS102: Remove unnecessary code created because of implicit returns
@@ -11,7 +11,7 @@ describe('ColorMarker', function() {
   let [editor, marker, colorMarker, jasmineContent] = Array.from([]);
 
   beforeEach(function() {
-    editor = atom.workspace.buildTextEditor({});
+    editor = lumine.workspace.buildTextEditor({});
     editor.setText(`\
 body {
   color: hsva(0, 100%, 100%, 0.5);
@@ -30,31 +30,31 @@ body {
   describe('::copyContentAsHex', function() {
     beforeEach(() => colorMarker.copyContentAsHex());
 
-    return it('write the hexadecimal version in the clipboard', () => expect(atom.clipboard.read()).toEqual("#ff0000"));
+    return it('write the hexadecimal version in the clipboard', () => expect(lumine.clipboard.read()).toEqual("#ff0000"));
   });
 
   describe('::copyContentAsRGB', function() {
     beforeEach(() => colorMarker.copyContentAsRGB());
 
-    return it('write the rgb version in the clipboard', () => expect(atom.clipboard.read()).toEqual("rgb(255, 0, 0)"));
+    return it('write the rgb version in the clipboard', () => expect(lumine.clipboard.read()).toEqual("rgb(255, 0, 0)"));
   });
 
   describe('::copyContentAsRGBA', function() {
     beforeEach(() => colorMarker.copyContentAsRGBA());
 
-    return it('write the rgba version in the clipboard', () => expect(atom.clipboard.read()).toEqual("rgba(255, 0, 0, 0.5)"));
+    return it('write the rgba version in the clipboard', () => expect(lumine.clipboard.read()).toEqual("rgba(255, 0, 0, 0.5)"));
   });
 
   describe('::copyContentAsHSL', function() {
     beforeEach(() => colorMarker.copyContentAsHSL());
 
-    return it('write the hsl version in the clipboard', () => expect(atom.clipboard.read()).toEqual("hsl(0, 100%, 50%)"));
+    return it('write the hsl version in the clipboard', () => expect(lumine.clipboard.read()).toEqual("hsl(0, 100%, 50%)"));
   });
 
   describe('::copyContentAsHSLA', function() {
     beforeEach(() => colorMarker.copyContentAsHSLA());
 
-    return it('write the hsla version in the clipboard', () => expect(atom.clipboard.read()).toEqual("hsla(0, 100%, 50%, 0.5)"));
+    return it('write the hsla version in the clipboard', () => expect(lumine.clipboard.read()).toEqual("hsla(0, 100%, 50%, 0.5)"));
   });
 
   describe('::convertContentToHex', function() {

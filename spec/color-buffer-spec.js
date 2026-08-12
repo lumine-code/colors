@@ -1,4 +1,4 @@
-/*
+﻿/*
  * decaffeinate suggestions:
  * DS101: Remove unnecessary use of Array.from
  * DS102: Remove unnecessary code created because of implicit returns
@@ -14,7 +14,7 @@ const jsonFixture = require('./helpers/fixtures').jsonFixture(__dirname, 'fixtur
 
 
 describe('ColorBuffer', function() {
-  let [editor, colorBuffer, pigments, project] = Array.from([]);
+  let [editor, colorBuffer, colors, project] = Array.from([]);
 
   const sleep = function(ms) {
     const start = new Date;
@@ -38,21 +38,21 @@ describe('ColorBuffer', function() {
   };
 
   beforeEach(function() {
-    atom.config.set('pigments.delayBeforeScan', 0);
-    atom.config.set('pigments.ignoredBufferNames', []);
-    atom.config.set('pigments.filetypesForColorWords', ['*']);
-    atom.config.set('pigments.sourceNames', [
+    lumine.config.set('colors.delayBeforeScan', 0);
+    lumine.config.set('colors.ignoredBufferNames', []);
+    lumine.config.set('colors.filetypesForColorWords', ['*']);
+    lumine.config.set('colors.sourceNames', [
       '*.styl',
       '*.less'
     ]);
 
-    atom.config.set('pigments.ignoredNames', ['project/vendor/**']);
+    lumine.config.set('colors.ignoredNames', ['project/vendor/**']);
 
-    waitsForPromise(() => atom.workspace.open('four-variables.styl').then(o => editor = o));
+    waitsForPromise(() => lumine.workspace.open('four-variables.styl').then(o => editor = o));
 
-    return waitsForPromise(() => atom.packages.activatePackage('pigments').then(function(pkg) {
-      pigments = pkg.mainModule;
-      return project = pigments.getProject();}).catch(err => console.error(err)));
+    return waitsForPromise(() => lumine.packages.activatePackage('colors').then(function(pkg) {
+      colors = pkg.mainModule;
+      return project = colors.getProject();}).catch(err => console.error(err)));
   });
 
   afterEach(() => colorBuffer != null ? colorBuffer.destroy() : undefined);
@@ -63,20 +63,20 @@ describe('ColorBuffer', function() {
     beforeEach(function() {
       expect(project.hasColorBufferForEditor(editor)).toBeTruthy();
 
-      return atom.config.set('pigments.ignoredBufferNames', ['**/*.styl']);});
+      return lumine.config.set('colors.ignoredBufferNames', ['**/*.styl']);});
 
     it('destroys the color buffer for this file', () => expect(project.hasColorBufferForEditor(editor)).toBeFalsy());
 
     it('recreates the color buffer when the settings no longer ignore the file', function() {
       expect(project.hasColorBufferForEditor(editor)).toBeFalsy();
 
-      atom.config.set('pigments.ignoredBufferNames', []);
+      lumine.config.set('colors.ignoredBufferNames', []);
 
       return expect(project.hasColorBufferForEditor(editor)).toBeTruthy();
     });
 
     return it('prevents the creation of a new color buffer', function() {
-      waitsForPromise(() => atom.workspace.open('variables.styl').then(o => editor = o));
+      waitsForPromise(() => lumine.workspace.open('variables.styl').then(o => editor = o));
 
       return runs(() => expect(project.hasColorBufferForEditor(editor)).toBeFalsy());
     });
@@ -93,7 +93,7 @@ describe('ColorBuffer', function() {
       return it('adds the path to the project immediately', function() {
         spyOn(project, 'appendPath');
 
-        waitsForPromise(() => atom.workspace.open(pathToOpen).then(function(o) {
+        waitsForPromise(() => lumine.workspace.open(pathToOpen).then(function(o) {
           editor = o;
           return colorBuffer = project.colorBufferForEditor(editor);
         }));
@@ -105,7 +105,7 @@ describe('ColorBuffer', function() {
 
     return describe('when the file is not yet saved on disk', function() {
       beforeEach(function() {
-        waitsForPromise(() => atom.workspace.open('foo-de-fafa.styl').then(function(o) {
+        waitsForPromise(() => lumine.workspace.open('foo-de-fafa.styl').then(function(o) {
           editor = o;
           return colorBuffer = project.colorBufferForEditor(editor);
         }));
@@ -129,7 +129,7 @@ describe('ColorBuffer', function() {
 
   describe('when an editor without path is opened', function() {
     beforeEach(function() {
-      waitsForPromise(() => atom.workspace.open().then(function(o) {
+      waitsForPromise(() => lumine.workspace.open().then(function(o) {
         editor = o;
         return colorBuffer = project.colorBufferForEditor(editor);
       }));
@@ -323,7 +323,7 @@ describe('ColorBuffer', function() {
         return it('returns the whole buffer data', function() {
           const expected = jsonFixture("four-variables-buffer.json", {
             id: editor.id,
-            root: atom.project.getPaths()[0],
+            root: lumine.project.getPaths()[0],
             colorMarkers: colorBuffer.getColorMarkers().map(m => m.marker.id)
           });
 
@@ -342,7 +342,7 @@ describe('ColorBuffer', function() {
 
     describe('with a buffer with only colors', function() {
       beforeEach(function() {
-        waitsForPromise(() => atom.workspace.open('buttons.styl').then(o => editor = o));
+        waitsForPromise(() => lumine.workspace.open('buttons.styl').then(o => editor = o));
 
         return runs(() => colorBuffer = project.colorBufferForEditor(editor));
       });
@@ -454,7 +454,7 @@ describe('ColorBuffer', function() {
 
     describe('with a buffer whose scope is not one of source files', function() {
       beforeEach(function() {
-        waitsForPromise(() => atom.workspace.open('project/lib/main.coffee').then(o => editor = o));
+        waitsForPromise(() => lumine.workspace.open('project/lib/main.coffee').then(o => editor = o));
 
         runs(() => colorBuffer = project.colorBufferForEditor(editor));
 
@@ -467,7 +467,7 @@ describe('ColorBuffer', function() {
 
     return describe('with a buffer in crlf mode', function() {
       beforeEach(function() {
-        waitsForPromise(() => atom.workspace.open('crlf.styl').then(o => editor = o));
+        waitsForPromise(() => lumine.workspace.open('crlf.styl').then(o => editor = o));
 
         runs(() => colorBuffer = project.colorBufferForEditor(editor));
 
@@ -489,9 +489,9 @@ describe('ColorBuffer', function() {
   describe('with a buffer part of the global ignored files', function() {
     beforeEach(function() {
       project.setIgnoredNames([]);
-      atom.config.set('pigments.ignoredNames', ['project/vendor/*']);
+      lumine.config.set('colors.ignoredNames', ['project/vendor/*']);
 
-      waitsForPromise(() => atom.workspace.open('project/vendor/css/variables.less').then(o => editor = o));
+      waitsForPromise(() => lumine.workspace.open('project/vendor/css/variables.less').then(o => editor = o));
 
       runs(() => colorBuffer = project.colorBufferForEditor(editor));
 
@@ -512,7 +512,7 @@ describe('ColorBuffer', function() {
 
   describe('with a buffer part of the project ignored files', function() {
     beforeEach(function() {
-      waitsForPromise(() => atom.workspace.open('project/vendor/css/variables.less').then(o => editor = o));
+      waitsForPromise(() => lumine.workspace.open('project/vendor/css/variables.less').then(o => editor = o));
 
       runs(() => colorBuffer = project.colorBufferForEditor(editor));
 
@@ -558,7 +558,7 @@ describe('ColorBuffer', function() {
 
   describe('with a buffer not being a variable source', function() {
     beforeEach(function() {
-      waitsForPromise(() => atom.workspace.open('project/lib/main.coffee').then(o => editor = o));
+      waitsForPromise(() => lumine.workspace.open('project/lib/main.coffee').then(o => editor = o));
 
       runs(() => colorBuffer = project.colorBufferForEditor(editor));
 
@@ -594,7 +594,7 @@ describe('ColorBuffer', function() {
       });
 
       return it('does not ask the project to reload the variables', function() {
-        if (parseFloat(atom.getVersion()) >= 1.19) {
+        if (parseFloat(lumine.getVersion()) >= 1.19) {
           return expect(project.reloadVariablesForPath).not.toHaveBeenCalled();
         } else {
           return expect(project.reloadVariablesForPath.mostRecentCall.args[0]).not.toEqual(colorBuffer.editor.getPath());
@@ -620,7 +620,7 @@ describe('ColorBuffer', function() {
 
           const state = jsonFixture('four-variables-buffer.json', {
             id: editor.id,
-            root: atom.project.getPaths()[0],
+            root: lumine.project.getPaths()[0],
             colorMarkers: __range__(-1, -4, true)
           });
           state.editor = editor;
@@ -649,14 +649,14 @@ describe('ColorBuffer', function() {
 
     return describe('with an invalid color', function() {
       beforeEach(function() {
-        waitsForPromise(() => atom.workspace.open('invalid-color.styl').then(o => editor = o));
+        waitsForPromise(() => lumine.workspace.open('invalid-color.styl').then(o => editor = o));
 
         waitsForPromise(() => project.initialize());
 
         return runs(function() {
           const state = jsonFixture('invalid-color-buffer.json', {
             id: editor.id,
-            root: atom.project.getPaths()[0],
+            root: lumine.project.getPaths()[0],
             colorMarkers: [-1]
           });
           state.editor = editor;

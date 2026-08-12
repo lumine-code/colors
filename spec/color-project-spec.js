@@ -1,4 +1,4 @@
-/*
+﻿/*
  * decaffeinate suggestions:
  * DS101: Remove unnecessary use of Array.from
  * DS102: Remove unnecessary code created because of implicit returns
@@ -23,15 +23,15 @@ describe('ColorProject', function() {
   let [project, promise, rootPath, paths, eventSpy] = Array.from([]);
 
   beforeEach(function() {
-    atom.config.set('pigments.sourceNames', [
+    lumine.config.set('colors.sourceNames', [
       '*.styl'
     ]);
-    atom.config.set('pigments.ignoredNames', []);
-    atom.config.set('pigments.filetypesForColorWords', ['*']);
+    lumine.config.set('colors.ignoredNames', []);
+    lumine.config.set('colors.filetypesForColorWords', ['*']);
 
-    const [fixturesPath] = Array.from(atom.project.getPaths());
+    const [fixturesPath] = Array.from(lumine.project.getPaths());
     rootPath = `${fixturesPath}/project`;
-    atom.project.setPaths([rootPath]);
+    lumine.project.setPaths([rootPath]);
 
     return project = new ColorProject({
       ignoredNames: ['vendor/*'],
@@ -187,11 +187,11 @@ describe('ColorProject', function() {
 
   describe('when the project has no variables source files', function() {
     beforeEach(function() {
-      atom.config.set('pigments.sourceNames', ['*.sass']);
+      lumine.config.set('colors.sourceNames', ['*.sass']);
 
-      const [fixturesPath] = Array.from(atom.project.getPaths());
+      const [fixturesPath] = Array.from(lumine.project.getPaths());
       rootPath = `${fixturesPath}-no-sources`;
-      atom.project.setPaths([rootPath]);
+      lumine.project.setPaths([rootPath]);
 
       project = new ColorProject({});
 
@@ -205,9 +205,9 @@ describe('ColorProject', function() {
 
   describe('when the project has custom source names defined', function() {
     beforeEach(function() {
-      atom.config.set('pigments.sourceNames', ['*.sass']);
+      lumine.config.set('colors.sourceNames', ['*.sass']);
 
-      const [fixturesPath] = Array.from(atom.project.getPaths());
+      const [fixturesPath] = Array.from(lumine.project.getPaths());
 
       project = new ColorProject({sourceNames: ['*.styl']});
 
@@ -224,11 +224,11 @@ describe('ColorProject', function() {
 
   describe('when the project has looping variable definition', function() {
     beforeEach(function() {
-      atom.config.set('pigments.sourceNames', ['*.sass']);
+      lumine.config.set('colors.sourceNames', ['*.sass']);
 
-      const [fixturesPath] = Array.from(atom.project.getPaths());
+      const [fixturesPath] = Array.from(lumine.project.getPaths());
       rootPath = `${fixturesPath}-with-recursion`;
-      atom.project.setPaths([rootPath]);
+      lumine.project.setPaths([rootPath]);
 
       project = new ColorProject({});
 
@@ -290,14 +290,14 @@ describe('ColorProject', function() {
 
     describe('::showVariableInFile', () => it('opens the file where is located the variable', function() {
       const spy = jasmine.createSpy('did-add-text-editor');
-      atom.workspace.onDidAddTextEditor(spy);
+      lumine.workspace.onDidAddTextEditor(spy);
 
       project.showVariableInFile(project.getVariables()[0]);
 
       waitsFor(() => spy.callCount > 0);
 
       return runs(function() {
-        const editor = atom.workspace.getActiveTextEditor();
+        const editor = lumine.workspace.getActiveTextEditor();
 
         return expect(editor.getSelectedBufferRange()).toEqual([[1,2],[1,14]]);
       });
@@ -384,7 +384,7 @@ describe('ColorProject', function() {
         eventSpy = jasmine.createSpy('did-update-variables');
         project.onDidUpdateVariables(eventSpy);
 
-        waitsForPromise(() => atom.workspace.open('styles/variables.styl').then(o => editor = o));
+        waitsForPromise(() => lumine.workspace.open('styles/variables.styl').then(o => editor = o));
 
         runs(function() {
           colorBuffer = project.colorBufferForEditor(editor);
@@ -561,10 +561,10 @@ describe('ColorProject', function() {
 
     describe('when the project has multiple root directory', function() {
       beforeEach(function() {
-        atom.config.set('pigments.sourceNames', ['**/*.sass', '**/*.styl']);
+        lumine.config.set('colors.sourceNames', ['**/*.sass', '**/*.styl']);
 
-        const [fixturesPath] = Array.from(atom.project.getPaths());
-        atom.project.setPaths([
+        const [fixturesPath] = Array.from(lumine.project.getPaths());
+        lumine.project.setPaths([
           `${fixturesPath}`,
           `${fixturesPath}-with-recursion`
         ]);
@@ -580,11 +580,11 @@ describe('ColorProject', function() {
     describe('when the project has VCS ignored files', function() {
       let [projectPath] = Array.from([]);
       beforeEach(function() {
-        atom.config.set('pigments.sourceNames', ['*.sass']);
+        lumine.config.set('colors.sourceNames', ['*.sass']);
 
         const fixture = path.join(__dirname, 'fixtures', 'project-with-gitignore');
 
-        projectPath = temp.mkdirSync('pigments-project');
+        projectPath = temp.mkdirSync('colors-project');
         const dotGitFixture = path.join(fixture, 'git.git');
         const dotGit = path.join(projectPath, '.git');
         fs.copySync(dotGitFixture, dotGit);
@@ -596,12 +596,12 @@ describe('ColorProject', function() {
 
         // FIXME repo.getWorkingDirectory returns the project path prefixed with
         // /private
-        return atom.project.setPaths([projectPath]);
+        return lumine.project.setPaths([projectPath]);
       });
 
       describe('when the ignoreVcsIgnoredPaths setting is enabled', function() {
         beforeEach(function() {
-          atom.config.set('pigments.ignoreVcsIgnoredPaths', true);
+          lumine.config.set('colors.ignoreVcsIgnoredPaths', true);
           project = new ColorProject({});
 
           return waitsForPromise(() => project.initialize());
@@ -616,7 +616,7 @@ describe('ColorProject', function() {
           beforeEach(function() {
             const spy = jasmine.createSpy('did-update-variables');
             project.onDidUpdateVariables(spy);
-            atom.config.set('pigments.ignoreVcsIgnoredPaths', false);
+            lumine.config.set('colors.ignoreVcsIgnoredPaths', false);
 
             return waitsFor(() => spy.callCount > 0);
           });
@@ -629,7 +629,7 @@ describe('ColorProject', function() {
 
       return describe('when the ignoreVcsIgnoredPaths setting is disabled', function() {
         beforeEach(function() {
-          atom.config.set('pigments.ignoreVcsIgnoredPaths', false);
+          lumine.config.set('colors.ignoreVcsIgnoredPaths', false);
           project = new ColorProject({});
 
           return waitsForPromise(() => project.initialize());
@@ -644,7 +644,7 @@ describe('ColorProject', function() {
           beforeEach(function() {
             const spy = jasmine.createSpy('did-update-variables');
             project.onDidUpdateVariables(spy);
-            atom.config.set('pigments.ignoreVcsIgnoredPaths', true);
+            lumine.config.set('colors.ignoreVcsIgnoredPaths', true);
 
             return waitsFor(() => spy.callCount > 0);
           });
@@ -669,7 +669,7 @@ describe('ColorProject', function() {
 
       beforeEach(function() {
         const originalPaths = project.getPaths();
-        atom.config.set('pigments.sourceNames', []);
+        lumine.config.set('colors.sourceNames', []);
 
         return waitsFor(() => project.getPaths().join(',') !== originalPaths.join(','));
       });
@@ -683,7 +683,7 @@ describe('ColorProject', function() {
           const originalPaths = project.getPaths();
           project.onDidUpdateVariables(updateSpy);
 
-          atom.config.set('pigments.sourceNames', ['**/*.styl']);
+          lumine.config.set('colors.sourceNames', ['**/*.styl']);
 
           waitsFor(() => project.getPaths().join(',') !== originalPaths.join(','));
           return waitsFor(() => updateSpy.callCount > 0);
@@ -698,7 +698,7 @@ describe('ColorProject', function() {
 
       beforeEach(function() {
         const originalPaths = project.getPaths();
-        atom.config.set('pigments.ignoredNames', ['**/*.styl']);
+        lumine.config.set('colors.ignoredNames', ['**/*.styl']);
 
         return waitsFor(() => project.getPaths().join(',') !== originalPaths.join(','));
       });
@@ -712,7 +712,7 @@ describe('ColorProject', function() {
           const originalPaths = project.getPaths();
           project.onDidUpdateVariables(updateSpy);
 
-          atom.config.set('pigments.ignoredNames', []);
+          lumine.config.set('colors.ignoredNames', []);
 
           waitsFor(() => project.getPaths().join(',') !== originalPaths.join(','));
           return waitsFor(() => updateSpy.callCount > 0);
@@ -739,14 +739,14 @@ describe('ColorProject', function() {
           return waitsForPromise(() => project.setIgnoreGlobalSourceNames(true));
         });
 
-        it('ignores the content of the global config', () => expect(project.getSourceNames()).toEqual(['.pigments','*.foo']));
+        it('ignores the content of the global config', () => expect(project.getSourceNames()).toEqual(['.colors','*.foo']));
 
         return it('serializes the project setting', () => expect(project.serialize().ignoreGlobalSourceNames).toBeTruthy());
       });
 
       describe('for the ignoredNames field', function() {
         beforeEach(function() {
-          atom.config.set('pigments.ignoredNames', ['*.foo']);
+          lumine.config.set('colors.ignoredNames', ['*.foo']);
           project.ignoredNames = ['*.bar'];
 
           return project.setIgnoreGlobalIgnoredNames(true);
@@ -759,7 +759,7 @@ describe('ColorProject', function() {
 
       describe('for the ignoredScopes field', function() {
         beforeEach(function() {
-          atom.config.set('pigments.ignoredScopes', ['\\.comment']);
+          lumine.config.set('colors.ignoredScopes', ['\\.comment']);
           project.ignoredScopes = ['\\.source'];
 
           return project.setIgnoreGlobalIgnoredScopes(true);
@@ -772,7 +772,7 @@ describe('ColorProject', function() {
 
       return describe('for the searchNames field', function() {
         beforeEach(function() {
-          atom.config.set('pigments.extendedSearchNames', ['*.css']);
+          lumine.config.set('colors.extendedSearchNames', ['*.css']);
           project.searchNames = ['*.foo'];
 
           return project.setIgnoreGlobalSearchNames(true);
@@ -787,19 +787,19 @@ describe('ColorProject', function() {
 
     describe('::loadThemesVariables', function() {
       beforeEach(function() {
-        atom.packages.activatePackage('atom-light-ui');
-        atom.packages.activatePackage('atom-light-syntax');
+        lumine.packages.activatePackage('atom-light-ui');
+        lumine.packages.activatePackage('atom-light-syntax');
 
-        atom.config.set('core.themes', ['atom-light-ui', 'atom-light-syntax']);
+        lumine.config.set('core.themes', ['atom-light-ui', 'atom-light-syntax']);
 
-        waitsForPromise(() => atom.themes.activateThemes());
+        waitsForPromise(() => lumine.themes.activateThemes());
 
-        return waitsForPromise(() => atom.packages.activatePackage('pigments'));
+        return waitsForPromise(() => lumine.packages.activatePackage('colors'));
       });
 
       afterEach(function() {
-        atom.themes.deactivateThemes();
-        return atom.themes.unwatchUserStylesheet();
+        lumine.themes.deactivateThemes();
+        return lumine.themes.unwatchUserStylesheet();
       });
 
       return it('returns an array of 62 variables', function() {
@@ -815,29 +815,29 @@ describe('ColorProject', function() {
         paths = project.getPaths();
         expect(project.getColorVariables().length).toEqual(10);
 
-        atom.packages.activatePackage('atom-light-ui');
-        atom.packages.activatePackage('atom-light-syntax');
-        atom.packages.activatePackage('atom-dark-ui');
-        atom.packages.activatePackage('atom-dark-syntax');
+        lumine.packages.activatePackage('atom-light-ui');
+        lumine.packages.activatePackage('atom-light-syntax');
+        lumine.packages.activatePackage('atom-dark-ui');
+        lumine.packages.activatePackage('atom-dark-syntax');
 
-        atom.config.set('core.themes', ['atom-light-ui', 'atom-light-syntax']);
+        lumine.config.set('core.themes', ['atom-light-ui', 'atom-light-syntax']);
 
-        waitsForPromise(() => atom.themes.activateThemes());
+        waitsForPromise(() => lumine.themes.activateThemes());
 
-        waitsForPromise(() => atom.packages.activatePackage('pigments'));
+        waitsForPromise(() => lumine.packages.activatePackage('colors'));
 
         waitsForPromise(() => project.initialize());
 
         return runs(function() {
           spy = jasmine.createSpy('did-change-active-themes');
-          atom.themes.onDidChangeActiveThemes(spy);
+          lumine.themes.onDidChangeActiveThemes(spy);
           return project.setIncludeThemes(true);
         });
       });
 
       afterEach(function() {
-        atom.themes.deactivateThemes();
-        return atom.themes.unwatchUserStylesheet();
+        lumine.themes.deactivateThemes();
+        return lumine.themes.unwatchUserStylesheet();
       });
 
       it('includes the variables set for ui and syntax themes in the palette', () => expect(project.getColorVariables().length).toEqual(72));
@@ -859,7 +859,7 @@ describe('ColorProject', function() {
         return describe('when the core.themes setting is modified', function() {
           beforeEach(function() {
             spyOn(project, 'loadThemesVariables').andCallThrough();
-            atom.config.set('core.themes', ['atom-dark-ui', 'atom-dark-syntax']);
+            lumine.config.set('core.themes', ['atom-dark-ui', 'atom-dark-syntax']);
 
             return waitsFor(() => spy.callCount > 0);
           });
@@ -871,7 +871,7 @@ describe('ColorProject', function() {
       return describe('when the core.themes setting is modified', function() {
         beforeEach(function() {
           spyOn(project, 'loadThemesVariables').andCallThrough();
-          atom.config.set('core.themes', ['atom-dark-ui', 'atom-dark-syntax']);
+          lumine.config.set('core.themes', ['atom-dark-ui', 'atom-dark-syntax']);
 
           return waitsFor(() => spy.callCount > 0);
         });
@@ -949,7 +949,7 @@ describe('ColorProject', function() {
 
     describe('with a sourceNames setting value different than when serialized', function() {
       beforeEach(function() {
-        atom.config.set('pigments.sourceNames', []);
+        lumine.config.set('colors.sourceNames', []);
 
         project = createProject({
           stateFixture: "empty-project.json"});
@@ -1008,7 +1008,7 @@ describe('ColorProject', function() {
     describe('with an open editor and the corresponding buffer state', function() {
       let [editor, colorBuffer] = Array.from([]);
       beforeEach(function() {
-        waitsForPromise(() => atom.workspace.open('variables.styl').then(o => editor = o));
+        waitsForPromise(() => lumine.workspace.open('variables.styl').then(o => editor = o));
 
         runs(function() {
           project = createProject({
@@ -1032,7 +1032,7 @@ describe('ColorProject', function() {
     return describe('with an open editor, the corresponding buffer state and a old timestamp', function() {
       let [editor, colorBuffer] = Array.from([]);
       beforeEach(function() {
-        waitsForPromise(() => atom.workspace.open('variables.styl').then(o => editor = o));
+        waitsForPromise(() => lumine.workspace.open('variables.styl').then(o => editor = o));
 
         runs(function() {
           spyOn(ColorBuffer.prototype, 'updateVariableRanges').andCallThrough();
@@ -1063,13 +1063,13 @@ describe('ColorProject', function() {
 
 describe('ColorProject', function() {
   let [project, rootPath] = Array.from([]);
-  return describe('when the project has a pigments defaults file', function() {
+  return describe('when the project has a colors defaults file', function() {
     beforeEach(function() {
-      atom.config.set('pigments.sourceNames', ['*.sass']);
+      lumine.config.set('colors.sourceNames', ['*.sass']);
 
-      const [fixturesPath] = Array.from(atom.project.getPaths());
+      const [fixturesPath] = Array.from(lumine.project.getPaths());
       rootPath = `${fixturesPath}/project-with-defaults`;
-      atom.project.setPaths([rootPath]);
+      lumine.project.setPaths([rootPath]);
 
       project = new ColorProject({});
 

@@ -1,4 +1,4 @@
-/*
+﻿/*
  * decaffeinate suggestions:
  * DS101: Remove unnecessary use of Array.from
  * DS102: Remove unnecessary code created because of implicit returns
@@ -11,7 +11,7 @@ const {THEME_VARIABLES} = require('../lib/uris');
 const {change, click} = require('./helpers/events');
 
 describe('PaletteElement', function() {
-  let [nextID, palette, paletteElement, workspaceElement, pigments, project] = Array.from([0]);
+  let [nextID, palette, paletteElement, workspaceElement, colors, project] = Array.from([0]);
 
   const createVar = (name, color, path, line, isAlternate=false) => ({
     name,
@@ -23,15 +23,15 @@ describe('PaletteElement', function() {
   });
 
   beforeEach(function() {
-    workspaceElement = atom.views.getView(atom.workspace);
-    atom.config.set('pigments.sourceNames', [
+    workspaceElement = lumine.views.getView(lumine.workspace);
+    lumine.config.set('colors.sourceNames', [
       '*.styl',
       '*.less'
     ]);
 
-    waitsForPromise(() => atom.packages.activatePackage('pigments').then(function(pkg) {
-      pigments = pkg.mainModule;
-      return project = pigments.getProject();
+    waitsForPromise(() => lumine.packages.activatePackage('colors').then(function(pkg) {
+      colors = pkg.mainModule;
+      return project = colors.getProject();
     }));
 
     return waitsForPromise(() => project.initialize());
@@ -50,7 +50,7 @@ describe('PaletteElement', function() {
         createVar('red', new Color('#ff0000'), THEME_VARIABLES, 0)
       ]);
 
-      paletteElement = atom.views.getView(palette);
+      paletteElement = lumine.views.getView(palette);
       return jasmine.attachToDOM(paletteElement);
     });
 
@@ -61,11 +61,11 @@ describe('PaletteElement', function() {
     return it('does not render the file link when the variable comes from a theme', () => expect(paletteElement.querySelectorAll('li')[4].querySelector(' [data-variable-id]')).not.toExist());
   });
 
-  describe('when pigments:show-palette commands is triggered', function() {
+  describe('when colors:show-palette commands is triggered', function() {
     beforeEach(function() {
-      atom.commands.dispatch(workspaceElement, 'pigments:show-palette');
+      lumine.commands.dispatch(workspaceElement, 'colors:show-palette');
 
-      waitsFor(() => paletteElement = workspaceElement.querySelector('pigments-palette'));
+      waitsFor(() => paletteElement = workspaceElement.querySelector('colors-palette'));
 
       return runs(function() {
         palette = paletteElement.getModel();
@@ -84,7 +84,7 @@ describe('PaletteElement', function() {
       const projectVariables = project.getColorVariables();
 
       const li = paletteElement.querySelector('li');
-      return expect(li.querySelector('.path').textContent).toEqual(atom.project.relativize(projectVariables[0].path));
+      return expect(li.querySelector('.path').textContent).toEqual(lumine.project.relativize(projectVariables[0].path));
     });
 
     describe('clicking on a result path', () => it('shows the variable in its file', function() {
@@ -98,7 +98,7 @@ describe('PaletteElement', function() {
     }));
 
     describe('when the sortPaletteColors settings is set to color', function() {
-      beforeEach(() => atom.config.set('pigments.sortPaletteColors', 'by color'));
+      beforeEach(() => lumine.config.set('colors.sortPaletteColors', 'by color'));
 
       return it('reorders the colors', function() {
         const sortedColors = project.getPalette().sortedByColor().filter(v => !v.isAlternate);
@@ -116,7 +116,7 @@ describe('PaletteElement', function() {
     });
 
     describe('when the sortPaletteColors settings is set to name', function() {
-      beforeEach(() => atom.config.set('pigments.sortPaletteColors', 'by name'));
+      beforeEach(() => lumine.config.set('colors.sortPaletteColors', 'by name'));
 
       return it('reorders the colors', function() {
         const sortedColors = project.getPalette().sortedByName().filter(v => !v.isAlternate);
@@ -134,7 +134,7 @@ describe('PaletteElement', function() {
     });
 
     describe('when the groupPaletteColors setting is set to file', function() {
-      beforeEach(() => atom.config.set('pigments.groupPaletteColors', 'by file'));
+      beforeEach(() => lumine.config.set('colors.groupPaletteColors', 'by file'));
 
       it('renders the list with sublists for each files', function() {
         const ols = paletteElement.querySelectorAll('ol ol');
@@ -142,16 +142,16 @@ describe('PaletteElement', function() {
       });
 
       it('adds a header with the file path for each sublist', function() {
-        const ols = paletteElement.querySelectorAll('.pigments-color-group-header');
+        const ols = paletteElement.querySelectorAll('.colors-color-group-header');
         return expect(ols.length).toEqual(5);
       });
 
       describe('and the sortPaletteColors is set to name', function() {
-        beforeEach(() => atom.config.set('pigments.sortPaletteColors', 'by name'));
+        beforeEach(() => lumine.config.set('colors.sortPaletteColors', 'by name'));
 
         return it('sorts the nested list items', function() {
           const palettes = paletteElement.getFilesPalettes();
-          const ols = paletteElement.querySelectorAll('.pigments-color-group');
+          const ols = paletteElement.querySelectorAll('.colors-color-group');
           let n = 0;
 
           return (() => {
@@ -177,7 +177,7 @@ describe('PaletteElement', function() {
       });
 
       return describe('when the mergeColorDuplicates', function() {
-        beforeEach(() => atom.config.set('pigments.mergeColorDuplicates', true));
+        beforeEach(() => lumine.config.set('colors.mergeColorDuplicates', true));
 
         return it('groups identical colors together', function() {
           const lis = paletteElement.querySelectorAll('li');
@@ -198,7 +198,7 @@ describe('PaletteElement', function() {
           return change(sortSelect);
         });
 
-        return it('changes the settings value', () => expect(atom.config.get('pigments.sortPaletteColors')).toEqual('by name'));
+        return it('changes the settings value', () => expect(lumine.config.get('colors.sortPaletteColors')).toEqual('by name'));
       });
     });
 
@@ -213,23 +213,23 @@ describe('PaletteElement', function() {
           return change(groupSelect);
         });
 
-        return it('changes the settings value', () => expect(atom.config.get('pigments.groupPaletteColors')).toEqual('by file'));
+        return it('changes the settings value', () => expect(lumine.config.get('colors.groupPaletteColors')).toEqual('by file'));
       });
     });
   });
 
   describe('when the palette settings differs from defaults', function() {
     beforeEach(function() {
-      atom.config.set('pigments.sortPaletteColors', 'by name');
-      atom.config.set('pigments.groupPaletteColors', 'by file');
-      return atom.config.set('pigments.mergeColorDuplicates', true);
+      lumine.config.set('colors.sortPaletteColors', 'by name');
+      lumine.config.set('colors.groupPaletteColors', 'by file');
+      return lumine.config.set('colors.mergeColorDuplicates', true);
     });
 
-    return describe('when pigments:show-palette commands is triggered', function() {
+    return describe('when colors:show-palette commands is triggered', function() {
       beforeEach(function() {
-        atom.commands.dispatch(workspaceElement, 'pigments:show-palette');
+        lumine.commands.dispatch(workspaceElement, 'colors:show-palette');
 
-        waitsFor(() => paletteElement = workspaceElement.querySelector('pigments-palette'));
+        waitsFor(() => paletteElement = workspaceElement.querySelector('colors-palette'));
 
         return runs(() => palette = paletteElement.getModel());
       });
@@ -254,9 +254,9 @@ describe('PaletteElement', function() {
   return describe('when the project variables are modified', function() {
     let [spy, initialColorCount] = Array.from([]);
     beforeEach(function() {
-      atom.commands.dispatch(workspaceElement, 'pigments:show-palette');
+      lumine.commands.dispatch(workspaceElement, 'colors:show-palette');
 
-      waitsFor(() => paletteElement = workspaceElement.querySelector('pigments-palette'));
+      waitsFor(() => paletteElement = workspaceElement.querySelector('colors-palette'));
 
       runs(function() {
         palette = paletteElement.getModel();
@@ -265,7 +265,7 @@ describe('PaletteElement', function() {
 
         project.onDidUpdateVariables(spy);
 
-        return atom.config.set('pigments.sourceNames', [
+        return lumine.config.set('colors.sourceNames', [
           '*.styl',
           '*.less',
           '*.sass'

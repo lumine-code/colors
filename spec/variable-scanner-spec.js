@@ -1,4 +1,4 @@
-/*
+﻿/*
  * decaffeinate suggestions:
  * DS101: Remove unnecessary use of Array.from
  * DS102: Remove unnecessary code created because of implicit returns
@@ -15,9 +15,9 @@ describe('VariableScanner', function() {
 
   const withTextEditor = (fixture, block) => describe(`with ${fixture} buffer`, function() {
     beforeEach(function() {
-      waitsForPromise(() => atom.workspace.open(fixture));
+      waitsForPromise(() => lumine.workspace.open(fixture));
       return runs(function() {
-        editor = atom.workspace.getActiveTextEditor();
+        editor = lumine.workspace.getActiveTextEditor();
         text = editor.getText();
         return scope = scopeFromFileName(editor.getPath());
       });

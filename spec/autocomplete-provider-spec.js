@@ -1,4 +1,4 @@
-/*
+﻿/*
  * decaffeinate suggestions:
  * DS101: Remove unnecessary use of Array.from
  * DS102: Remove unnecessary code created because of implicit returns
@@ -7,46 +7,46 @@
  */
 
 describe('autocomplete provider', function() {
-  let [completionDelay, editor, editorView, pigments, autocompleteMain, autocompleteManager, jasmineContent, project] = Array.from([]);
+  let [completionDelay, editor, editorView, colors, autocompleteMain, autocompleteManager, jasmineContent, project] = Array.from([]);
 
   beforeEach(function() {
     runs(function() {
       jasmineContent = document.body.querySelector('#jasmine-content');
 
-      atom.config.set('pigments.autocompleteScopes', ['*']);
-      atom.config.set('pigments.sourceNames', [
+      lumine.config.set('colors.autocompleteScopes', ['*']);
+      lumine.config.set('colors.sourceNames', [
         '**/*.styl',
         '**/*.less'
       ]);
 
       // Set to live completion
-      atom.config.set('autocomplete-plus.enableAutoActivation', true);
+      lumine.config.set('autocomplete-plus.enableAutoActivation', true);
       // Set the completion delay
       completionDelay = 100;
-      atom.config.set('autocomplete-plus.autoActivationDelay', completionDelay);
+      lumine.config.set('autocomplete-plus.autoActivationDelay', completionDelay);
       completionDelay += 100; // Rendering delay
-      const workspaceElement = atom.views.getView(atom.workspace);
+      const workspaceElement = lumine.views.getView(lumine.workspace);
 
       return jasmineContent.appendChild(workspaceElement);
     });
 
-    waitsForPromise('autocomplete-plus activation', () => atom.packages.activatePackage('autocomplete-plus').then(pkg => autocompleteMain = pkg.mainModule));
+    waitsForPromise('autocomplete-plus activation', () => lumine.packages.activatePackage('autocomplete-plus').then(pkg => autocompleteMain = pkg.mainModule));
 
-    waitsForPromise('pigments activation', () => atom.packages.activatePackage('pigments').then(pkg => pigments = pkg.mainModule));
+    waitsForPromise('colors activation', () => lumine.packages.activatePackage('colors').then(pkg => colors = pkg.mainModule));
 
     runs(function() {
       spyOn(autocompleteMain, 'consumeProvider').andCallThrough();
-      return spyOn(pigments, 'provideAutocomplete').andCallThrough();
+      return spyOn(colors, 'provideAutocomplete').andCallThrough();
     });
 
-    waitsForPromise('open sample file', () => atom.workspace.open('sample.styl').then(function(e) {
+    waitsForPromise('open sample file', () => lumine.workspace.open('sample.styl').then(function(e) {
       editor = e;
       editor.setText('');
-      return editorView = atom.views.getView(editor);
+      return editorView = lumine.views.getView(editor);
     }));
 
-    waitsForPromise('pigments project initialized', function() {
-      project = pigments.getProject();
+    waitsForPromise('colors project initialized', function() {
+      project = colors.getProject();
       return project.initialize();
     });
 
@@ -105,7 +105,7 @@ describe('autocomplete provider', function() {
       waitsFor(() => editorView.querySelector('.autocomplete-plus li') != null);
 
       return runs(function() {
-        atom.commands.dispatch(editorView, 'autocomplete-plus:confirm');
+        lumine.commands.dispatch(editorView, 'autocomplete-plus:confirm');
         return expect(editor.getText()).not.toContain('@@');
       });
     });
@@ -127,14 +127,14 @@ describe('autocomplete provider', function() {
       waitsFor(() => editorView.querySelector('.autocomplete-plus li') != null);
 
       return runs(function() {
-        atom.commands.dispatch(editorView, 'autocomplete-plus:confirm');
+        lumine.commands.dispatch(editorView, 'autocomplete-plus:confirm');
         expect(editor.getText()).toContain('$other-color');
         return expect(editor.getText()).not.toContain('$$');
       });
     });
 
     return describe('when the extendAutocompleteToColorValue setting is enabled', function() {
-      beforeEach(() => atom.config.set('pigments.extendAutocompleteToColorValue', true));
+      beforeEach(() => lumine.config.set('colors.extendAutocompleteToColorValue', true));
 
       describe('with an opaque color', () => it('displays the color hexadecimal code in the completion item', function() {
         runs(function() {
@@ -162,7 +162,7 @@ describe('autocomplete provider', function() {
       }));
 
       describe('when the autocompleteSuggestionsFromValue setting is enabled', function() {
-        beforeEach(() => atom.config.set('pigments.autocompleteSuggestionsFromValue', true));
+        beforeEach(() => lumine.config.set('colors.autocompleteSuggestionsFromValue', true));
 
         it('suggests color variables from hexadecimal values', function() {
           runs(function() {
@@ -250,7 +250,7 @@ describe('autocomplete provider', function() {
         });
 
         return describe('and when extendAutocompleteToVariables is true', function() {
-          beforeEach(() => atom.config.set('pigments.extendAutocompleteToVariables', true));
+          beforeEach(() => lumine.config.set('colors.extendAutocompleteToVariables', true));
 
           return it('returns suggestions for the matching variable value', function() {
             runs(function() {
@@ -311,7 +311,7 @@ describe('autocomplete provider', function() {
   });
 
   describe('writing the name of a non-color variable', () => it('returns suggestions for the matching variable', function() {
-    atom.config.set('pigments.extendAutocompleteToVariables', false);
+    lumine.config.set('colors.extendAutocompleteToVariables', false);
     runs(function() {
       expect(editorView.querySelector('.autocomplete-plus')).not.toExist();
 
@@ -329,7 +329,7 @@ describe('autocomplete provider', function() {
   }));
 
   return describe('when extendAutocompleteToVariables is true', function() {
-    beforeEach(() => atom.config.set('pigments.extendAutocompleteToVariables', true));
+    beforeEach(() => lumine.config.set('colors.extendAutocompleteToVariables', true));
 
     return describe('writing the name of a non-color variable', () => it('returns suggestions for the matching variable', function() {
       runs(function() {
@@ -364,46 +364,46 @@ describe('autocomplete provider', function() {
 });
 
 describe('autocomplete provider', function() {
-  let [completionDelay, editor, editorView, pigments, autocompleteMain, autocompleteManager, jasmineContent, project] = Array.from([]);
+  let [completionDelay, editor, editorView, colors, autocompleteMain, autocompleteManager, jasmineContent, project] = Array.from([]);
 
   return describe('for sass files', function() {
     beforeEach(function() {
       runs(function() {
         jasmineContent = document.body.querySelector('#jasmine-content');
 
-        atom.config.set('pigments.autocompleteScopes', ['*']);
-        atom.config.set('pigments.sourceNames', [
+        lumine.config.set('colors.autocompleteScopes', ['*']);
+        lumine.config.set('colors.sourceNames', [
           '**/*.sass',
           '**/*.scss'
         ]);
 
         // Set to live completion
-        atom.config.set('autocomplete-plus.enableAutoActivation', true);
+        lumine.config.set('autocomplete-plus.enableAutoActivation', true);
         // Set the completion delay
         completionDelay = 100;
-        atom.config.set('autocomplete-plus.autoActivationDelay', completionDelay);
+        lumine.config.set('autocomplete-plus.autoActivationDelay', completionDelay);
         completionDelay += 100; // Rendering delay
-        const workspaceElement = atom.views.getView(atom.workspace);
+        const workspaceElement = lumine.views.getView(lumine.workspace);
 
         return jasmineContent.appendChild(workspaceElement);
       });
 
-      waitsForPromise('autocomplete-plus activation', () => atom.packages.activatePackage('autocomplete-plus').then(pkg => autocompleteMain = pkg.mainModule));
+      waitsForPromise('autocomplete-plus activation', () => lumine.packages.activatePackage('autocomplete-plus').then(pkg => autocompleteMain = pkg.mainModule));
 
-      waitsForPromise('pigments activation', () => atom.packages.activatePackage('pigments').then(pkg => pigments = pkg.mainModule));
+      waitsForPromise('colors activation', () => lumine.packages.activatePackage('colors').then(pkg => colors = pkg.mainModule));
 
       runs(function() {
         spyOn(autocompleteMain, 'consumeProvider').andCallThrough();
-        return spyOn(pigments, 'provideAutocomplete').andCallThrough();
+        return spyOn(colors, 'provideAutocomplete').andCallThrough();
       });
 
-      waitsForPromise('open sample file', () => atom.workspace.open('sample.styl').then(function(e) {
+      waitsForPromise('open sample file', () => lumine.workspace.open('sample.styl').then(function(e) {
         editor = e;
-        return editorView = atom.views.getView(editor);
+        return editorView = lumine.views.getView(editor);
       }));
 
-      waitsForPromise('pigments project initialized', function() {
-        project = pigments.getProject();
+      waitsForPromise('colors project initialized', function() {
+        project = colors.getProject();
         return project.initialize();
       });
 

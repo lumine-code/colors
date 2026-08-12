@@ -1,4 +1,4 @@
-/*
+﻿/*
  * decaffeinate suggestions:
  * DS101: Remove unnecessary use of Array.from
  * DS102: Remove unnecessary code created because of implicit returns
@@ -487,7 +487,7 @@ describe('VariablesCollection', function() {
     });
 
     return describe('.deserialize', function() {
-      beforeEach(() => collection = atom.deserializers.deserialize({
+      beforeEach(() => collection = lumine.deserializers.deserialize({
         deserializer: 'VariablesCollection',
         content: [
           {

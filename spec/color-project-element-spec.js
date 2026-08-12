@@ -1,4 +1,4 @@
-/*
+﻿/*
  * decaffeinate suggestions:
  * DS101: Remove unnecessary use of Array.from
  * DS102: Remove unnecessary code created because of implicit returns
@@ -7,15 +7,15 @@
 const {change} = require('./helpers/events');
 
 describe('ColorProjectElement', function() {
-  let [pigments, project, projectElement] = Array.from([]);
+  let [colors, project, projectElement] = Array.from([]);
 
   beforeEach(function() {
     const jasmineContent = document.body.querySelector('#jasmine-content');
 
-    return waitsForPromise(() => atom.packages.activatePackage('pigments').then(function(pkg) {
-      pigments = pkg.mainModule;
-      project = pigments.getProject();
-      projectElement = atom.views.getView(project);
+    return waitsForPromise(() => lumine.packages.activatePackage('colors').then(function(pkg) {
+      colors = pkg.mainModule;
+      project = colors.getProject();
+      projectElement = lumine.views.getView(project);
       return jasmineContent.appendChild(projectElement);
     }));
   });

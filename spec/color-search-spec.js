@@ -1,4 +1,4 @@
-/*
+﻿/*
  * decaffeinate suggestions:
  * DS101: Remove unnecessary use of Array.from
  * DS102: Remove unnecessary code created because of implicit returns
@@ -8,23 +8,23 @@ require('./helpers/matchers');
 const ColorSearch = require('../lib/color-search');
 
 describe('ColorSearch', function() {
-  let [search, pigments, project] = Array.from([]);
+  let [search, colors, project] = Array.from([]);
 
   beforeEach(function() {
-    atom.config.set('pigments.sourceNames', [
+    lumine.config.set('colors.sourceNames', [
       '**/*.styl',
       '**/*.less'
     ]);
-    atom.config.set('pigments.extendedSearchNames', [
+    lumine.config.set('colors.extendedSearchNames', [
       '**/*.css'
     ]);
-    atom.config.set('pigments.ignoredNames', [
+    lumine.config.set('colors.ignoredNames', [
       'project/vendor/**'
     ]);
 
-    waitsForPromise(() => atom.packages.activatePackage('pigments').then(function(pkg) {
-      pigments = pkg.mainModule;
-      return project = pigments.getProject();
+    waitsForPromise(() => lumine.packages.activatePackage('colors').then(function(pkg) {
+      colors = pkg.mainModule;
+      return project = colors.getProject();
     }));
 
     return waitsForPromise(() => project.initialize());

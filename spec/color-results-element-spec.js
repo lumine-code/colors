@@ -1,4 +1,4 @@
-/*
+﻿/*
  * decaffeinate suggestions:
  * DS101: Remove unnecessary use of Array.from
  * DS102: Remove unnecessary code created because of implicit returns
@@ -8,17 +8,17 @@ const {click} = require('./helpers/events');
 const ColorSearch = require('../lib/color-search');
 
 describe('ColorResultsElement', function() {
-  let [search, resultsElement, pigments, project, completeSpy, findSpy] = Array.from([]);
+  let [search, resultsElement, colors, project, completeSpy, findSpy] = Array.from([]);
 
   beforeEach(function() {
-    atom.config.set('pigments.sourceNames', [
+    lumine.config.set('colors.sourceNames', [
       '**/*.styl',
       '**/*.less'
     ]);
 
-    waitsForPromise(() => atom.packages.activatePackage('pigments').then(function(pkg) {
-      pigments = pkg.mainModule;
-      return project = pigments.getProject();
+    waitsForPromise(() => lumine.packages.activatePackage('colors').then(function(pkg) {
+      colors = pkg.mainModule;
+      return project = colors.getProject();
     }));
 
     waitsForPromise(() => project.initialize());
@@ -29,7 +29,7 @@ describe('ColorResultsElement', function() {
       completeSpy = jasmine.createSpy('did-complete-search');
       search.onDidCompleteSearch(completeSpy);
 
-      resultsElement = atom.views.getView(search);
+      resultsElement = lumine.views.getView(search);
 
       return jasmine.attachToDOM(resultsElement);
     });
@@ -67,7 +67,7 @@ describe('ColorResultsElement', function() {
       beforeEach(function() {
         spy = jasmine.createSpy('did-add-text-editor');
 
-        atom.workspace.onDidAddTextEditor(spy);
+        lumine.workspace.onDidAddTextEditor(spy);
         matchItem = resultsElement.querySelector('.search-result.list-item');
         click(matchItem);
 
