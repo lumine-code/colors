@@ -5,10 +5,10 @@
  */
 module.exports = {
   activate() {
-    return console.log('green', '#00ff00');
+    return console.log("green", "#00ff00");
   },
 
   deactivate() {
-    return console.log('red', '#ff0000', 'text-color');
-  }
+    return console.log("red", "#ff0000", "text-color");
+  },
 };

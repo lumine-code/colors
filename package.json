@@ -6,7 +6,15 @@
   "bugs": {
     "url": "https://github.com/lumine-code/colors/issues"
   },
-  "keywords": ["swatch", "palette", "hex", "rgb", "hsl", "sass", "stylus"],
+  "keywords": [
+    "swatch",
+    "palette",
+    "hex",
+    "rgb",
+    "hsl",
+    "sass",
+    "stylus"
+  ],
   "version": "1.0.0",
   "license": "MIT",
   "engines": {
@@ -17,7 +25,14 @@
     "You can find every use of a colour across the project with {{ 'colors:find-colors' | keystroke }}"
   ],
   "main": "./lib/main",
-  "files": ["docs", "keymaps", "lib", "menus", "spec", "styles"],
+  "files": [
+    "docs",
+    "keymaps",
+    "lib",
+    "menus",
+    "spec",
+    "styles"
+  ],
   "scripts": {
     "test": "lumine --test spec",
     "lint": "eslint . --max-warnings 0",
@@ -67,7 +82,9 @@
       }
     }
   },
-  "viewProviders": ["colorsViewProvider"],
+  "viewProviders": [
+    "colorsViewProvider"
+  ],
   "deserializers": {
     "Palette": "deserializePalette",
     "ColorSearch": "deserializeColorSearch",
@@ -81,12 +98,30 @@
       "description": "How a colour is drawn in the editor.",
       "type": "string",
       "enum": [
-        { "value": "background", "description": "Background — the text sits on the colour" },
-        { "value": "underline", "description": "Underline — a rule beneath the text" },
-        { "value": "outline", "description": "Outline — a box around the text" },
-        { "value": "dot", "description": "Dot — a round mark before the text" },
-        { "value": "square-dot", "description": "Square dot — a square mark before the text" },
-        { "value": "gutter", "description": "Gutter — a mark in its own gutter" }
+        {
+          "value": "background",
+          "description": "Background — the text sits on the colour"
+        },
+        {
+          "value": "underline",
+          "description": "Underline — a rule beneath the text"
+        },
+        {
+          "value": "outline",
+          "description": "Outline — a box around the text"
+        },
+        {
+          "value": "dot",
+          "description": "Dot — a round mark before the text"
+        },
+        {
+          "value": "square-dot",
+          "description": "Square dot — a square mark before the text"
+        },
+        {
+          "value": "gutter",
+          "description": "Gutter — a mark in its own gutter"
+        }
       ],
       "default": "background"
     },
@@ -94,28 +129,45 @@
       "title": "Supported File Types",
       "description": "File extensions whose colours are marked. A `*` marks colours everywhere.",
       "type": "array",
-      "items": { "type": "string" },
-      "default": ["*"]
+      "items": {
+        "type": "string"
+      },
+      "default": [
+        "*"
+      ]
     },
     "filetypesForColorWords": {
       "title": "File Types for Colour Words",
       "description": "File extensions where a bare name such as `red` or `whitesmoke` counts as a colour. Use a value matching no extension to switch colour words off entirely.",
       "type": "array",
-      "items": { "type": "string" },
-      "default": ["css", "less", "styl", "stylus", "sass", "scss"]
+      "items": {
+        "type": "string"
+      },
+      "default": [
+        "css",
+        "less",
+        "styl",
+        "stylus",
+        "sass",
+        "scss"
+      ]
     },
     "ignoredScopes": {
       "title": "Ignored Scopes",
       "description": "Regular expressions matching scopes whose colours are left unmarked. `\\.comment` skips every comment.",
       "type": "array",
-      "items": { "type": "string" },
+      "items": {
+        "type": "string"
+      },
       "default": []
     },
     "ignoredBufferNames": {
       "title": "Ignored Buffer Names",
       "description": "Glob patterns of files that get no colour marks at all.",
       "type": "array",
-      "items": { "type": "string" },
+      "items": {
+        "type": "string"
+      },
       "default": []
     },
     "maxDecorationsInGutter": {
@@ -137,14 +189,25 @@
       "title": "Source Names",
       "description": "Glob patterns of the files scanned for colour variables.",
       "type": "array",
-      "items": { "type": "string" },
-      "default": ["**/*.css", "**/*.styl", "**/*.stylus", "**/*.less", "**/*.sass", "**/*.scss"]
+      "items": {
+        "type": "string"
+      },
+      "default": [
+        "**/*.css",
+        "**/*.styl",
+        "**/*.stylus",
+        "**/*.less",
+        "**/*.sass",
+        "**/*.scss"
+      ]
     },
     "ignoredNames": {
       "title": "Ignored Names",
       "description": "Glob patterns skipped when scanning the project for variables.",
       "type": "array",
-      "items": { "type": "string" },
+      "items": {
+        "type": "string"
+      },
       "default": [
         "**/vendor",
         "**/node_modules",
@@ -159,8 +222,12 @@
       "title": "Extended Search Names",
       "description": "Extra glob patterns searched by Find Colors, on top of the source names.",
       "type": "array",
-      "items": { "type": "string" },
-      "default": ["**/*.css"]
+      "items": {
+        "type": "string"
+      },
+      "default": [
+        "**/*.css"
+      ]
     },
     "ignoreVcsIgnoredPaths": {
       "title": "Ignore VCS Ignored Paths",
@@ -178,7 +245,9 @@
       "title": "Autocomplete Scopes",
       "description": "Scopes in which colour names and variables are offered as completions.",
       "type": "array",
-      "items": { "type": "string" },
+      "items": {
+        "type": "string"
+      },
       "default": [
         ".source.css",
         ".source.css.less",
@@ -210,9 +279,18 @@
       "description": "The order colours appear in the palette.",
       "type": "string",
       "enum": [
-        { "value": "none", "description": "None — the order they were found in" },
-        { "value": "by name", "description": "By name" },
-        { "value": "by color", "description": "By colour" }
+        {
+          "value": "none",
+          "description": "None — the order they were found in"
+        },
+        {
+          "value": "by name",
+          "description": "By name"
+        },
+        {
+          "value": "by color",
+          "description": "By colour"
+        }
       ],
       "default": "none"
     },
@@ -221,8 +299,14 @@
       "description": "How the palette is divided up.",
       "type": "string",
       "enum": [
-        { "value": "none", "description": "None — one flat list" },
-        { "value": "by file", "description": "By the file each colour is declared in" }
+        {
+          "value": "none",
+          "description": "None — one flat list"
+        },
+        {
+          "value": "by file",
+          "description": "By the file each colour is declared in"
+        }
       ],
       "default": "none"
     },
@@ -237,8 +321,14 @@
       "description": "Sass ships no `shade` or `tint`, and the two common libraries define them differently.",
       "type": "string",
       "enum": [
-        { "value": "compass", "description": "Compass" },
-        { "value": "bourbon", "description": "Bourbon" }
+        {
+          "value": "compass",
+          "description": "Compass"
+        },
+        {
+          "value": "bourbon",
+          "description": "Bourbon"
+        }
       ],
       "default": "compass"
     },

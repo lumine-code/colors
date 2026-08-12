@@ -1,3 +1,3 @@
 // comment = #ffffff
 
-const string = '#ffffff';
+const string = "#ffffff";

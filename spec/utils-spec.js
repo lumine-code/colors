@@ -5,40 +5,42 @@
  * DS201: Simplify complex destructure assignments
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
  */
-const {findClosingIndex, split} = require('../lib/utils');
+const { findClosingIndex, split } = require("../lib/utils");
 
-describe('.split()', function() {
+describe(".split()", function () {
   const tests = [
-    ['a,b,c', ['a', 'b', 'c']],
-    ['a,b(),c', ['a', 'b()', 'c']],
-    ['a,b(c)', ['a', 'b(c)']],
-    ['a,(b, c)', ['a', '(b,c)']],
-    ['a,(b, c())', ['a', '(b,c())']],
-    ['a(b, c())', ['a(b,c())']],
-    ['a,)(', ['a']],
-    ['a(,', []],
-    ['(,', []],
-    ['(,(,(,)', []],
-    ['a,(,', ['a']],
-    ['a,((),', ['a']],
-    ['a,()),', ['a', '()']]
+    ["a,b,c", ["a", "b", "c"]],
+    ["a,b(),c", ["a", "b()", "c"]],
+    ["a,b(c)", ["a", "b(c)"]],
+    ["a,(b, c)", ["a", "(b,c)"]],
+    ["a,(b, c())", ["a", "(b,c())"]],
+    ["a(b, c())", ["a(b,c())"]],
+    ["a,)(", ["a"]],
+    ["a(,", []],
+    ["(,", []],
+    ["(,(,(,)", []],
+    ["a,(,", ["a"]],
+    ["a,((),", ["a"]],
+    ["a,()),", ["a", "()"]],
   ];
 
-  return tests.forEach(function(...args) {
+  return tests.forEach(function (...args) {
     const [source, expected] = Array.from(args[0]);
-    return it(`splits ${jasmine.pp(source)} as ${jasmine.pp(expected)}`, () => expect(split(source)).toEqual(expected));
+    return it(`splits ${jasmine.pp(source)} as ${jasmine.pp(expected)}`, () =>
+      expect(split(source)).toEqual(expected));
   });
 });
 
-describe('.findClosingIndex()', function() {
+describe(".findClosingIndex()", function () {
   const tests = [
-    ['a(', -1],
-    ['a()', 2],
-    ['a(((()', -1]
+    ["a(", -1],
+    ["a()", 2],
+    ["a(((()", -1],
   ];
 
-  return tests.forEach(function(...args) {
+  return tests.forEach(function (...args) {
     const [source, expected] = Array.from(args[0]);
-    return it("returs the index of the closing character", () => expect(findClosingIndex(source, 2, '(', ')')).toEqual(expected));
+    return it("returs the index of the closing character", () =>
+      expect(findClosingIndex(source, 2, "(", ")")).toEqual(expected));
   });
 });

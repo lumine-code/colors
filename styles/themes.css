@@ -1,5 +1,4 @@
-﻿
-.pigments-sampler {
+﻿.colors-sampler {
   .text-color {
     color: var(--text-color);
   }
@@ -26,7 +25,6 @@
     color: var(--text-color-error);
   }
 
-
   /* Background ----------------- */
   .background-color-info {
     color: var(--background-color-info);
@@ -52,7 +50,6 @@
     color: var(--app-background-color);
   }
 
-
   /* Base ----------------- */
   .base-background-color {
     color: var(--base-background-color);
@@ -60,7 +57,6 @@
   .base-border-color {
     color: var(--base-border-color);
   }
-
 
   /* Components ----------------- */
   .pane-item-background-color {
@@ -156,7 +152,6 @@
   .ui-site-color-5 {
     color: var(--ui-site-color-5);
   }
-
 
   /*     ######  ##    ## ##    ## ########    ###    ##     ## */
   /*    ##    ##  ##  ##  ###   ##    ##      ## ##    ##   ## */
