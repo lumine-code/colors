@@ -669,13 +669,7 @@ describe("ColorBuffer", function () {
       });
 
       return it("does not ask the project to reload the variables", async function () {
-        if (parseFloat(lumine.application.getVersion()) >= 1.19) {
-          return expect(project.reloadVariablesForPath).not.toHaveBeenCalled();
-        } else {
-          return expect(project.reloadVariablesForPath.calls.mostRecent().args[0]).not.toEqual(
-            colorBuffer.editor.getPath(),
-          );
-        }
+        return expect(project.reloadVariablesForPath).not.toHaveBeenCalled();
       });
     });
   });

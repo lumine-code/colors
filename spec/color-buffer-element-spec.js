@@ -201,14 +201,12 @@ describe("ColorBufferElement", function () {
       describe("when the current pane is splitted to the right", function () {
         beforeEach(async function () {
           registerViewProvider();
-          const version = parseFloat(
-            lumine.application.getVersion().split(".").slice(1, 2).join("."),
-          );
-          if (version > 5) {
-            lumine.commands.dispatch(editorElement, "pane:split-right-and-copy-active-item");
-          } else {
-            lumine.commands.dispatch(editorElement, "pane:split-right");
-          }
+          // The spec wants the same editor in both panes. `pane:split-right`
+          // has not carried the active item across since long before this fork,
+          // and the version gate that used to pick between the two read the
+          // editor's minor as `0`, so it took the branch that leaves the new
+          // pane empty and then waited forever for a second text editor.
+          lumine.commands.dispatch(editorElement, "pane:split-right-and-copy-active-item");
 
           await waitsFor("text editor", () => (editor = lumine.workspace.getTextEditors()[1]));
 
