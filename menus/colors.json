@@ -1,0 +1,19 @@
+{
+  "menu": [
+    {
+      "label": "Packages",
+      "submenu": [
+        {
+          "label": "Colors",
+          "submenu": [
+            { "label": "Show Palette", "command": "colors:show-palette" },
+            { "label": "Find Colors", "command": "colors:find-colors" },
+            { "label": "Create Report", "command": "colors:report" },
+            { "label": "Reload", "command": "colors:reload" },
+            { "label": "Project Settings", "command": "colors:project-settings" }
+          ]
+        }
+      ]
+    }
+  ]
+}
