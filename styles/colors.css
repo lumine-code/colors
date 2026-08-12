@@ -1,18 +1,4 @@
-// The ui-variables file is provided by base themes provided by Atom.
-//
-// See https://github.com/atom/atom-dark-ui/blob/master/styles/ui-variables.less
-// for a full listing of what's available.
-@import "ui-variables";
-@import "syntax-variables";
-
-//    ##     ## ######## ##       ########  ######## ########   ######
-//    ##     ## ##       ##       ##     ## ##       ##     ## ##    ##
-//    ##     ## ##       ##       ##     ## ##       ##     ## ##
-//    ######### ######   ##       ########  ######   ########   ######
-//    ##     ## ##       ##       ##        ##       ##   ##         ##
-//    ##     ## ##       ##       ##        ##       ##    ##  ##    ##
-//    ##     ## ######## ######## ##        ######## ##     ##  ######
-
+﻿
 .absolute-box {
   display: block;
   position: absolute;
@@ -46,14 +32,13 @@
   margin-top: 0.2em;
 }
 
-//    ##     ##    ###    ########  ##    ## ######## ########   ######
-//    ###   ###   ## ##   ##     ## ##   ##  ##       ##     ## ##    ##
-//    #### ####  ##   ##  ##     ## ##  ##   ##       ##     ## ##
-//    ## ### ## ##     ## ########  #####    ######   ########   ######
-//    ##     ## ######### ##   ##   ##  ##   ##       ##   ##         ##
-//    ##     ## ##     ## ##    ##  ##   ##  ##       ##    ##  ##    ##
-//    ##     ## ##     ## ##     ## ##    ## ######## ##     ##  ######
-
+/*    ##     ##    ###    ########  ##    ## ######## ########   ###### */
+/*    ###   ###   ## ##   ##     ## ##   ##  ##       ##     ## ##    ## */
+/*    #### ####  ##   ##  ##     ## ##  ##   ##       ##     ## ## */
+/*    ## ### ## ##     ## ########  #####    ######   ########   ###### */
+/*    ##     ## ######### ##   ##   ##  ##   ##       ##   ##         ## */
+/*    ##     ## ##     ## ##    ##  ##   ##  ##       ##    ##  ##    ## */
+/*    ##     ## ##     ## ##     ## ##    ## ######## ##     ##  ###### */
 atom-panel-container.footer {
   z-index: 3;
 }
@@ -76,7 +61,7 @@ atom-text-editor {
     .background-color;
     z-index: 1;
     height: 2px !important;
-    margin-top: 1.3em; // adjust to your liking
+    margin-top: 1.3em; /* adjust to your liking */
   }
 
   .pigments-native-outline .region,
@@ -124,7 +109,7 @@ atom-text-editor {
       height: 12px;
       display: block;
       box-sizing: border-box;
-      // border-radius: 50%;
+      /* border-radius: 50%; */
       position: relative;
       .background-color;
       
@@ -133,7 +118,7 @@ atom-text-editor {
   }
 
   .gutter .pigments-gutter-marker-in-selection div span::after {
-    border: 1px solid @text-color-highlight;
+    border: 1px solid var(--text-color-highlight);
   }
 
   .gutter[gutter-name="pigments-native-dot"],
@@ -224,7 +209,7 @@ atom-text-editor {
 
       &.underline {
         height: 2px !important;
-        margin-top: 1.3em; // adjust to your liking
+        margin-top: 1.3em; /* adjust to your liking */
       }
 
       &.background, &.underline {
@@ -261,14 +246,13 @@ atom-text-editor {
   }
 }
 
-//     ######  ##     ##  ######    ######   ########  ######  ########
-//    ##    ## ##     ## ##    ##  ##    ##  ##       ##    ##    ##
-//    ##       ##     ## ##        ##        ##       ##          ##
-//     ######  ##     ## ##   #### ##   #### ######    ######     ##
-//          ## ##     ## ##    ##  ##    ##  ##             ##    ##
-//    ##    ## ##     ## ##    ##  ##    ##  ##       ##    ##    ##
-//     ######   #######   ######    ######   ########  ######     ##
-
+/*     ######  ##     ##  ######    ######   ########  ######  ######## */
+/*    ##    ## ##     ## ##    ##  ##    ##  ##       ##    ##    ## */
+/*    ##       ##     ## ##        ##        ##       ##          ## */
+/*     ######  ##     ## ##   #### ##   #### ######    ######     ## */
+/*          ## ##     ## ##    ##  ##    ##  ##             ##    ## */
+/*    ##    ## ##     ## ##    ##  ##    ##  ##       ##    ##    ## */
+/*     ######   #######   ######    ######   ########  ######     ## */
 .color-suggestion .label {
   opacity: 1 !important;
 }
@@ -280,14 +264,13 @@ atom-text-editor {
   border-radius: 50%;
 }
 
-//     ######  ########    ###    ########   ######  ##     ##
-//    ##    ## ##         ## ##   ##     ## ##    ## ##     ##
-//    ##       ##        ##   ##  ##     ## ##       ##     ##
-//     ######  ######   ##     ## ########  ##       #########
-//          ## ##       ######### ##   ##   ##       ##     ##
-//    ##    ## ##       ##     ## ##    ##  ##    ## ##     ##
-//     ######  ######## ##     ## ##     ##  ######  ##     ##
-
+/*     ######  ########    ###    ########   ######  ##     ## */
+/*    ##    ## ##         ## ##   ##     ## ##    ## ##     ## */
+/*    ##       ##        ##   ##  ##     ## ##       ##     ## */
+/*     ######  ######   ##     ## ########  ##       ######### */
+/*          ## ##       ######### ##   ##   ##       ##     ## */
+/*    ##    ## ##       ##     ## ##    ##  ##    ## ##     ## */
+/*     ######  ######## ##     ## ##     ##  ######  ##     ## */
 pigments-color-results {
   display: block;
   width: 100%;
@@ -302,7 +285,7 @@ pigments-color-results {
     right: 0;
     bottom: 0;
     left: 0;
-    // overflow: auto;
+    /* overflow: auto; */
   }
 
   .match.color-match {
@@ -317,7 +300,7 @@ pigments-color-results {
     .results-view {
       overflow: auto;
       position: relative;
-      padding: 0 @component-padding;
+      padding: 0 var(--component-padding);
       -webkit-flex: 1;
 
       .line-number {
@@ -332,7 +315,7 @@ pigments-color-results {
         cursor: alias;
 
         &:hover {
-          background: @background-color-highlight;
+          background: var(--background-color-highlight);
         }
       }
 
@@ -343,31 +326,29 @@ pigments-color-results {
   }
 }
 
-//     ######   ##     ##    ###    ########  ########
-//    ##    ##  ##     ##   ## ##   ##     ## ##     ##
-//    ##        ##     ##  ##   ##  ##     ## ##     ##
-//    ##   #### ##     ## ##     ## ########  ##     ##
-//    ##    ##  ##     ## ######### ##   ##   ##     ##
-//    ##    ##  ##     ## ##     ## ##    ##  ##     ##
-//     ######    #######  ##     ## ##     ## ########
-
+/*     ######   ##     ##    ###    ########  ######## */
+/*    ##    ##  ##     ##   ## ##   ##     ## ##     ## */
+/*    ##        ##     ##  ##   ##  ##     ## ##     ## */
+/*    ##   #### ##     ## ##     ## ########  ##     ## */
+/*    ##    ##  ##     ## ######### ##   ##   ##     ## */
+/*    ##    ##  ##     ## ##     ## ##    ##  ##     ## */
+/*     ######    #######  ##     ## ##     ## ######## */
 pigments-sources-popup {
   .inset-panel {
     margin-bottom: 0.75em;
   }
 }
 
-//    ########     ###    ##       ######## ######## ######## ########
-//    ##     ##   ## ##   ##       ##          ##       ##    ##
-//    ##     ##  ##   ##  ##       ##          ##       ##    ##
-//    ########  ##     ## ##       ######      ##       ##    ######
-//    ##        ######### ##       ##          ##       ##    ##
-//    ##        ##     ## ##       ##          ##       ##    ##
-//    ##        ##     ## ######## ########    ##       ##    ########
-
+/*    ########     ###    ##       ######## ######## ######## ######## */
+/*    ##     ##   ## ##   ##       ##          ##       ##    ## */
+/*    ##     ##  ##   ##  ##       ##          ##       ##    ## */
+/*    ########  ##     ## ##       ######      ##       ##    ###### */
+/*    ##        ######### ##       ##          ##       ##    ## */
+/*    ##        ##     ## ##       ##          ##       ##    ## */
+/*    ##        ##     ## ######## ########    ##       ##    ######## */
 pigments-palette {
-  background: @syntax-background-color;
-  color: @text-color;
+  background: var(--syntax-background-color);
+  color: var(--text-color);
   font-size: 1.2em;
 
   .pigments-palette-list, .pigments-palette-controls {
@@ -376,14 +357,13 @@ pigments-palette {
     width: 100%;
   }
 
-  //    ##       ####  ######  ########
-  //    ##        ##  ##    ##    ##
-  //    ##        ##  ##          ##
-  //    ##        ##   ######     ##
-  //    ##        ##        ##    ##
-  //    ##        ##  ##    ##    ##
-  //    ######## ####  ######     ##
-
+  /*    ##       ####  ######  ######## */
+  /*    ##        ##  ##    ##    ## */
+  /*    ##        ##  ##          ## */
+  /*    ##        ##   ######     ## */
+  /*    ##        ##        ##    ## */
+  /*    ##        ##  ##    ##    ## */
+  /*    ######## ####  ######     ## */
   ol {
     width: 100%;
     padding: 0;
@@ -391,9 +371,9 @@ pigments-palette {
   }
 
   li {
-    padding: @component-padding;
+    padding: var(--component-padding);
     list-style: none;
-    border-bottom: 1px solid @base-border-color;
+    border-bottom: 1px solid var(--base-border-color);
     display: -webkit-flex;
     -webkit-flex-direction: row;
 
@@ -414,7 +394,7 @@ pigments-palette {
   }
 
   .path, .line {
-    color: @text-color-subtle;
+    color: var(--text-color-subtle);
   }
 
   .pigments-color-group .path {
@@ -422,10 +402,10 @@ pigments-palette {
   }
 
   .pigments-color-group-header-content {
-    border-bottom: 1px solid @base-border-color;
+    border-bottom: 1px solid var(--base-border-color);
     display: inline-block;
-    background: @syntax-background-color;
-    padding: @component-padding;
+    background: var(--syntax-background-color);
+    padding: var(--component-padding);
     width: 100%;
 
     &.fixed {
@@ -442,7 +422,7 @@ pigments-palette {
 
   .pigments-palette-list {
     overflow-y: auto;
-    background: @tool-panel-background-color;
+    background: var(--tool-panel-background-color);
   }
 
   .pigments-color, .pigments-color-details {
@@ -465,11 +445,11 @@ pigments-palette {
       display: block;
       float: left;
       width: 50%;
-      color: @text-color;
+      color: var(--text-color);
     }
 
     strong {
-      color: @text-color-subtle;
+      color: var(--text-color-subtle);
     }
   }
 
@@ -479,7 +459,7 @@ pigments-palette {
     position: relative;
     width: 3em;
     height: 3em;
-    margin-right: @component-padding;
+    margin-right: var(--component-padding);
     z-index: 0;
 
     &:before {
@@ -490,20 +470,19 @@ pigments-palette {
     }
   }
 
-  //     ######  ######## ########  ##        ######
-  //    ##    ##    ##    ##     ## ##       ##    ##
-  //    ##          ##    ##     ## ##       ##
-  //    ##          ##    ########  ##        ######
-  //    ##          ##    ##   ##   ##             ##
-  //    ##    ##    ##    ##    ##  ##       ##    ##
-  //     ######     ##    ##     ## ########  ######
-
+  /*     ######  ######## ########  ##        ###### */
+  /*    ##    ##    ##    ##     ## ##       ##    ## */
+  /*    ##          ##    ##     ## ##       ## */
+  /*    ##          ##    ########  ##        ###### */
+  /*    ##          ##    ##   ##   ##             ## */
+  /*    ##    ##    ##    ##    ##  ##       ##    ## */
+  /*     ######     ##    ##     ## ########  ###### */
   select {
     margin: 0 0.5em;
-    background: @input-background-color;
-    border: 1px solid @input-border-color;
-    color: @text-color;
-    font-family: @font-family;
+    background: var(--input-background-color);
+    border: 1px solid var(--input-border-color);
+    color: var(--text-color);
+    font-family: var(--font-family);
   }
 
   .settings-view input[type="checkbox"] {
@@ -527,8 +506,8 @@ pigments-palette {
   }
 
   .pigments-palette-controls-wrapper {
-    border-bottom: 1px solid @base-border-color;
-    padding: @component-padding;
+    border-bottom: 1px solid var(--base-border-color);
+    padding: var(--component-padding);
     width: 100%;
   }
 
@@ -537,31 +516,30 @@ pigments-palette {
   }
 }
 
-//     ######  ######## ######## ######## #### ##    ##  ######    ######
-//    ##    ## ##          ##       ##     ##  ###   ## ##    ##  ##    ##
-//    ##       ##          ##       ##     ##  ####  ## ##        ##
-//     ######  ######      ##       ##     ##  ## ## ## ##   ####  ######
-//          ## ##          ##       ##     ##  ##  #### ##    ##        ##
-//    ##    ## ##          ##       ##     ##  ##   ### ##    ##  ##    ##
-//     ######  ########    ##       ##    #### ##    ##  ######    ######
-
+/*     ######  ######## ######## ######## #### ##    ##  ######    ###### */
+/*    ##    ## ##          ##       ##     ##  ###   ## ##    ##  ##    ## */
+/*    ##       ##          ##       ##     ##  ####  ## ##        ## */
+/*     ######  ######      ##       ##     ##  ## ## ## ##   ####  ###### */
+/*          ## ##          ##       ##     ##  ##  #### ##    ##        ## */
+/*    ##    ## ##          ##       ##     ##  ##   ### ##    ##  ##    ## */
+/*     ######  ########    ##       ##    #### ##    ##  ######    ###### */
 pigments-color-project {
-  color: @text-color;
+  color: var(--text-color);
   position: relative;
 
   .header {
-    border-bottom: 1px solid @input-border-color;
-    padding-bottom: @component-padding * 2;
+    border-bottom: 1px solid var(--input-border-color);
+    padding-bottom: var(--component-padding) * 2;
     text-align: left;
     overflow: hidden;
 
     .logo {
       float: left;
-      margin-right: @component-padding;
+      margin-right: var(--component-padding);
     }
 
     p {
-      margin: (@component-padding * 1.5) 0 0;
+      margin: (var(--component-padding) * 1.5) 0 0;
     }
   }
 
@@ -584,7 +562,7 @@ pigments-color-project {
   }
 
   .control-group {
-    margin-bottom: @component-padding * 2;
+    margin-bottom: var(--component-padding) * 2;
 
     &.boolean {
       padding-left: 150px;
@@ -614,7 +592,7 @@ pigments-color-project {
 
         & > div:first-child {
           flex: 1 1 0;
-          padding-right: @component-padding * 2;
+          padding-right: var(--component-padding) * 2;
         }
       }
 
@@ -630,7 +608,7 @@ pigments-color-project {
           display: flex;
         }
         .control-label {
-          padding-right: @component-padding;
+          padding-right: var(--component-padding);
         }
         .setting-description {
           margin: 0;
@@ -640,7 +618,7 @@ pigments-color-project {
   }
 
   .fields {
-    margin-top: @component-padding * 2;
+    margin-top: var(--component-padding) * 2;
   }
 
   .fields .controls, .fields .fields-header {
@@ -652,7 +630,7 @@ pigments-color-project {
       text-align: center;
       font-size: 1.6em;
       font-weight: normal;
-      margin-bottom: @component-padding * 2;
+      margin-bottom: var(--component-padding) * 2;
     }
 
   }
@@ -660,7 +638,7 @@ pigments-color-project {
     margin: 0;
     line-height: 2em;
     width: 150px;
-    padding-right: @component-padding;
+    padding-right: var(--component-padding);
   }
 
   .control-wrapper {
