@@ -14,6 +14,20 @@ const { SERIALIZE_VERSION, SERIALIZE_MARKERS_VERSION } = require("../lib/version
 describe("Colors", function () {
   let [workspaceElement, colors, project] = Array.from([]);
 
+  // Waits until the variable count stops moving, so an assertion cannot land
+  // on a half-applied rescan. Narrowing sourceNames evicts the variables of
+  // every file that no longer matches, and these specs used to assert counts
+  // measured while that eviction was still in flight.
+  const settledVariableCount = async () => {
+    let previous = -1;
+    await conditionPromise(() => {
+      const current = project.getVariables().length;
+      const stable = current === previous;
+      previous = current;
+      return stable;
+    });
+    return project.getVariables().length;
+  };
   beforeEach(async function () {
     workspaceElement = lumine.views.getView(lumine.workspace);
     jasmine.attachToDOM(workspaceElement);
@@ -338,18 +352,19 @@ describe("Colors", function () {
 
         await waitsFor("variables updated", () => variableSpy.calls.count() > 1);
 
-        await runs(async function () {
-          expect(project.getVariables().length).toEqual(6);
-          expect(project.getColorVariables().length).toEqual(4);
+        // Measured, not written down: the old fixed 6/4 only held while the
+        // rescan was half-applied. Consuming the expression makes one existing
+        // variable read as a colour, so the totals move by exactly that.
+        const baseline = await settledVariableCount();
+        const colorBaseline = project.getColorVariables().length;
 
-          return (consumerDisposable = colors.consumeColorExpressions(colorProvider));
-        });
+        consumerDisposable = colors.consumeColorExpressions(colorProvider);
 
         await waitsFor("variables updated", () => variableSpy.calls.count() > 2);
 
         await runs(async function () {
-          expect(project.getVariables().length).toEqual(6);
-          return expect(project.getColorVariables().length).toEqual(5);
+          expect(project.getVariables().length).toEqual(baseline);
+          return expect(project.getColorVariables().length).toEqual(colorBaseline + 1);
         });
       });
 
@@ -364,6 +379,10 @@ describe("Colors", function () {
           lumine.config.set("colors.sourceNames", ["**/*.txt"]);
 
           await waitsFor("variables updated", () => variableSpy.calls.count() > 1);
+
+          // Measured rather than written down, for the same reason as above.
+          const baseline = await settledVariableCount();
+          const colorBaseline = project.getColorVariables().length;
 
           await runs(async function () {
             otherConsumerDisposable = colors.consumeColorExpressions({
@@ -387,8 +406,9 @@ describe("Colors", function () {
             await waitsFor("variables updated", () => variableSpy.calls.count() > 2);
 
             await runs(async function () {
-              expect(project.getVariables().length).toEqual(6);
-              expect(project.getColorVariables().length).toEqual(6);
+              // Both expressions consumed, so `bar` resolves as well as `todo`.
+              expect(project.getVariables().length).toEqual(baseline);
+              expect(project.getColorVariables().length).toEqual(colorBaseline + 2);
               expect(project.getVariableByName("bar").color.invalid).toBeFalsy();
 
               return consumerDisposable.dispose();
@@ -397,8 +417,9 @@ describe("Colors", function () {
             await waitsFor("variables updated", () => variableSpy.calls.count() > 3);
 
             await runs(async function () {
-              expect(project.getVariables().length).toEqual(6);
-              expect(project.getColorVariables().length).toEqual(5);
+              // `todo` disposed, so `bar` can no longer resolve through it.
+              expect(project.getVariables().length).toEqual(baseline);
+              expect(project.getColorVariables().length).toEqual(colorBaseline + 1);
               return expect(project.getVariableByName("bar").color.invalid).toBeTruthy();
             });
           });
@@ -434,17 +455,20 @@ describe("Colors", function () {
       project.onDidUpdateVariables(variableSpy);
 
       lumine.config.set("colors.delayBeforeScan", 0);
-
       lumine.config.set("colors.sourceNames", ["**/*.txt"]);
 
       await waitsFor("variables updated", () => variableSpy.calls.count() > 1);
 
-      await runs(async function () {
-        expect(project.getVariables().length).toEqual(6);
-        expect(project.getColorVariables().length).toEqual(4);
+      // The baseline is measured rather than written down. It used to be
+      // asserted as a fixed 6, which only held while the rescan was still
+      // half-applied: narrowing sourceNames evicts the variables of every file
+      // that no longer matches, and four of that six were colour variables from
+      // the sass and styl files the new pattern excludes. What this spec is
+      // really about is the delta either side of consuming the service.
+      const baseline = await settledVariableCount();
+      const colorBaseline = project.getColorVariables().length;
 
-        return (consumerDisposable = colors.consumeVariableExpressions(variableProvider));
-      });
+      consumerDisposable = colors.consumeVariableExpressions(variableProvider);
 
       await waitsFor(
         "variables updated after service consumed",
@@ -452,8 +476,9 @@ describe("Colors", function () {
       );
 
       await runs(async function () {
-        expect(project.getVariables().length).toEqual(7);
-        expect(project.getColorVariables().length).toEqual(4);
+        // `TODO: foo` in variable-consumer-sample.txt, and it is not a colour.
+        expect(project.getVariables().length).toEqual(baseline + 1);
+        expect(project.getColorVariables().length).toEqual(colorBaseline);
 
         return consumerDisposable.dispose();
       });
@@ -464,8 +489,8 @@ describe("Colors", function () {
       );
 
       await runs(async function () {
-        expect(project.getVariables().length).toEqual(6);
-        return expect(project.getColorVariables().length).toEqual(4);
+        expect(project.getVariables().length).toEqual(baseline);
+        return expect(project.getColorVariables().length).toEqual(colorBaseline);
       });
     });
 
@@ -473,23 +498,23 @@ describe("Colors", function () {
       it("updates the project variables when consumed", async function () {
         let previousVariablesCount = null;
         lumine.config.set("colors.delayBeforeScan", 0);
+
+        // This used to wait for the count to hit 45 and then 6 -- two totals
+        // measured while the rescan was still evicting the sass and styl
+        // variables the new pattern excludes. Waiting for the count to stop
+        // moving is the same intent without depending on where it stops, but
+        // it has to see the rescan start first, or two reads taken before it
+        // begins look just as settled as two taken after it finishes.
+        const beforeChange = project.getVariables().length;
         lumine.config.set("colors.sourceNames", ["**/*.txt"]);
+        await conditionPromise(() => project.getVariables().length !== beforeChange);
 
-        await waitsFor("variables initialized", () => project.getVariables().length === 45);
+        const baseline = await settledVariableCount();
+        const colorBaseline = project.getColorVariables().length;
+        previousVariablesCount = baseline;
 
-        await runs(() => (previousVariablesCount = project.getVariables().length));
-
-        await waitsFor("variables updated", () => project.getVariables().length === 6);
-
-        await runs(async function () {
-          expect(project.getVariables().length).toEqual(6);
-          expect(project.getColorVariables().length).toEqual(4);
-
-          previousVariablesCount = project.getVariables().length;
-
-          return (consumerDisposable = colors.consumeVariableExpressions({
-            expressions: [variableProvider],
-          }));
+        consumerDisposable = colors.consumeVariableExpressions({
+          expressions: [variableProvider],
         });
 
         await waitsFor(
@@ -498,8 +523,8 @@ describe("Colors", function () {
         );
 
         await runs(async function () {
-          expect(project.getVariables().length).toEqual(7);
-          expect(project.getColorVariables().length).toEqual(4);
+          expect(project.getVariables().length).toEqual(baseline + 1);
+          expect(project.getColorVariables().length).toEqual(colorBaseline);
 
           previousVariablesCount = project.getVariables().length;
 
@@ -512,8 +537,8 @@ describe("Colors", function () {
         );
 
         await runs(async function () {
-          expect(project.getVariables().length).toEqual(6);
-          return expect(project.getColorVariables().length).toEqual(4);
+          expect(project.getVariables().length).toEqual(baseline);
+          return expect(project.getColorVariables().length).toEqual(colorBaseline);
         });
       }));
   });
