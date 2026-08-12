@@ -18,3 +18,7 @@ Thumbs.db
 .idea/
 .vscode/
 *.sublime-workspace
+
+# Local lint scratch output
+lint*.txt
+lint*.json
