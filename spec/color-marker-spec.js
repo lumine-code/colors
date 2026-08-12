@@ -71,9 +71,9 @@ body {
     return it("replaces the text in the editor by the hexadecimal version", () =>
       expect(editor.getText()).toEqual(`\
 body {
-color: #ff0000;
-bar: foo;
-foo: bar;
+  color: #ff0000;
+  bar: foo;
+  foo: bar;
 }\
 `));
   });
@@ -84,9 +84,9 @@ foo: bar;
     it("replaces the text in the editor by the rgba version", () =>
       expect(editor.getText()).toEqual(`\
 body {
-color: rgba(255, 0, 0, 0.5);
-bar: foo;
-foo: bar;
+  color: rgba(255, 0, 0, 0.5);
+  bar: foo;
+  foo: bar;
 }\
 `));
 
@@ -99,9 +99,9 @@ foo: bar;
       return it("replaces the text in the editor by the rgba version", () =>
         expect(editor.getText()).toEqual(`\
 body {
-color: rgba(255, 0, 0, 1);
-bar: foo;
-foo: bar;
+  color: rgba(255, 0, 0, 1);
+  bar: foo;
+  foo: bar;
 }\
 `));
     });
@@ -116,9 +116,9 @@ foo: bar;
     it("replaces the text in the editor by the rgb version", () =>
       expect(editor.getText()).toEqual(`\
 body {
-color: rgb(255, 0, 0);
-bar: foo;
-foo: bar;
+  color: rgb(255, 0, 0);
+  bar: foo;
+  foo: bar;
 }\
 `));
 
@@ -128,9 +128,9 @@ foo: bar;
       return it("replaces the text in the editor by the rgb version", () =>
         expect(editor.getText()).toEqual(`\
 body {
-color: rgb(255, 0, 0);
-bar: foo;
-foo: bar;
+  color: rgb(255, 0, 0);
+  bar: foo;
+  foo: bar;
 }\
 `));
     });
@@ -142,9 +142,9 @@ foo: bar;
     it("replaces the text in the editor by the hsla version", () =>
       expect(editor.getText()).toEqual(`\
 body {
-color: hsla(0, 100%, 50%, 0.5);
-bar: foo;
-foo: bar;
+  color: hsla(0, 100%, 50%, 0.5);
+  bar: foo;
+  foo: bar;
 }\
 `));
 
@@ -157,9 +157,9 @@ foo: bar;
       return it("replaces the text in the editor by the hsla version", () =>
         expect(editor.getText()).toEqual(`\
 body {
-color: hsla(0, 100%, 50%, 1);
-bar: foo;
-foo: bar;
+  color: hsla(0, 100%, 50%, 1);
+  bar: foo;
+  foo: bar;
 }\
 `));
     });
@@ -174,9 +174,9 @@ foo: bar;
     it("replaces the text in the editor by the hsl version", () =>
       expect(editor.getText()).toEqual(`\
 body {
-color: hsl(0, 100%, 50%);
-bar: foo;
-foo: bar;
+  color: hsl(0, 100%, 50%);
+  bar: foo;
+  foo: bar;
 }\
 `));
 
@@ -186,9 +186,9 @@ foo: bar;
       return it("replaces the text in the editor by the hsl version", () =>
         expect(editor.getText()).toEqual(`\
 body {
-color: hsl(0, 100%, 50%);
-bar: foo;
-foo: bar;
+  color: hsl(0, 100%, 50%);
+  bar: foo;
+  foo: bar;
 }\
 `));
     });

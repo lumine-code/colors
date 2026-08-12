@@ -6,6 +6,9 @@
 # that are correct for the content but wrong for the file on disk.
 spec/fixtures/** text eol=lf
 
+# Except this one, whose whole point is to be scanned with CRLF endings.
+spec/fixtures/crlf.styl -text
+
 /docs export-ignore
 /spec export-ignore
 /.gitattributes export-ignore
