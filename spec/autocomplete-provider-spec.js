@@ -23,19 +23,24 @@ describe("autocomplete provider", function () {
 
       lumine.config.set("colors.autocompleteScopes", ["*"]);
       lumine.config.set("colors.sourceNames", ["**/*.styl", "**/*.less"]);
+      // The only `@`-prefixed variables in the fixtures are in a LESS file
+      // under a `vendor` directory, which the default ignores -- that fixture
+      // is what the ignore specs are about. Nothing here is testing the
+      // ignores, so they are turned off rather than worked around.
+      lumine.config.set("colors.ignoredNames", []);
 
       // Set to live completion
-      lumine.config.set("autocomplete-plus.enableAutoActivation", true);
+      lumine.config.set("autocomplete.enableAutoActivation", true);
       // Set the completion delay
       completionDelay = 100;
-      lumine.config.set("autocomplete-plus.autoActivationDelay", completionDelay);
+      lumine.config.set("autocomplete.autoActivationDelay", completionDelay);
       completionDelay += 100; // Rendering delay
       const workspaceElement = lumine.views.getView(lumine.workspace);
 
       return jasmineContent.appendChild(workspaceElement);
     });
 
-    await waitsForPromise("autocomplete-plus activation", () =>
+    await waitsForPromise("autocomplete activation", () =>
       lumine.packages
         .activatePackage("autocomplete")
         .then((pkg) => (autocompleteMain = pkg.mainModule)),
@@ -116,7 +121,7 @@ describe("autocomplete provider", function () {
       await waitsFor(() => editorView.querySelector("autocomplete-suggestion-list li") != null);
 
       await runs(async function () {
-        lumine.commands.dispatch(editorView, "autocomplete-plus:confirm");
+        lumine.commands.dispatch(editorView, "autocomplete:confirm");
         return expect(editor.getText()).not.toContain("@@");
       });
     });
@@ -138,7 +143,7 @@ describe("autocomplete provider", function () {
       await waitsFor(() => editorView.querySelector("autocomplete-suggestion-list li") != null);
 
       await runs(async function () {
-        lumine.commands.dispatch(editorView, "autocomplete-plus:confirm");
+        lumine.commands.dispatch(editorView, "autocomplete:confirm");
         expect(editor.getText()).toContain("$other-color");
         return expect(editor.getText()).not.toContain("$$");
       });
@@ -404,17 +409,17 @@ describe("autocomplete provider", function () {
         lumine.config.set("colors.sourceNames", ["**/*.sass", "**/*.scss"]);
 
         // Set to live completion
-        lumine.config.set("autocomplete-plus.enableAutoActivation", true);
+        lumine.config.set("autocomplete.enableAutoActivation", true);
         // Set the completion delay
         completionDelay = 100;
-        lumine.config.set("autocomplete-plus.autoActivationDelay", completionDelay);
+        lumine.config.set("autocomplete.autoActivationDelay", completionDelay);
         completionDelay += 100; // Rendering delay
         const workspaceElement = lumine.views.getView(lumine.workspace);
 
         return jasmineContent.appendChild(workspaceElement);
       });
 
-      await waitsForPromise("autocomplete-plus activation", () =>
+      await waitsForPromise("autocomplete activation", () =>
         lumine.packages
           .activatePackage("autocomplete")
           .then((pkg) => (autocompleteMain = pkg.mainModule)),
