@@ -54,7 +54,7 @@ describe("ColorContext", function () {
         expect(context.readColor(expression)).toBeColor(...Array.from(expected || [])));
     },
 
-    asInvalidColor(...expected) {
+    asInvalidColor(..._expected) {
       return it(`parses '${expression}' as an invalid color`, () =>
         expect(context.readColor(expression)).not.toBeValid());
     },

@@ -1,4 +1,4 @@
-﻿/*
+const { runs, waitsFor, waitsForPromise } = require("./helpers/waiters"); /*
  * decaffeinate suggestions:
  * DS101: Remove unnecessary use of Array.from
  * DS102: Remove unnecessary code created because of implicit returns
@@ -9,10 +9,10 @@ const { change } = require("./helpers/events");
 describe("ColorProjectElement", function () {
   let [colors, project, projectElement] = Array.from([]);
 
-  beforeEach(function () {
+  beforeEach(async function () {
     const jasmineContent = document.body.querySelector("#jasmine-content");
 
-    return waitsForPromise(() =>
+    await waitsForPromise(() =>
       lumine.packages.activatePackage("colors").then(function (pkg) {
         colors = pkg.mainModule;
         project = colors.getProject();
@@ -22,10 +22,10 @@ describe("ColorProjectElement", function () {
     );
   });
 
-  it("is bound to the ColorProject model", () => expect(projectElement).toExist());
+  it("is bound to the ColorProject model", async () => expect(projectElement).toExist());
 
   describe("typing in the sourceNames input", () =>
-    it("update the source names in the project", function () {
+    it("update the source names in the project", async function () {
       spyOn(project, "setSourceNames");
 
       projectElement.sourceNames.getModel().setText("foo, bar");
@@ -35,7 +35,7 @@ describe("ColorProjectElement", function () {
     }));
 
   describe("typing in the supportedFiletypes input", () =>
-    it("update the source names in the project", function () {
+    it("update the source names in the project", async function () {
       spyOn(project, "setSupportedFiletypes");
 
       projectElement.supportedFiletypes.getModel().setText("foo, bar");
@@ -45,7 +45,7 @@ describe("ColorProjectElement", function () {
     }));
 
   describe("typing in the searchNames input", () =>
-    it("update the search names in the project", function () {
+    it("update the search names in the project", async function () {
       spyOn(project, "setSearchNames");
 
       projectElement.searchNames.getModel().setText("foo, bar");
@@ -55,7 +55,7 @@ describe("ColorProjectElement", function () {
     }));
 
   describe("typing in the ignoredNames input", () =>
-    it("update the source names in the project", function () {
+    it("update the source names in the project", async function () {
       spyOn(project, "setIgnoredNames");
 
       projectElement.ignoredNames.getModel().setText("foo, bar");
@@ -65,7 +65,7 @@ describe("ColorProjectElement", function () {
     }));
 
   describe("typing in the ignoredScopes input", () =>
-    it("update the source names in the project", function () {
+    it("update the source names in the project", async function () {
       spyOn(project, "setIgnoredScopes");
 
       projectElement.ignoredScopes.getModel().setText("foo, bar");
@@ -75,7 +75,7 @@ describe("ColorProjectElement", function () {
     }));
 
   describe("changing the sass implementation", () =>
-    it("update the setting in the project", function () {
+    it("update the setting in the project", async function () {
       spyOn(project, "setSassShadeAndTintImplementation");
 
       projectElement.sassShadeAndTintImplementation.selectedIndex = 1;
@@ -85,7 +85,7 @@ describe("ColorProjectElement", function () {
     }));
 
   describe("toggling on the includeThemes checkbox", () =>
-    it("update the source names in the project", function () {
+    it("update the source names in the project", async function () {
       spyOn(project, "setIncludeThemes");
 
       projectElement.includeThemes.checked = true;
@@ -100,7 +100,7 @@ describe("ColorProjectElement", function () {
     }));
 
   describe("toggling on the ignoreGlobalSourceNames checkbox", () =>
-    it("update the source names in the project", function () {
+    it("update the source names in the project", async function () {
       spyOn(project, "setIgnoreGlobalSourceNames");
 
       projectElement.ignoreGlobalSourceNames.checked = true;
@@ -115,7 +115,7 @@ describe("ColorProjectElement", function () {
     }));
 
   describe("toggling on the ignoreGlobalSupportedFiletypes checkbox", () =>
-    it("update the source names in the project", function () {
+    it("update the source names in the project", async function () {
       spyOn(project, "setIgnoreGlobalSupportedFiletypes");
 
       projectElement.ignoreGlobalSupportedFiletypes.checked = true;
@@ -130,7 +130,7 @@ describe("ColorProjectElement", function () {
     }));
 
   describe("toggling on the ignoreGlobalIgnoredNames checkbox", () =>
-    it("update the ignored names in the project", function () {
+    it("update the ignored names in the project", async function () {
       spyOn(project, "setIgnoreGlobalIgnoredNames");
 
       projectElement.ignoreGlobalIgnoredNames.checked = true;
@@ -145,7 +145,7 @@ describe("ColorProjectElement", function () {
     }));
 
   describe("toggling on the ignoreGlobalIgnoredScopes checkbox", () =>
-    it("update the ignored scopes in the project", function () {
+    it("update the ignored scopes in the project", async function () {
       spyOn(project, "setIgnoreGlobalIgnoredScopes");
 
       projectElement.ignoreGlobalIgnoredScopes.checked = true;
@@ -160,7 +160,7 @@ describe("ColorProjectElement", function () {
     }));
 
   return describe("toggling on the ignoreGlobalSearchNames checkbox", () =>
-    it("update the search names in the project", function () {
+    it("update the search names in the project", async function () {
       spyOn(project, "setIgnoreGlobalSearchNames");
 
       projectElement.ignoreGlobalSearchNames.checked = true;

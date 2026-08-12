@@ -1,4 +1,4 @@
-﻿/*
+﻿const { runs, waitsFor, waitsForPromise } = require("./helpers/waiters"); /*
  * decaffeinate suggestions:
  * DS101: Remove unnecessary use of Array.from
  * DS102: Remove unnecessary code created because of implicit returns
@@ -10,21 +10,21 @@ const ColorSearch = require("../lib/color-search");
 describe("ColorResultsElement", function () {
   let [search, resultsElement, colors, project, completeSpy, findSpy] = Array.from([]);
 
-  beforeEach(function () {
+  beforeEach(async function () {
     lumine.config.set("colors.sourceNames", ["**/*.styl", "**/*.less"]);
 
-    waitsForPromise(() =>
+    await waitsForPromise(() =>
       lumine.packages.activatePackage("colors").then(function (pkg) {
         colors = pkg.mainModule;
         return (project = colors.getProject());
       }),
     );
 
-    waitsForPromise(() => project.initialize());
+    await waitsForPromise(() => project.initialize());
 
-    return runs(function () {
+    await runs(async function () {
       search = project.findAllColors();
-      spyOn(search, "search").andCallThrough();
+      spyOn(search, "search").and.callThrough();
       completeSpy = jasmine.createSpy("did-complete-search");
       search.onDidCompleteSearch(completeSpy);
 
@@ -34,16 +34,16 @@ describe("ColorResultsElement", function () {
     });
   });
 
-  afterEach(() => waitsFor(() => completeSpy.callCount > 0));
+  afterEach(async () => await waitsFor(() => completeSpy.calls.count() > 0));
 
-  it("is associated with ColorSearch model", () => expect(resultsElement).toBeDefined());
+  it("is associated with ColorSearch model", async () => expect(resultsElement).toBeDefined());
 
-  it("starts the search", () => expect(search.search).toHaveBeenCalled());
+  it("starts the search", async () => expect(search.search).toHaveBeenCalled());
 
   return describe("when matches are found", function () {
-    beforeEach(() => waitsFor(() => completeSpy.callCount > 0));
+    beforeEach(async () => await waitsFor(() => completeSpy.calls.count() > 0));
 
-    it("groups results by files", function () {
+    it("groups results by files", async function () {
       const fileResults = resultsElement.querySelectorAll(".list-nested-item");
 
       expect(fileResults.length).toEqual(8);
@@ -53,30 +53,30 @@ describe("ColorResultsElement", function () {
 
     describe("when a file item is clicked", function () {
       let [fileItem] = Array.from([]);
-      beforeEach(function () {
+      beforeEach(async function () {
         fileItem = resultsElement.querySelector(".list-nested-item > .list-item");
         return click(fileItem);
       });
 
-      return it("collapses the file matches", () =>
+      return it("collapses the file matches", async () =>
         expect(resultsElement.querySelector(".list-nested-item.collapsed")).toExist());
     });
 
     return describe("when a matches item is clicked", function () {
       let [matchItem, spy] = Array.from([]);
-      beforeEach(function () {
+      beforeEach(async function () {
         spy = jasmine.createSpy("did-add-text-editor");
 
         lumine.workspace.onDidAddTextEditor(spy);
         matchItem = resultsElement.querySelector(".search-result.list-item");
         click(matchItem);
 
-        return waitsFor(() => spy.callCount > 0);
+        await waitsFor(() => spy.calls.count() > 0);
       });
 
-      return it("opens the file", function () {
+      return it("opens the file", async function () {
         expect(spy).toHaveBeenCalled();
-        const { textEditor } = spy.argsForCall[0][0];
+        const { textEditor } = spy.calls.argsFor(0)[0];
         return expect(textEditor.getSelectedBufferRange()).toEqual([
           [1, 13],
           [1, 23],

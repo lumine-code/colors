@@ -51,7 +51,7 @@ describe("VariablesCollection", function () {
       it("dispatches a change event", function () {
         expect(changeSpy).toHaveBeenCalled();
 
-        const arg = changeSpy.mostRecentCall.args[0];
+        const arg = changeSpy.calls.mostRecent().args[0];
         expect(arg.created.length).toEqual(5);
         expect(arg.destroyed).toBeUndefined();
         return expect(arg.updated).toBeUndefined();
@@ -79,7 +79,8 @@ describe("VariablesCollection", function () {
           return expect(collection.getColorVariables().length).toEqual(2);
         });
 
-        return it("does not trigger an update event", () => expect(changeSpy.callCount).toEqual(1));
+        return it("does not trigger an update event", () =>
+          expect(changeSpy.calls.count()).toEqual(1));
       });
 
       return describe("appending an already existing variable with a different value", function () {
@@ -104,9 +105,9 @@ describe("VariablesCollection", function () {
           });
 
           return it("emits a change event", function () {
-            expect(changeSpy.callCount).toEqual(2);
+            expect(changeSpy.calls.count()).toEqual(2);
 
-            const arg = changeSpy.mostRecentCall.args[0];
+            const arg = changeSpy.calls.mostRecent().args[0];
             expect(arg.created).toBeUndefined();
             expect(arg.destroyed).toBeUndefined();
             return expect(arg.updated.length).toEqual(2);
@@ -132,9 +133,9 @@ describe("VariablesCollection", function () {
           });
 
           return it("emits a change event", function () {
-            expect(changeSpy.callCount).toEqual(2);
+            expect(changeSpy.calls.count()).toEqual(2);
 
-            const arg = changeSpy.mostRecentCall.args[0];
+            const arg = changeSpy.calls.mostRecent().args[0];
             expect(arg.created.length).toEqual(1);
             expect(arg.destroyed).toBeUndefined();
             return expect(arg.updated.length).toEqual(1);
@@ -162,9 +163,9 @@ describe("VariablesCollection", function () {
           });
 
           return it("emits a change event", function () {
-            expect(changeSpy.callCount).toEqual(2);
+            expect(changeSpy.calls.count()).toEqual(2);
 
-            const arg = changeSpy.mostRecentCall.args[0];
+            const arg = changeSpy.calls.mostRecent().args[0];
             expect(arg.created).toBeUndefined();
             expect(arg.destroyed).toBeUndefined();
             return expect(arg.updated.length).toEqual(2);
@@ -200,8 +201,8 @@ describe("VariablesCollection", function () {
           });
 
           return it("emits a change event", function () {
-            const arg = changeSpy.mostRecentCall.args[0];
-            expect(changeSpy.callCount).toEqual(2);
+            const arg = changeSpy.calls.mostRecent().args[0];
+            expect(changeSpy.calls.count()).toEqual(2);
 
             expect(arg.created).toBeUndefined();
             expect(arg.destroyed).toBeUndefined();
@@ -300,7 +301,7 @@ describe("VariablesCollection", function () {
         it("dispatches a change event", function () {
           expect(changeSpy).toHaveBeenCalled();
 
-          const arg = changeSpy.mostRecentCall.args[0];
+          const arg = changeSpy.calls.mostRecent().args[0];
           expect(arg.created).toBeUndefined();
           expect(arg.destroyed.length).toEqual(2);
           return expect(arg.updated).toBeUndefined();
@@ -331,7 +332,7 @@ describe("VariablesCollection", function () {
         it("dispatches a change event", function () {
           expect(changeSpy).toHaveBeenCalled();
 
-          const arg = changeSpy.mostRecentCall.args[0];
+          const arg = changeSpy.calls.mostRecent().args[0];
           expect(arg.created).toBeUndefined();
           expect(arg.destroyed.length).toEqual(1);
           return expect(arg.updated.length).toEqual(1);
@@ -385,9 +386,9 @@ describe("VariablesCollection", function () {
         return it("detects the addition and leave the rest of the collection unchanged", function () {
           expect(collection.length).toEqual(6);
           expect(collection.getColorVariables().length).toEqual(3);
-          expect(changeSpy.mostRecentCall.args[0].created.length).toEqual(1);
-          expect(changeSpy.mostRecentCall.args[0].destroyed).toBeUndefined();
-          return expect(changeSpy.mostRecentCall.args[0].updated).toBeUndefined();
+          expect(changeSpy.calls.mostRecent().args[0].created.length).toEqual(1);
+          expect(changeSpy.calls.mostRecent().args[0].destroyed).toBeUndefined();
+          return expect(changeSpy.calls.mostRecent().args[0].updated).toBeUndefined();
         });
       });
 
@@ -404,9 +405,9 @@ describe("VariablesCollection", function () {
         return it("removes the variable that is not present in the new array", function () {
           expect(collection.length).toEqual(4);
           expect(collection.getColorVariables().length).toEqual(2);
-          expect(changeSpy.mostRecentCall.args[0].destroyed.length).toEqual(1);
-          expect(changeSpy.mostRecentCall.args[0].created).toBeUndefined();
-          return expect(changeSpy.mostRecentCall.args[0].updated).toBeUndefined();
+          expect(changeSpy.calls.mostRecent().args[0].destroyed.length).toEqual(1);
+          expect(changeSpy.calls.mostRecent().args[0].created).toBeUndefined();
+          return expect(changeSpy.calls.mostRecent().args[0].updated).toBeUndefined();
         });
       });
 
@@ -424,9 +425,9 @@ describe("VariablesCollection", function () {
         return it("detects the update", function () {
           expect(collection.length).toEqual(5);
           expect(collection.getColorVariables().length).toEqual(4);
-          expect(changeSpy.mostRecentCall.args[0].updated.length).toEqual(2);
-          expect(changeSpy.mostRecentCall.args[0].destroyed).toBeUndefined();
-          return expect(changeSpy.mostRecentCall.args[0].created).toBeUndefined();
+          expect(changeSpy.calls.mostRecent().args[0].updated.length).toEqual(2);
+          expect(changeSpy.calls.mostRecent().args[0].destroyed).toBeUndefined();
+          return expect(changeSpy.calls.mostRecent().args[0].created).toBeUndefined();
         });
       });
     });

@@ -1,4 +1,4 @@
-﻿/*
+const { runs, waitsFor, waitsForPromise } = require("./helpers/waiters"); /*
  * decaffeinate suggestions:
  * DS101: Remove unnecessary use of Array.from
  * DS102: Remove unnecessary code created because of implicit returns
@@ -15,16 +15,16 @@ describe("VariableScanner", function () {
 
   const withTextEditor = (fixture, block) =>
     describe(`with ${fixture} buffer`, function () {
-      beforeEach(function () {
-        waitsForPromise(() => lumine.workspace.open(fixture));
-        return runs(function () {
+      beforeEach(async function () {
+        await waitsForPromise(() => lumine.workspace.open(fixture));
+        await runs(async function () {
           editor = lumine.workspace.getActiveTextEditor();
           text = editor.getText();
           return (scope = scopeFromFileName(editor.getPath()));
         });
       });
 
-      afterEach(function () {
+      afterEach(async function () {
         editor = null;
         return (scope = null);
       });
@@ -34,9 +34,9 @@ describe("VariableScanner", function () {
 
   const withScannerForTextEditor = (fixture, block) =>
     withTextEditor(fixture, function () {
-      beforeEach(() => (scanner = new VariableScanner({ registry, scope })));
+      beforeEach(async () => (scanner = new VariableScanner({ registry, scope })));
 
-      afterEach(() => (scanner = null));
+      afterEach(async () => (scanner = null));
 
       return block();
     });
@@ -45,18 +45,18 @@ describe("VariableScanner", function () {
     let [result] = Array.from([]);
 
     withScannerForTextEditor("four-variables.styl", function () {
-      beforeEach(() => (result = scanner.search(text)));
+      beforeEach(async () => (result = scanner.search(text)));
 
-      it("returns the first match", () => expect(result).toBeDefined());
+      it("returns the first match", async () => expect(result).toBeDefined());
 
       describe("the result object", function () {
-        it("has a match string", () => expect(result.match).toEqual("base-color = #fff"));
+        it("has a match string", async () => expect(result.match).toEqual("base-color = #fff"));
 
-        it("has a lastIndex property", () => expect(result.lastIndex).toEqual(17));
+        it("has a lastIndex property", async () => expect(result.lastIndex).toEqual(17));
 
-        it("has a range property", () => expect(result.range).toEqual([0, 17]));
+        it("has a range property", async () => expect(result.range).toEqual([0, 17]));
 
-        return it("has a variable result", function () {
+        return it("has a variable result", async function () {
           expect(result[0].name).toEqual("base-color");
           expect(result[0].value).toEqual("#fff");
           expect(result[0].range).toEqual([0, 17]);
@@ -65,16 +65,16 @@ describe("VariableScanner", function () {
       });
 
       describe("the second result object", function () {
-        beforeEach(() => (result = scanner.search(text, result.lastIndex)));
+        beforeEach(async () => (result = scanner.search(text, result.lastIndex)));
 
-        it("has a match string", () =>
+        it("has a match string", async () =>
           expect(result.match).toEqual("other-color = transparentize(base-color, 50%)"));
 
-        it("has a lastIndex property", () => expect(result.lastIndex).toEqual(64));
+        it("has a lastIndex property", async () => expect(result.lastIndex).toEqual(64));
 
-        it("has a range property", () => expect(result.range).toEqual([19, 64]));
+        it("has a range property", async () => expect(result.range).toEqual([19, 64]));
 
-        return it("has a variable result", function () {
+        return it("has a variable result", async function () {
           expect(result[0].name).toEqual("other-color");
           expect(result[0].value).toEqual("transparentize(base-color, 50%)");
           expect(result[0].range).toEqual([19, 64]);
@@ -83,7 +83,7 @@ describe("VariableScanner", function () {
       });
 
       return describe("successive searches", () =>
-        it("returns a result for each match and then undefined", function () {
+        it("returns a result for each match and then undefined", async function () {
           const doSearch = () => (result = scanner.search(text, result.lastIndex));
 
           expect(doSearch()).toBeDefined();
@@ -94,25 +94,25 @@ describe("VariableScanner", function () {
     });
 
     withScannerForTextEditor("incomplete-stylus-hash.styl", function () {
-      beforeEach(() => (result = scanner.search(text)));
+      beforeEach(async () => (result = scanner.search(text)));
 
-      return it("does not find any variables", () => expect(result).toBeUndefined());
+      return it("does not find any variables", async () => expect(result).toBeUndefined());
     });
 
     withScannerForTextEditor("variables-in-arguments.scss", function () {
-      beforeEach(() => (result = scanner.search(text)));
+      beforeEach(async () => (result = scanner.search(text)));
 
-      return it("does not find any variables", () => expect(result).toBeUndefined());
+      return it("does not find any variables", async () => expect(result).toBeUndefined());
     });
 
     withScannerForTextEditor("attribute-selectors.scss", function () {
-      beforeEach(() => (result = scanner.search(text)));
+      beforeEach(async () => (result = scanner.search(text)));
 
-      return it("does not find any variables", () => expect(result).toBeUndefined());
+      return it("does not find any variables", async () => expect(result).toBeUndefined());
     });
 
     withScannerForTextEditor("variables-in-conditions.scss", function () {
-      beforeEach(function () {
+      beforeEach(async function () {
         result = null;
         const doSearch = () =>
           (result = scanner.search(text, result != null ? result.lastIndex : undefined));
@@ -121,12 +121,12 @@ describe("VariableScanner", function () {
         return doSearch();
       });
 
-      return it("does not find the variable in the if clause", () =>
+      return it("does not find the variable in the if clause", async () =>
         expect(result).toBeUndefined());
     });
 
     withScannerForTextEditor("variables-after-mixins.scss", function () {
-      beforeEach(function () {
+      beforeEach(async function () {
         result = null;
         const doSearch = () =>
           (result = scanner.search(text, result != null ? result.lastIndex : undefined));
@@ -134,11 +134,11 @@ describe("VariableScanner", function () {
         return doSearch();
       });
 
-      return it("finds the variable after the mixin", () => expect(result).toBeDefined());
+      return it("finds the variable after the mixin", async () => expect(result).toBeDefined());
     });
 
     withScannerForTextEditor("variables-from-other-process.less", function () {
-      beforeEach(function () {
+      beforeEach(async function () {
         result = null;
         const doSearch = () =>
           (result = scanner.search(text, result != null ? result.lastIndex : undefined));
@@ -146,11 +146,12 @@ describe("VariableScanner", function () {
         return doSearch();
       });
 
-      return it("finds the variable with an interpolation tag", () => expect(result).toBeDefined());
+      return it("finds the variable with an interpolation tag", async () =>
+        expect(result).toBeDefined());
     });
 
     return withScannerForTextEditor("crlf.styl", function () {
-      beforeEach(function () {
+      beforeEach(async function () {
         result = null;
         const doSearch = () =>
           (result = scanner.search(text, result != null ? result.lastIndex : undefined));
@@ -159,7 +160,8 @@ describe("VariableScanner", function () {
         return doSearch();
       });
 
-      return it("finds all the variables even with crlf mode", () => expect(result).toBeDefined());
+      return it("finds all the variables even with crlf mode", async () =>
+        expect(result).toBeDefined());
     });
   });
 });

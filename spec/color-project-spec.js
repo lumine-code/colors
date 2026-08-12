@@ -1,4 +1,4 @@
-﻿/*
+﻿const { runs, waitsFor, waitsForPromise } = require("./helpers/waiters"); /*
  * decaffeinate suggestions:
  * DS101: Remove unnecessary use of Array.from
  * DS102: Remove unnecessary code created because of implicit returns
@@ -6,9 +6,8 @@
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
  */
 const os = require("os");
-const fs = require("fs-plus");
+const fs = require("fs");
 const path = require("path");
-const temp = require("temp");
 
 const { SERIALIZE_VERSION, SERIALIZE_MARKERS_VERSION } = require("../lib/versions");
 const ColorProject = require("../lib/color-project");
@@ -22,7 +21,7 @@ const TOTAL_COLORS_VARIABLES_IN_PROJECT = 10;
 describe("ColorProject", function () {
   let [project, promise, rootPath, paths, eventSpy] = Array.from([]);
 
-  beforeEach(function () {
+  beforeEach(async function () {
     lumine.config.set("colors.sourceNames", ["*.styl"]);
     lumine.config.set("colors.ignoredNames", []);
     lumine.config.set("colors.filetypesForColorWords", ["*"]);
@@ -38,10 +37,10 @@ describe("ColorProject", function () {
     }));
   });
 
-  afterEach(() => project.destroy());
+  afterEach(async () => project.destroy());
 
   describe(".deserialize", () =>
-    it("restores the project in its previous state", function () {
+    it("restores the project in its previous state", async function () {
       const data = {
         root: rootPath,
         timestamp: new Date().toJSON(),
@@ -62,28 +61,28 @@ describe("ColorProject", function () {
     }));
 
   describe("::initialize", function () {
-    beforeEach(function () {
+    beforeEach(async function () {
       eventSpy = jasmine.createSpy("did-initialize");
       project.onDidInitialize(eventSpy);
-      return waitsForPromise(() => project.initialize());
+      await waitsForPromise(() => project.initialize());
     });
 
-    it("loads the paths to scan in the project", () =>
+    it("loads the paths to scan in the project", async () =>
       expect(project.getPaths()).toEqual([
         `${rootPath}/styles/buttons.styl`,
         `${rootPath}/styles/variables.styl`,
       ]));
 
-    it("scans the loaded paths to retrieve the variables", function () {
+    it("scans the loaded paths to retrieve the variables", async function () {
       expect(project.getVariables()).toBeDefined();
       return expect(project.getVariables().length).toEqual(TOTAL_VARIABLES_IN_PROJECT);
     });
 
-    return it("dispatches a did-initialize event", () => expect(eventSpy).toHaveBeenCalled());
+    return it("dispatches a did-initialize event", async () => expect(eventSpy).toHaveBeenCalled());
   });
 
   describe("::findAllColors", () =>
-    it("returns all the colors in the legibles files of the project", function () {
+    it("returns all the colors in the legibles files of the project", async function () {
       const search = project.findAllColors();
       return expect(search).toBeDefined();
     }));
@@ -106,9 +105,9 @@ describe("ColorProject", function () {
 
   describe("when the variables have not been loaded yet", function () {
     describe("::serialize", () =>
-      it("returns an object without paths nor variables", function () {
+      it("returns an object without paths nor variables", async function () {
         const date = new Date();
-        spyOn(project, "getTimestamp").andCallFake(() => date);
+        spyOn(project, "getTimestamp").and.callFake(() => date);
         const expected = {
           deserializer: "ColorProject",
           timestamp: date,
@@ -125,59 +124,60 @@ describe("ColorProject", function () {
       }));
 
     describe("::getVariablesForPath", () =>
-      it("returns undefined", () =>
+      it("returns undefined", async () =>
         expect(project.getVariablesForPath(`${rootPath}/styles/variables.styl`)).toEqual([])));
 
     describe("::getVariableByName", () =>
-      it("returns undefined", () => expect(project.getVariableByName("foo")).toBeUndefined()));
+      it("returns undefined", async () =>
+        expect(project.getVariableByName("foo")).toBeUndefined()));
 
     describe("::getVariableById", () =>
-      it("returns undefined", () => expect(project.getVariableById(0)).toBeUndefined()));
+      it("returns undefined", async () => expect(project.getVariableById(0)).toBeUndefined()));
 
     describe("::getContext", () =>
-      it("returns an empty context", function () {
+      it("returns an empty context", async function () {
         expect(project.getContext()).toBeDefined();
         return expect(project.getContext().getVariablesCount()).toEqual(0);
       }));
 
     describe("::getPalette", () =>
-      it("returns an empty palette", function () {
+      it("returns an empty palette", async function () {
         expect(project.getPalette()).toBeDefined();
         return expect(project.getPalette().getColorsCount()).toEqual(0);
       }));
 
     describe("::reloadVariablesForPath", function () {
-      beforeEach(function () {
-        spyOn(project, "initialize").andCallThrough();
+      beforeEach(async function () {
+        spyOn(project, "initialize").and.callThrough();
 
-        return waitsForPromise(() =>
+        await waitsForPromise(() =>
           project.reloadVariablesForPath(`${rootPath}/styles/variables.styl`),
         );
       });
 
-      return it("returns a promise hooked on the initialize promise", () =>
+      return it("returns a promise hooked on the initialize promise", async () =>
         expect(project.initialize).toHaveBeenCalled());
     });
 
     describe("::setIgnoredNames", function () {
-      beforeEach(function () {
+      beforeEach(async function () {
         project.setIgnoredNames([]);
 
-        return waitsForPromise(() => project.initialize());
+        await waitsForPromise(() => project.initialize());
       });
 
-      return it("initializes the project with the new paths", () =>
+      return it("initializes the project with the new paths", async () =>
         expect(project.getVariables().length).toEqual(32));
     });
 
     return describe("::setSourceNames", function () {
-      beforeEach(function () {
+      beforeEach(async function () {
         project.setSourceNames([]);
 
-        return waitsForPromise(() => project.initialize());
+        await waitsForPromise(() => project.initialize());
       });
 
-      return it("initializes the project with the new paths", () =>
+      return it("initializes the project with the new paths", async () =>
         expect(project.getVariables().length).toEqual(12));
     });
   });
@@ -199,7 +199,7 @@ describe("ColorProject", function () {
   //#    ########  #######  ##     ## ########  ######## ########
 
   describe("when the project has no variables source files", function () {
-    beforeEach(function () {
+    beforeEach(async function () {
       lumine.config.set("colors.sourceNames", ["*.sass"]);
 
       const [fixturesPath] = Array.from(lumine.project.getPaths());
@@ -208,37 +208,38 @@ describe("ColorProject", function () {
 
       project = new ColorProject({});
 
-      return waitsForPromise(() => project.initialize());
+      await waitsForPromise(() => project.initialize());
     });
 
-    it("initializes the paths with an empty array", () => expect(project.getPaths()).toEqual([]));
+    it("initializes the paths with an empty array", async () =>
+      expect(project.getPaths()).toEqual([]));
 
-    return it("initializes the variables with an empty array", () =>
+    return it("initializes the variables with an empty array", async () =>
       expect(project.getVariables()).toEqual([]));
   });
 
   describe("when the project has custom source names defined", function () {
-    beforeEach(function () {
+    beforeEach(async function () {
       lumine.config.set("colors.sourceNames", ["*.sass"]);
 
       const [fixturesPath] = Array.from(lumine.project.getPaths());
 
       project = new ColorProject({ sourceNames: ["*.styl"] });
 
-      return waitsForPromise(() => project.initialize());
+      await waitsForPromise(() => project.initialize());
     });
 
-    it("initializes the paths with an empty array", () =>
+    it("initializes the paths with an empty array", async () =>
       expect(project.getPaths().length).toEqual(2));
 
-    return it("initializes the variables with an empty array", function () {
+    return it("initializes the variables with an empty array", async function () {
       expect(project.getVariables().length).toEqual(TOTAL_VARIABLES_IN_PROJECT);
       return expect(project.getColorVariables().length).toEqual(TOTAL_COLORS_VARIABLES_IN_PROJECT);
     });
   });
 
   describe("when the project has looping variable definition", function () {
-    beforeEach(function () {
+    beforeEach(async function () {
       lumine.config.set("colors.sourceNames", ["*.sass"]);
 
       const [fixturesPath] = Array.from(lumine.project.getPaths());
@@ -247,22 +248,22 @@ describe("ColorProject", function () {
 
       project = new ColorProject({});
 
-      return waitsForPromise(() => project.initialize());
+      await waitsForPromise(() => project.initialize());
     });
 
-    return it("ignores the looping definition", function () {
+    return it("ignores the looping definition", async function () {
       expect(project.getVariables().length).toEqual(5);
       return expect(project.getColorVariables().length).toEqual(5);
     });
   });
 
   describe("when the variables have been loaded", function () {
-    beforeEach(() => waitsForPromise(() => project.initialize()));
+    beforeEach(async () => await waitsForPromise(() => project.initialize()));
 
     describe("::serialize", () =>
-      it("returns an object with project properties", function () {
+      it("returns an object with project properties", async function () {
         const date = new Date();
-        spyOn(project, "getTimestamp").andCallFake(() => date);
+        spyOn(project, "getTimestamp").and.callFake(() => date);
         return expect(project.serialize()).toEqual({
           deserializer: "ColorProject",
           ignoredNames: ["vendor/*"],
@@ -280,47 +281,47 @@ describe("ColorProject", function () {
       }));
 
     describe("::getVariablesForPath", function () {
-      it("returns the variables defined in the file", () =>
+      it("returns the variables defined in the file", async () =>
         expect(project.getVariablesForPath(`${rootPath}/styles/variables.styl`).length).toEqual(
           TOTAL_VARIABLES_IN_PROJECT,
         ));
 
       return describe("for a file that was ignored in the scanning process", () =>
-        it("returns undefined", () =>
+        it("returns undefined", async () =>
           expect(project.getVariablesForPath(`${rootPath}/vendor/css/variables.less`)).toEqual(
             [],
           )));
     });
 
     describe("::deleteVariablesForPath", () =>
-      it("removes all the variables coming from the specified file", function () {
+      it("removes all the variables coming from the specified file", async function () {
         project.deleteVariablesForPath(`${rootPath}/styles/variables.styl`);
 
         return expect(project.getVariablesForPath(`${rootPath}/styles/variables.styl`)).toEqual([]);
       }));
 
     describe("::getContext", () =>
-      it("returns a context with the project variables", function () {
+      it("returns a context with the project variables", async function () {
         expect(project.getContext()).toBeDefined();
         return expect(project.getContext().getVariablesCount()).toEqual(TOTAL_VARIABLES_IN_PROJECT);
       }));
 
     describe("::getPalette", () =>
-      it("returns a palette with the colors from the project", function () {
+      it("returns a palette with the colors from the project", async function () {
         expect(project.getPalette()).toBeDefined();
         return expect(project.getPalette().getColorsCount()).toEqual(10);
       }));
 
     describe("::showVariableInFile", () =>
-      it("opens the file where is located the variable", function () {
+      it("opens the file where is located the variable", async function () {
         const spy = jasmine.createSpy("did-add-text-editor");
         lumine.workspace.onDidAddTextEditor(spy);
 
         project.showVariableInFile(project.getVariables()[0]);
 
-        waitsFor(() => spy.callCount > 0);
+        await waitsFor(() => spy.calls.count() > 0);
 
-        return runs(function () {
+        await runs(async function () {
           const editor = lumine.workspace.getActiveTextEditor();
 
           return expect(editor.getSelectedBufferRange()).toEqual([
@@ -333,36 +334,36 @@ describe("ColorProject", function () {
     describe("::reloadVariablesForPath", () =>
       describe("for a file that is part of the loaded paths", function () {
         describe("where the reload finds new variables", function () {
-          beforeEach(function () {
+          beforeEach(async function () {
             project.deleteVariablesForPath(`${rootPath}/styles/variables.styl`);
 
             eventSpy = jasmine.createSpy("did-update-variables");
             project.onDidUpdateVariables(eventSpy);
-            return waitsForPromise(() =>
+            await waitsForPromise(() =>
               project.reloadVariablesForPath(`${rootPath}/styles/variables.styl`),
             );
           });
 
-          it("scans again the file to find variables", () =>
+          it("scans again the file to find variables", async () =>
             expect(project.getVariables().length).toEqual(TOTAL_VARIABLES_IN_PROJECT));
 
-          return it("dispatches a did-update-variables event", () =>
+          return it("dispatches a did-update-variables event", async () =>
             expect(eventSpy).toHaveBeenCalled());
         });
 
         return describe("where the reload finds nothing new", function () {
-          beforeEach(function () {
+          beforeEach(async function () {
             eventSpy = jasmine.createSpy("did-update-variables");
             project.onDidUpdateVariables(eventSpy);
-            return waitsForPromise(() =>
+            await waitsForPromise(() =>
               project.reloadVariablesForPath(`${rootPath}/styles/variables.styl`),
             );
           });
 
-          it("leaves the file variables intact", () =>
+          it("leaves the file variables intact", async () =>
             expect(project.getVariables().length).toEqual(TOTAL_VARIABLES_IN_PROJECT));
 
-          return it("does not dispatch a did-update-variables event", () =>
+          return it("does not dispatch a did-update-variables event", async () =>
             expect(eventSpy).not.toHaveBeenCalled());
         });
       }));
@@ -370,14 +371,14 @@ describe("ColorProject", function () {
     describe("::reloadVariablesForPaths", function () {
       describe("for a file that is part of the loaded paths", function () {
         describe("where the reload finds new variables", function () {
-          beforeEach(function () {
+          beforeEach(async function () {
             project.deleteVariablesForPaths([
               `${rootPath}/styles/variables.styl`,
               `${rootPath}/styles/buttons.styl`,
             ]);
             eventSpy = jasmine.createSpy("did-update-variables");
             project.onDidUpdateVariables(eventSpy);
-            return waitsForPromise(() =>
+            await waitsForPromise(() =>
               project.reloadVariablesForPaths([
                 `${rootPath}/styles/variables.styl`,
                 `${rootPath}/styles/buttons.styl`,
@@ -385,18 +386,18 @@ describe("ColorProject", function () {
             );
           });
 
-          it("scans again the file to find variables", () =>
+          it("scans again the file to find variables", async () =>
             expect(project.getVariables().length).toEqual(TOTAL_VARIABLES_IN_PROJECT));
 
-          return it("dispatches a did-update-variables event", () =>
+          return it("dispatches a did-update-variables event", async () =>
             expect(eventSpy).toHaveBeenCalled());
         });
 
         return describe("where the reload finds nothing new", function () {
-          beforeEach(function () {
+          beforeEach(async function () {
             eventSpy = jasmine.createSpy("did-update-variables");
             project.onDidUpdateVariables(eventSpy);
-            return waitsForPromise(() =>
+            await waitsForPromise(() =>
               project.reloadVariablesForPaths([
                 `${rootPath}/styles/variables.styl`,
                 `${rootPath}/styles/buttons.styl`,
@@ -404,53 +405,53 @@ describe("ColorProject", function () {
             );
           });
 
-          it("leaves the file variables intact", () =>
+          it("leaves the file variables intact", async () =>
             expect(project.getVariables().length).toEqual(TOTAL_VARIABLES_IN_PROJECT));
 
-          return it("does not dispatch a did-update-variables event", () =>
+          return it("does not dispatch a did-update-variables event", async () =>
             expect(eventSpy).not.toHaveBeenCalled());
         });
       });
 
       return describe("for a file that is not part of the loaded paths", function () {
-        beforeEach(function () {
-          spyOn(project, "loadVariablesForPath").andCallThrough();
+        beforeEach(async function () {
+          spyOn(project, "loadVariablesForPath").and.callThrough();
 
-          return waitsForPromise(() =>
+          await waitsForPromise(() =>
             project.reloadVariablesForPath(`${rootPath}/vendor/css/variables.less`),
           );
         });
 
-        return it("does nothing", () =>
+        return it("does nothing", async () =>
           expect(project.loadVariablesForPath).not.toHaveBeenCalled());
       });
     });
 
     describe("when a buffer with variables is open", function () {
       let [editor, colorBuffer] = Array.from([]);
-      beforeEach(function () {
+      beforeEach(async function () {
         eventSpy = jasmine.createSpy("did-update-variables");
         project.onDidUpdateVariables(eventSpy);
 
-        waitsForPromise(() =>
+        await waitsForPromise(() =>
           lumine.workspace.open("styles/variables.styl").then((o) => (editor = o)),
         );
 
-        runs(function () {
+        await runs(async function () {
           colorBuffer = project.colorBufferForEditor(editor);
-          return spyOn(colorBuffer, "scanBufferForVariables").andCallThrough();
+          return spyOn(colorBuffer, "scanBufferForVariables").and.callThrough();
         });
 
-        waitsForPromise(() => project.initialize());
-        return waitsForPromise(() => colorBuffer.variablesAvailable());
+        await waitsForPromise(() => project.initialize());
+        await waitsForPromise(() => colorBuffer.variablesAvailable());
       });
 
-      it("updates the project variable with the buffer ranges", () =>
+      it("updates the project variable with the buffer ranges", async () =>
         project.getVariables().map((variable) => expect(variable.bufferRange).toBeDefined()));
 
       describe("when a color is modified that does not affect other variables ranges", function () {
         let [variablesTextRanges] = Array.from([]);
-        beforeEach(function () {
+        beforeEach(async function () {
           variablesTextRanges = {};
           project
             .getVariablesForPath(editor.getPath())
@@ -463,21 +464,21 @@ describe("ColorProject", function () {
           editor.insertText("#336");
           editor.getBuffer().emitter.emit("did-stop-changing");
 
-          return waitsFor(() => eventSpy.callCount > 0);
+          await waitsFor(() => eventSpy.calls.count() > 0);
         });
 
-        it("reloads the variables with the buffer instead of the file", function () {
+        it("reloads the variables with the buffer instead of the file", async function () {
           expect(colorBuffer.scanBufferForVariables).toHaveBeenCalled();
           return expect(project.getVariables().length).toEqual(TOTAL_VARIABLES_IN_PROJECT);
         });
 
-        it("uses the buffer ranges to detect which variables were really changed", function () {
-          expect(eventSpy.argsForCall[0][0].destroyed).toBeUndefined();
-          expect(eventSpy.argsForCall[0][0].created).toBeUndefined();
-          return expect(eventSpy.argsForCall[0][0].updated.length).toEqual(1);
+        it("uses the buffer ranges to detect which variables were really changed", async function () {
+          expect(eventSpy.calls.argsFor(0)[0].destroyed).toBeUndefined();
+          expect(eventSpy.calls.argsFor(0)[0].created).toBeUndefined();
+          return expect(eventSpy.calls.argsFor(0)[0].updated.length).toEqual(1);
         });
 
-        it("updates the text range of the other variables", () =>
+        it("updates the text range of the other variables", async () =>
           project
             .getVariablesForPath(`${rootPath}/styles/variables.styl`)
             .forEach(function (variable) {
@@ -487,14 +488,14 @@ describe("ColorProject", function () {
               }
             }));
 
-        return it("dispatches a did-update-variables event", () =>
+        return it("dispatches a did-update-variables event", async () =>
           expect(eventSpy).toHaveBeenCalled());
       });
 
       describe("when a text is inserted that affects other variables ranges", function () {
         let [variablesTextRanges, variablesBufferRanges] = Array.from([]);
-        beforeEach(function () {
-          runs(function () {
+        beforeEach(async function () {
+          await runs(async function () {
             variablesTextRanges = {};
             variablesBufferRanges = {};
             project.getVariablesForPath(editor.getPath()).forEach(function (variable) {
@@ -502,7 +503,7 @@ describe("ColorProject", function () {
               return (variablesBufferRanges[variable.name] = variable.bufferRange);
             });
 
-            spyOn(project.variables, "addMany").andCallThrough();
+            spyOn(project.variables, "addMany").and.callThrough();
 
             editor.setSelectedBufferRange([
               [0, 0],
@@ -512,12 +513,13 @@ describe("ColorProject", function () {
             return editor.getBuffer().emitter.emit("did-stop-changing");
           });
 
-          return waitsFor(() => project.variables.addMany.callCount > 0);
+          await waitsFor(() => project.variables.addMany.calls.count() > 0);
         });
 
-        it("does not trigger a change event", () => expect(eventSpy.callCount).toEqual(0));
+        it("does not trigger a change event", async () =>
+          expect(eventSpy.calls.count()).toEqual(0));
 
-        return it("updates the range of the updated variables", () =>
+        return it("updates the range of the updated variables", async () =>
           project
             .getVariablesForPath(`${rootPath}/styles/variables.styl`)
             .forEach(function (variable) {
@@ -533,8 +535,8 @@ describe("ColorProject", function () {
 
       describe("when a color is removed", function () {
         let [variablesTextRanges] = Array.from([]);
-        beforeEach(function () {
-          runs(function () {
+        beforeEach(async function () {
+          await runs(async function () {
             variablesTextRanges = {};
             project
               .getVariablesForPath(editor.getPath())
@@ -548,35 +550,35 @@ describe("ColorProject", function () {
             return editor.getBuffer().emitter.emit("did-stop-changing");
           });
 
-          return waitsFor(() => eventSpy.callCount > 0);
+          await waitsFor(() => eventSpy.calls.count() > 0);
         });
 
-        it("reloads the variables with the buffer instead of the file", function () {
+        it("reloads the variables with the buffer instead of the file", async function () {
           expect(colorBuffer.scanBufferForVariables).toHaveBeenCalled();
           return expect(project.getVariables().length).toEqual(TOTAL_VARIABLES_IN_PROJECT - 1);
         });
 
-        it("uses the buffer ranges to detect which variables were really changed", function () {
-          expect(eventSpy.argsForCall[0][0].destroyed.length).toEqual(1);
-          expect(eventSpy.argsForCall[0][0].created).toBeUndefined();
-          return expect(eventSpy.argsForCall[0][0].updated).toBeUndefined();
+        it("uses the buffer ranges to detect which variables were really changed", async function () {
+          expect(eventSpy.calls.argsFor(0)[0].destroyed.length).toEqual(1);
+          expect(eventSpy.calls.argsFor(0)[0].created).toBeUndefined();
+          return expect(eventSpy.calls.argsFor(0)[0].updated).toBeUndefined();
         });
 
-        it("can no longer be found in the project variables", function () {
+        it("can no longer be found in the project variables", async function () {
           expect(project.getVariables().some((v) => v.name === "colors.red")).toBeFalsy();
           return expect(
             project.getColorVariables().some((v) => v.name === "colors.red"),
           ).toBeFalsy();
         });
 
-        return it("dispatches a did-update-variables event", () =>
+        return it("dispatches a did-update-variables event", async () =>
           expect(eventSpy).toHaveBeenCalled());
       });
 
       return describe("when all the colors are removed", function () {
         let [variablesTextRanges] = Array.from([]);
-        beforeEach(function () {
-          runs(function () {
+        beforeEach(async function () {
+          await runs(async function () {
             variablesTextRanges = {};
             project
               .getVariablesForPath(editor.getPath())
@@ -590,62 +592,62 @@ describe("ColorProject", function () {
             return editor.getBuffer().emitter.emit("did-stop-changing");
           });
 
-          return waitsFor(() => eventSpy.callCount > 0);
+          await waitsFor(() => eventSpy.calls.count() > 0);
         });
 
-        it("removes every variable from the file", function () {
+        it("removes every variable from the file", async function () {
           expect(colorBuffer.scanBufferForVariables).toHaveBeenCalled();
           expect(project.getVariables().length).toEqual(0);
 
-          expect(eventSpy.argsForCall[0][0].destroyed.length).toEqual(TOTAL_VARIABLES_IN_PROJECT);
-          expect(eventSpy.argsForCall[0][0].created).toBeUndefined();
-          return expect(eventSpy.argsForCall[0][0].updated).toBeUndefined();
+          expect(eventSpy.calls.argsFor(0)[0].destroyed.length).toEqual(TOTAL_VARIABLES_IN_PROJECT);
+          expect(eventSpy.calls.argsFor(0)[0].created).toBeUndefined();
+          return expect(eventSpy.calls.argsFor(0)[0].updated).toBeUndefined();
         });
 
-        it("can no longer be found in the project variables", function () {
+        it("can no longer be found in the project variables", async function () {
           expect(project.getVariables().some((v) => v.name === "colors.red")).toBeFalsy();
           return expect(
             project.getColorVariables().some((v) => v.name === "colors.red"),
           ).toBeFalsy();
         });
 
-        return it("dispatches a did-update-variables event", () =>
+        return it("dispatches a did-update-variables event", async () =>
           expect(eventSpy).toHaveBeenCalled());
       });
     });
 
     describe("::setIgnoredNames", function () {
       describe("with an empty array", function () {
-        beforeEach(function () {
+        beforeEach(async function () {
           expect(project.getVariables().length).toEqual(12);
 
           const spy = jasmine.createSpy("did-update-variables");
           project.onDidUpdateVariables(spy);
           project.setIgnoredNames([]);
 
-          return waitsFor(() => spy.callCount > 0);
+          await waitsFor(() => spy.calls.count() > 0);
         });
 
-        return it("reloads the variables from the new paths", () =>
+        return it("reloads the variables from the new paths", async () =>
           expect(project.getVariables().length).toEqual(32));
       });
 
       return describe("with a more restrictive array", function () {
-        beforeEach(function () {
+        beforeEach(async function () {
           expect(project.getVariables().length).toEqual(12);
 
           const spy = jasmine.createSpy("did-update-variables");
           project.onDidUpdateVariables(spy);
-          return waitsForPromise(() => project.setIgnoredNames(["vendor/*", "**/*.styl"]));
+          await waitsForPromise(() => project.setIgnoredNames(["vendor/*", "**/*.styl"]));
         });
 
-        return it("clears all the paths as there is no legible paths", () =>
+        return it("clears all the paths as there is no legible paths", async () =>
           expect(project.getPaths().length).toEqual(0));
       });
     });
 
     describe("when the project has multiple root directory", function () {
-      beforeEach(function () {
+      beforeEach(async function () {
         lumine.config.set("colors.sourceNames", ["**/*.sass", "**/*.styl"]);
 
         const [fixturesPath] = Array.from(lumine.project.getPaths());
@@ -653,24 +655,24 @@ describe("ColorProject", function () {
 
         project = new ColorProject({});
 
-        return waitsForPromise(() => project.initialize());
+        await waitsForPromise(() => project.initialize());
       });
 
-      return it("finds the variables from the two directories", () =>
+      return it("finds the variables from the two directories", async () =>
         expect(project.getVariables().length).toEqual(17));
     });
 
     describe("when the project has VCS ignored files", function () {
       let [projectPath] = Array.from([]);
-      beforeEach(function () {
+      beforeEach(async function () {
         lumine.config.set("colors.sourceNames", ["*.sass"]);
 
         const fixture = path.join(__dirname, "fixtures", "project-with-gitignore");
 
-        projectPath = temp.mkdirSync("colors-project");
+        projectPath = fs.mkdtempSync(path.join(os.tmpdir(), "colors-project"));
         const dotGitFixture = path.join(fixture, "git.git");
         const dotGit = path.join(projectPath, ".git");
-        fs.copySync(dotGitFixture, dotGit);
+        fs.cpSync(dotGitFixture, dotGit, { recursive: true });
         fs.writeFileSync(
           path.join(projectPath, ".gitignore"),
           fs.readFileSync(path.join(fixture, "git.gitignore")),
@@ -695,59 +697,59 @@ describe("ColorProject", function () {
       });
 
       describe("when the ignoreVcsIgnoredPaths setting is enabled", function () {
-        beforeEach(function () {
+        beforeEach(async function () {
           lumine.config.set("colors.ignoreVcsIgnoredPaths", true);
           project = new ColorProject({});
 
-          return waitsForPromise(() => project.initialize());
+          await waitsForPromise(() => project.initialize());
         });
 
-        it("finds the variables from the three files", function () {
+        it("finds the variables from the three files", async function () {
           expect(project.getVariables().length).toEqual(3);
           return expect(project.getPaths().length).toEqual(1);
         });
 
         return describe("and then disabled", function () {
-          beforeEach(function () {
+          beforeEach(async function () {
             const spy = jasmine.createSpy("did-update-variables");
             project.onDidUpdateVariables(spy);
             lumine.config.set("colors.ignoreVcsIgnoredPaths", false);
 
-            return waitsFor(() => spy.callCount > 0);
+            await waitsFor(() => spy.calls.count() > 0);
           });
 
-          it("reloads the paths", () => expect(project.getPaths().length).toEqual(3));
+          it("reloads the paths", async () => expect(project.getPaths().length).toEqual(3));
 
-          return it("reloads the variables", () =>
+          return it("reloads the variables", async () =>
             expect(project.getVariables().length).toEqual(10));
         });
       });
 
       return describe("when the ignoreVcsIgnoredPaths setting is disabled", function () {
-        beforeEach(function () {
+        beforeEach(async function () {
           lumine.config.set("colors.ignoreVcsIgnoredPaths", false);
           project = new ColorProject({});
 
-          return waitsForPromise(() => project.initialize());
+          await waitsForPromise(() => project.initialize());
         });
 
-        it("finds the variables from the three files", function () {
+        it("finds the variables from the three files", async function () {
           expect(project.getVariables().length).toEqual(10);
           return expect(project.getPaths().length).toEqual(3);
         });
 
         return describe("and then enabled", function () {
-          beforeEach(function () {
+          beforeEach(async function () {
             const spy = jasmine.createSpy("did-update-variables");
             project.onDidUpdateVariables(spy);
             lumine.config.set("colors.ignoreVcsIgnoredPaths", true);
 
-            return waitsFor(() => spy.callCount > 0);
+            await waitsFor(() => spy.calls.count() > 0);
           });
 
-          it("reloads the paths", () => expect(project.getPaths().length).toEqual(1));
+          it("reloads the paths", async () => expect(project.getPaths().length).toEqual(1));
 
-          return it("reloads the variables", () =>
+          return it("reloads the variables", async () =>
             expect(project.getVariables().length).toEqual(3));
         });
       });
@@ -764,18 +766,18 @@ describe("ColorProject", function () {
     describe("when the sourceNames setting is changed", function () {
       let [updateSpy] = Array.from([]);
 
-      beforeEach(function () {
+      beforeEach(async function () {
         const originalPaths = project.getPaths();
         lumine.config.set("colors.sourceNames", []);
 
-        return waitsFor(() => project.getPaths().join(",") !== originalPaths.join(","));
+        await waitsFor(() => project.getPaths().join(",") !== originalPaths.join(","));
       });
 
-      it("updates the variables using the new pattern", () =>
+      it("updates the variables using the new pattern", async () =>
         expect(project.getVariables().length).toEqual(0));
 
       return describe("so that new paths are found", function () {
-        beforeEach(function () {
+        beforeEach(async function () {
           updateSpy = jasmine.createSpy("did-update-variables");
 
           const originalPaths = project.getPaths();
@@ -783,11 +785,11 @@ describe("ColorProject", function () {
 
           lumine.config.set("colors.sourceNames", ["**/*.styl"]);
 
-          waitsFor(() => project.getPaths().join(",") !== originalPaths.join(","));
-          return waitsFor(() => updateSpy.callCount > 0);
+          await waitsFor(() => project.getPaths().join(",") !== originalPaths.join(","));
+          await waitsFor(() => updateSpy.calls.count() > 0);
         });
 
-        return it("loads the variables from these new paths", () =>
+        return it("loads the variables from these new paths", async () =>
           expect(project.getVariables().length).toEqual(TOTAL_VARIABLES_IN_PROJECT));
       });
     });
@@ -795,18 +797,18 @@ describe("ColorProject", function () {
     describe("when the ignoredNames setting is changed", function () {
       let [updateSpy] = Array.from([]);
 
-      beforeEach(function () {
+      beforeEach(async function () {
         const originalPaths = project.getPaths();
         lumine.config.set("colors.ignoredNames", ["**/*.styl"]);
 
-        return waitsFor(() => project.getPaths().join(",") !== originalPaths.join(","));
+        await waitsFor(() => project.getPaths().join(",") !== originalPaths.join(","));
       });
 
-      it("updates the found using the new pattern", () =>
+      it("updates the found using the new pattern", async () =>
         expect(project.getVariables().length).toEqual(0));
 
       return describe("so that new paths are found", function () {
-        beforeEach(function () {
+        beforeEach(async function () {
           updateSpy = jasmine.createSpy("did-update-variables");
 
           const originalPaths = project.getPaths();
@@ -814,11 +816,11 @@ describe("ColorProject", function () {
 
           lumine.config.set("colors.ignoredNames", []);
 
-          waitsFor(() => project.getPaths().join(",") !== originalPaths.join(","));
-          return waitsFor(() => updateSpy.callCount > 0);
+          await waitsFor(() => project.getPaths().join(",") !== originalPaths.join(","));
+          await waitsFor(() => updateSpy.calls.count() > 0);
         });
 
-        return it("loads the variables from these new paths", () =>
+        return it("loads the variables from these new paths", async () =>
           expect(project.getVariables().length).toEqual(TOTAL_VARIABLES_IN_PROJECT));
       });
     });
@@ -826,92 +828,93 @@ describe("ColorProject", function () {
     describe("when the extendedSearchNames setting is changed", function () {
       const [updateSpy] = Array.from([]);
 
-      beforeEach(() => project.setSearchNames(["*.foo"]));
+      beforeEach(async () => project.setSearchNames(["*.foo"]));
 
-      it("updates the search names", () => expect(project.getSearchNames().length).toEqual(3));
+      it("updates the search names", async () =>
+        expect(project.getSearchNames().length).toEqual(3));
 
-      return it("serializes the setting", () =>
+      return it("serializes the setting", async () =>
         expect(project.serialize().searchNames).toEqual(["*.foo"]));
     });
 
     describe("when the ignore global config settings are enabled", function () {
       describe("for the sourceNames field", function () {
-        beforeEach(function () {
+        beforeEach(async function () {
           project.sourceNames = ["*.foo"];
-          return waitsForPromise(() => project.setIgnoreGlobalSourceNames(true));
+          await waitsForPromise(() => project.setIgnoreGlobalSourceNames(true));
         });
 
-        it("ignores the content of the global config", () =>
+        it("ignores the content of the global config", async () =>
           expect(project.getSourceNames()).toEqual([".colors", "*.foo"]));
 
-        return it("serializes the project setting", () =>
+        return it("serializes the project setting", async () =>
           expect(project.serialize().ignoreGlobalSourceNames).toBeTruthy());
       });
 
       describe("for the ignoredNames field", function () {
-        beforeEach(function () {
+        beforeEach(async function () {
           lumine.config.set("colors.ignoredNames", ["*.foo"]);
           project.ignoredNames = ["*.bar"];
 
           return project.setIgnoreGlobalIgnoredNames(true);
         });
 
-        it("ignores the content of the global config", () =>
+        it("ignores the content of the global config", async () =>
           expect(project.getIgnoredNames()).toEqual(["*.bar"]));
 
-        return it("serializes the project setting", () =>
+        return it("serializes the project setting", async () =>
           expect(project.serialize().ignoreGlobalIgnoredNames).toBeTruthy());
       });
 
       describe("for the ignoredScopes field", function () {
-        beforeEach(function () {
+        beforeEach(async function () {
           lumine.config.set("colors.ignoredScopes", ["\\.comment"]);
           project.ignoredScopes = ["\\.source"];
 
           return project.setIgnoreGlobalIgnoredScopes(true);
         });
 
-        it("ignores the content of the global config", () =>
+        it("ignores the content of the global config", async () =>
           expect(project.getIgnoredScopes()).toEqual(["\\.source"]));
 
-        return it("serializes the project setting", () =>
+        return it("serializes the project setting", async () =>
           expect(project.serialize().ignoreGlobalIgnoredScopes).toBeTruthy());
       });
 
       return describe("for the searchNames field", function () {
-        beforeEach(function () {
+        beforeEach(async function () {
           lumine.config.set("colors.extendedSearchNames", ["*.css"]);
           project.searchNames = ["*.foo"];
 
           return project.setIgnoreGlobalSearchNames(true);
         });
 
-        it("ignores the content of the global config", () =>
+        it("ignores the content of the global config", async () =>
           expect(project.getSearchNames()).toEqual(["*.less", "*.foo"]));
 
-        return it("serializes the project setting", () =>
+        return it("serializes the project setting", async () =>
           expect(project.serialize().ignoreGlobalSearchNames).toBeTruthy());
       });
     });
 
     describe("::loadThemesVariables", function () {
-      beforeEach(function () {
-        lumine.packages.activatePackage("atom-light-ui");
-        lumine.packages.activatePackage("atom-light-syntax");
+      beforeEach(async function () {
+        lumine.packages.activatePackage("one-theme");
+        lumine.packages.activatePackage("one-theme");
 
-        lumine.config.set("core.themes", ["atom-light-ui", "atom-light-syntax"]);
+        lumine.config.set("core.themes", ["one-day-ui", "one-day-syntax"]);
 
-        waitsForPromise(() => lumine.themes.activateThemes());
+        await waitsForPromise(() => lumine.themes.activateThemes());
 
-        return waitsForPromise(() => lumine.packages.activatePackage("colors"));
+        await waitsForPromise(() => lumine.packages.activatePackage("colors"));
       });
 
-      afterEach(function () {
+      afterEach(async function () {
         lumine.themes.deactivateThemes();
         return lumine.themes.unwatchUserStylesheet();
       });
 
-      return it("returns an array of 62 variables", function () {
+      return it("returns an array of 62 variables", async function () {
         const themeVariables = project.loadThemesVariables();
         return expect(themeVariables.length).toEqual(62);
       });
@@ -920,75 +923,75 @@ describe("ColorProject", function () {
     return describe("when the includeThemes setting is enabled", function () {
       let spy;
       [paths, spy] = Array.from([]);
-      beforeEach(function () {
+      beforeEach(async function () {
         paths = project.getPaths();
         expect(project.getColorVariables().length).toEqual(10);
 
-        lumine.packages.activatePackage("atom-light-ui");
-        lumine.packages.activatePackage("atom-light-syntax");
-        lumine.packages.activatePackage("atom-dark-ui");
-        lumine.packages.activatePackage("atom-dark-syntax");
+        lumine.packages.activatePackage("one-theme");
+        lumine.packages.activatePackage("one-theme");
+        lumine.packages.activatePackage("one-theme");
+        lumine.packages.activatePackage("one-theme");
 
-        lumine.config.set("core.themes", ["atom-light-ui", "atom-light-syntax"]);
+        lumine.config.set("core.themes", ["one-day-ui", "one-day-syntax"]);
 
-        waitsForPromise(() => lumine.themes.activateThemes());
+        await waitsForPromise(() => lumine.themes.activateThemes());
 
-        waitsForPromise(() => lumine.packages.activatePackage("colors"));
+        await waitsForPromise(() => lumine.packages.activatePackage("colors"));
 
-        waitsForPromise(() => project.initialize());
+        await waitsForPromise(() => project.initialize());
 
-        return runs(function () {
+        await runs(async function () {
           spy = jasmine.createSpy("did-change-active-themes");
           lumine.themes.onDidChangeActiveThemes(spy);
           return project.setIncludeThemes(true);
         });
       });
 
-      afterEach(function () {
+      afterEach(async function () {
         lumine.themes.deactivateThemes();
         return lumine.themes.unwatchUserStylesheet();
       });
 
-      it("includes the variables set for ui and syntax themes in the palette", () =>
+      it("includes the variables set for ui and syntax themes in the palette", async () =>
         expect(project.getColorVariables().length).toEqual(72));
 
-      it("still includes the paths from the project", () =>
+      it("still includes the paths from the project", async () =>
         paths.map((p) => expect(project.getPaths().indexOf(p)).not.toEqual(-1)));
 
-      it("serializes the setting with the project", function () {
+      it("serializes the setting with the project", async function () {
         const serialized = project.serialize();
 
         return expect(serialized.includeThemes).toEqual(true);
       });
 
       describe("and then disabled", function () {
-        beforeEach(() => project.setIncludeThemes(false));
+        beforeEach(async () => project.setIncludeThemes(false));
 
-        it("removes all the paths to the themes stylesheets", () =>
+        it("removes all the paths to the themes stylesheets", async () =>
           expect(project.getColorVariables().length).toEqual(10));
 
         return describe("when the core.themes setting is modified", function () {
-          beforeEach(function () {
-            spyOn(project, "loadThemesVariables").andCallThrough();
-            lumine.config.set("core.themes", ["atom-dark-ui", "atom-dark-syntax"]);
+          beforeEach(async function () {
+            spyOn(project, "loadThemesVariables").and.callThrough();
+            lumine.config.set("core.themes", ["one-day-ui", "one-day-syntax"]);
 
-            return waitsFor(() => spy.callCount > 0);
+            await waitsFor(() => spy.calls.count() > 0);
           });
 
-          return it("does not trigger a paths update", () =>
+          return it("does not trigger a paths update", async () =>
             expect(project.loadThemesVariables).not.toHaveBeenCalled());
         });
       });
 
       return describe("when the core.themes setting is modified", function () {
-        beforeEach(function () {
-          spyOn(project, "loadThemesVariables").andCallThrough();
-          lumine.config.set("core.themes", ["atom-dark-ui", "atom-dark-syntax"]);
+        beforeEach(async function () {
+          spyOn(project, "loadThemesVariables").and.callThrough();
+          lumine.config.set("core.themes", ["one-day-ui", "one-day-syntax"]);
 
-          return waitsFor(() => spy.callCount > 0);
+          await waitsFor(() => spy.calls.count() > 0);
         });
 
-        return it("triggers a paths update", () =>
+        return it("triggers a paths update", async () =>
           expect(project.loadThemesVariables).toHaveBeenCalled());
       });
     });
@@ -1030,82 +1033,82 @@ describe("ColorProject", function () {
     };
 
     describe("with a timestamp more recent than the files last modification date", function () {
-      beforeEach(function () {
+      beforeEach(async function () {
         project = createProject({
           stateFixture: "empty-project.json",
         });
 
-        return waitsForPromise(() => project.initialize());
+        await waitsForPromise(() => project.initialize());
       });
 
-      return it("does not rescans the files", () =>
+      return it("does not rescans the files", async () =>
         expect(project.getVariables().length).toEqual(1));
     });
 
     describe("with a version different that the current one", function () {
-      beforeEach(function () {
+      beforeEach(async function () {
         project = createProject({
           stateFixture: "empty-project.json",
           version: "0.0.0",
         });
 
-        return waitsForPromise(() => project.initialize());
+        await waitsForPromise(() => project.initialize());
       });
 
-      return it("drops the whole serialized state and rescans all the project", () =>
+      return it("drops the whole serialized state and rescans all the project", async () =>
         expect(project.getVariables().length).toEqual(12));
     });
 
     describe("with a serialized path that no longer exist", function () {
-      beforeEach(function () {
+      beforeEach(async function () {
         project = createProject({
           stateFixture: "rename-file-project.json",
         });
 
-        return waitsForPromise(() => project.initialize());
+        await waitsForPromise(() => project.initialize());
       });
 
-      it("drops drops the non-existing and reload the paths", () =>
+      it("drops drops the non-existing and reload the paths", async () =>
         expect(project.getPaths()).toEqual([
           `${rootPath}/styles/buttons.styl`,
           `${rootPath}/styles/variables.styl`,
         ]));
 
-      it("drops the variables from the removed paths", () =>
+      it("drops the variables from the removed paths", async () =>
         expect(project.getVariablesForPath(`${rootPath}/styles/foo.styl`).length).toEqual(0));
 
-      return it("loads the variables from the new file", () =>
+      return it("loads the variables from the new file", async () =>
         expect(project.getVariablesForPath(`${rootPath}/styles/variables.styl`).length).toEqual(
           12,
         ));
     });
 
     describe("with a sourceNames setting value different than when serialized", function () {
-      beforeEach(function () {
+      beforeEach(async function () {
         lumine.config.set("colors.sourceNames", []);
 
         project = createProject({
           stateFixture: "empty-project.json",
         });
 
-        return waitsForPromise(() => project.initialize());
+        await waitsForPromise(() => project.initialize());
       });
 
-      return it("drops the whole serialized state and rescans all the project", () =>
+      return it("drops the whole serialized state and rescans all the project", async () =>
         expect(project.getVariables().length).toEqual(0));
     });
 
     describe("with a markers version different that the current one", function () {
-      beforeEach(function () {
+      beforeEach(async function () {
         project = createProject({
           stateFixture: "empty-project.json",
           markersVersion: "0.0.0",
         });
 
-        return waitsForPromise(() => project.initialize());
+        await waitsForPromise(() => project.initialize());
       });
 
-      it("keeps the project related data", function () {
+      it("keeps the project related data", async function () {
         expect(project.ignoredNames).toEqual(["vendor/*"]);
         return expect(project.getPaths()).toEqual([
           `${rootPath}/styles/buttons.styl`,
@@ -1113,72 +1116,76 @@ describe("ColorProject", function () {
         ]);
       });
 
-      return it("drops the variables and buffers data", () =>
+      return it("drops the variables and buffers data", async () =>
         expect(project.getVariables().length).toEqual(TOTAL_VARIABLES_IN_PROJECT));
     });
 
     describe("with a timestamp older than the files last modification date", function () {
-      beforeEach(function () {
+      beforeEach(async function () {
         project = createProject({
           timestamp: new Date(0).toJSON(),
           stateFixture: "empty-project.json",
         });
 
-        return waitsForPromise(() => project.initialize());
+        await waitsForPromise(() => project.initialize());
       });
 
-      return it("scans again all the files that have a more recent modification date", () =>
+      return it("scans again all the files that have a more recent modification date", async () =>
         expect(project.getVariables().length).toEqual(TOTAL_VARIABLES_IN_PROJECT));
     });
 
     describe("with some files not saved in the project state", function () {
-      beforeEach(function () {
+      beforeEach(async function () {
         project = createProject({
           stateFixture: "partial-project.json",
         });
 
-        return waitsForPromise(() => project.initialize());
+        await waitsForPromise(() => project.initialize());
       });
 
-      return it("detects the new files and scans them", () =>
+      return it("detects the new files and scans them", async () =>
         expect(project.getVariables().length).toEqual(12));
     });
 
     describe("with an open editor and the corresponding buffer state", function () {
       let [editor, colorBuffer] = Array.from([]);
-      beforeEach(function () {
-        waitsForPromise(() => lumine.workspace.open("variables.styl").then((o) => (editor = o)));
+      beforeEach(async function () {
+        await waitsForPromise(() =>
+          lumine.workspace.open("variables.styl").then((o) => (editor = o)),
+        );
 
-        runs(function () {
+        await runs(async function () {
           project = createProject({
             stateFixture: "open-buffer-project.json",
             id: editor.id,
           });
 
-          return spyOn(ColorBuffer.prototype, "variablesAvailable").andCallThrough();
+          return spyOn(ColorBuffer.prototype, "variablesAvailable").and.callThrough();
         });
 
-        return runs(() => (colorBuffer = project.colorBuffersByEditorId[editor.id]));
+        await runs(() => (colorBuffer = project.colorBuffersByEditorId[editor.id]));
       });
 
-      it("restores the color buffer in its previous state", function () {
+      it("restores the color buffer in its previous state", async function () {
         expect(colorBuffer).toBeDefined();
         return expect(colorBuffer.getColorMarkers().length).toEqual(
           TOTAL_COLORS_VARIABLES_IN_PROJECT,
         );
       });
 
-      return it("does not wait for the project variables", () =>
+      return it("does not wait for the project variables", async () =>
         expect(colorBuffer.variablesAvailable).not.toHaveBeenCalled());
     });
 
     return describe("with an open editor, the corresponding buffer state and a old timestamp", function () {
       let [editor, colorBuffer] = Array.from([]);
-      beforeEach(function () {
-        waitsForPromise(() => lumine.workspace.open("variables.styl").then((o) => (editor = o)));
+      beforeEach(async function () {
+        await waitsForPromise(() =>
+          lumine.workspace.open("variables.styl").then((o) => (editor = o)),
+        );
 
-        runs(function () {
-          spyOn(ColorBuffer.prototype, "updateVariableRanges").andCallThrough();
+        await runs(async function () {
+          spyOn(ColorBuffer.prototype, "updateVariableRanges").and.callThrough();
           return (project = createProject({
             timestamp: new Date(0).toJSON(),
             stateFixture: "open-buffer-project.json",
@@ -1186,12 +1193,12 @@ describe("ColorProject", function () {
           }));
         });
 
-        runs(() => (colorBuffer = project.colorBuffersByEditorId[editor.id]));
+        await runs(() => (colorBuffer = project.colorBuffersByEditorId[editor.id]));
 
-        return waitsFor(() => colorBuffer.updateVariableRanges.callCount > 0);
+        await waitsFor(() => colorBuffer.updateVariableRanges.calls.count() > 0);
       });
 
-      return it("invalidates the color buffer markers as soon as the dirty paths have been determined", () =>
+      return it("invalidates the color buffer markers as soon as the dirty paths have been determined", async () =>
         expect(colorBuffer.updateVariableRanges).toHaveBeenCalled());
     });
   });
@@ -1208,7 +1215,7 @@ describe("ColorProject", function () {
 describe("ColorProject", function () {
   let [project, rootPath] = Array.from([]);
   return describe("when the project has a colors defaults file", function () {
-    beforeEach(function () {
+    beforeEach(async function () {
       lumine.config.set("colors.sourceNames", ["*.sass"]);
 
       const [fixturesPath] = Array.from(lumine.project.getPaths());
@@ -1217,10 +1224,10 @@ describe("ColorProject", function () {
 
       project = new ColorProject({});
 
-      return waitsForPromise(() => project.initialize());
+      await waitsForPromise(() => project.initialize());
     });
 
-    return it("loads the defaults file content", () =>
+    return it("loads the defaults file content", async () =>
       expect(project.getColorVariables().length).toEqual(12));
   });
 });

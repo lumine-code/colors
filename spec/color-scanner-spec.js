@@ -1,4 +1,4 @@
-﻿/*
+const { runs, waitsFor, waitsForPromise } = require("./helpers/waiters"); /*
  * decaffeinate suggestions:
  * DS101: Remove unnecessary use of Array.from
  * DS102: Remove unnecessary code created because of implicit returns
@@ -13,76 +13,76 @@ describe("ColorScanner", function () {
 
   const withScannerForString = (string, block) =>
     describe(`with '${string.replace(/#/g, "+")}'`, function () {
-      beforeEach(function () {
+      beforeEach(async function () {
         text = string;
         const context = new ColorContext({ registry });
         return (scanner = new ColorScanner({ context }));
       });
 
-      afterEach(() => (scanner = null));
+      afterEach(async () => (scanner = null));
 
       return block();
     });
 
   const withTextEditor = (fixture, block) =>
     describe(`with ${fixture} buffer`, function () {
-      beforeEach(function () {
-        waitsForPromise(() => lumine.workspace.open(fixture));
-        return runs(function () {
+      beforeEach(async function () {
+        await waitsForPromise(() => lumine.workspace.open(fixture));
+        await runs(async function () {
           editor = lumine.workspace.getActiveTextEditor();
           return (text = editor.getText());
         });
       });
 
-      afterEach(() => (editor = null));
+      afterEach(async () => (editor = null));
 
       return block();
     });
 
   const withScannerForTextEditor = (fixture, block) =>
     withTextEditor(fixture, function () {
-      beforeEach(function () {
+      beforeEach(async function () {
         const context = new ColorContext({ registry });
         return (scanner = new ColorScanner({ context }));
       });
 
-      afterEach(() => (scanner = null));
+      afterEach(async () => (scanner = null));
 
       return block();
     });
 
   return describe("::search", function () {
     withScannerForTextEditor("html-entities.html", function () {
-      beforeEach(() => (result = scanner.search(text, "html")));
+      beforeEach(async () => (result = scanner.search(text, "html")));
 
-      return it("returns nothing", () => expect(result).toBeUndefined());
+      return it("returns nothing", async () => expect(result).toBeUndefined());
     });
 
     withScannerForTextEditor("css-color-with-prefix.less", function () {
-      beforeEach(() => (result = scanner.search(text, "less")));
+      beforeEach(async () => (result = scanner.search(text, "less")));
 
-      return it("returns nothing", () => expect(result).toBeUndefined());
+      return it("returns nothing", async () => expect(result).toBeUndefined());
     });
 
     withScannerForTextEditor("four-variables.styl", function () {
-      beforeEach(() => (result = scanner.search(text, "styl")));
+      beforeEach(async () => (result = scanner.search(text, "styl")));
 
-      it("returns the first buffer color match", () => expect(result).toBeDefined());
+      it("returns the first buffer color match", async () => expect(result).toBeDefined());
 
       describe("the resulting buffer color", function () {
-        it("has a text range", () => expect(result.range).toEqual([13, 17]));
+        it("has a text range", async () => expect(result.range).toEqual([13, 17]));
 
-        it("has a color", () => expect(result.color).toBeColor("#ffffff"));
+        it("has a color", async () => expect(result.color).toBeColor("#ffffff"));
 
-        it("stores the matched text", () => expect(result.match).toEqual("#fff"));
+        it("stores the matched text", async () => expect(result.match).toEqual("#fff"));
 
-        it("stores the last index", () => expect(result.lastIndex).toEqual(17));
+        it("stores the last index", async () => expect(result.lastIndex).toEqual(17));
 
-        return it("stores match line", () => expect(result.line).toEqual(0));
+        return it("stores match line", async () => expect(result.line).toEqual(0));
       });
 
       return describe("successive searches", function () {
-        it("returns a buffer color for each match and then undefined", function () {
+        it("returns a buffer color for each match and then undefined", async function () {
           const doSearch = () => (result = scanner.search(text, "styl", result.lastIndex));
 
           expect(doSearch()).toBeDefined();
@@ -91,7 +91,7 @@ describe("ColorScanner", function () {
           return expect(doSearch()).toBeUndefined();
         });
 
-        return it("stores the line of successive matches", function () {
+        return it("stores the line of successive matches", async function () {
           const doSearch = () => (result = scanner.search(text, "styl", result.lastIndex));
 
           expect(doSearch().line).toEqual(2);
@@ -102,41 +102,41 @@ describe("ColorScanner", function () {
     });
 
     withScannerForTextEditor("class-after-color.sass", function () {
-      beforeEach(() => (result = scanner.search(text, "sass")));
+      beforeEach(async () => (result = scanner.search(text, "sass")));
 
-      it("returns the first buffer color match", () => expect(result).toBeDefined());
+      it("returns the first buffer color match", async () => expect(result).toBeDefined());
 
       return describe("the resulting buffer color", function () {
-        it("has a text range", () => expect(result.range).toEqual([15, 20]));
+        it("has a text range", async () => expect(result.range).toEqual([15, 20]));
 
-        return it("has a color", () => expect(result.color).toBeColor("#ffffff"));
+        return it("has a color", async () => expect(result.color).toBeColor("#ffffff"));
       });
     });
 
     withScannerForTextEditor("project/styles/variables.styl", function () {
-      beforeEach(() => (result = scanner.search(text, "styl")));
+      beforeEach(async () => (result = scanner.search(text, "styl")));
 
-      it("returns the first buffer color match", () => expect(result).toBeDefined());
+      it("returns the first buffer color match", async () => expect(result).toBeDefined());
 
       return describe("the resulting buffer color", function () {
-        it("has a text range", () => expect(result.range).toEqual([18, 25]));
+        it("has a text range", async () => expect(result.range).toEqual([18, 25]));
 
-        return it("has a color", () => expect(result.color).toBeColor("#BF616A"));
+        return it("has a color", async () => expect(result.color).toBeColor("#BF616A"));
       });
     });
 
     withScannerForTextEditor("crlf.styl", function () {
-      beforeEach(() => (result = scanner.search(text, "styl")));
+      beforeEach(async () => (result = scanner.search(text, "styl")));
 
-      it("returns the first buffer color match", () => expect(result).toBeDefined());
+      it("returns the first buffer color match", async () => expect(result).toBeDefined());
 
       describe("the resulting buffer color", function () {
-        it("has a text range", () => expect(result.range).toEqual([7, 11]));
+        it("has a text range", async () => expect(result.range).toEqual([7, 11]));
 
-        return it("has a color", () => expect(result.color).toBeColor("#ffffff"));
+        return it("has a color", async () => expect(result.color).toBeColor("#ffffff"));
       });
 
-      return it("finds the second color", function () {
+      return it("finds the second color", async function () {
         const doSearch = () => (result = scanner.search(text, "styl", result.lastIndex));
 
         doSearch();
@@ -146,7 +146,7 @@ describe("ColorScanner", function () {
     });
 
     withScannerForTextEditor("color-in-tag-content.html", () =>
-      it("finds both colors", function () {
+      it("finds both colors", async function () {
         result = { lastIndex: 0 };
         const doSearch = () => (result = scanner.search(text, "css", result.lastIndex));
 
@@ -157,7 +157,7 @@ describe("ColorScanner", function () {
     );
 
     withScannerForString("#add-something {}, #acedbe-foo {}, #acedbeef-foo {}", () =>
-      it("does not find any matches", function () {
+      it("does not find any matches", async function () {
         result = { lastIndex: 0 };
         const doSearch = () => (result = scanner.search(text, "css", result.lastIndex));
 
@@ -166,7 +166,7 @@ describe("ColorScanner", function () {
     );
 
     return withScannerForString("#add_something {}, #acedbe_foo {}, #acedbeef_foo {}", () =>
-      it("does not find any matches", function () {
+      it("does not find any matches", async function () {
         result = { lastIndex: 0 };
         const doSearch = () => (result = scanner.search(text, "css", result.lastIndex));
 

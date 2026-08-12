@@ -1,11 +1,10 @@
-﻿/*
+﻿const { runs, waitsFor, waitsForPromise } = require("./helpers/waiters"); /*
  * decaffeinate suggestions:
  * DS101: Remove unnecessary use of Array.from
  * DS102: Remove unnecessary code created because of implicit returns
  * DS207: Consider shorter variations of null checks
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
  */
-
 describe("autocomplete provider", function () {
   let [
     completionDelay,
@@ -18,8 +17,8 @@ describe("autocomplete provider", function () {
     project,
   ] = Array.from([]);
 
-  beforeEach(function () {
-    runs(function () {
+  beforeEach(async function () {
+    await runs(async function () {
       jasmineContent = document.body.querySelector("#jasmine-content");
 
       lumine.config.set("colors.autocompleteScopes", ["*"]);
@@ -36,22 +35,22 @@ describe("autocomplete provider", function () {
       return jasmineContent.appendChild(workspaceElement);
     });
 
-    waitsForPromise("autocomplete-plus activation", () =>
+    await waitsForPromise("autocomplete-plus activation", () =>
       lumine.packages
-        .activatePackage("autocomplete-plus")
+        .activatePackage("autocomplete")
         .then((pkg) => (autocompleteMain = pkg.mainModule)),
     );
 
-    waitsForPromise("colors activation", () =>
+    await waitsForPromise("colors activation", () =>
       lumine.packages.activatePackage("colors").then((pkg) => (colors = pkg.mainModule)),
     );
 
-    runs(function () {
-      spyOn(autocompleteMain, "consumeProvider").andCallThrough();
-      return spyOn(colors, "provideAutocomplete").andCallThrough();
+    await runs(async function () {
+      spyOn(autocompleteMain, "consumeAutocomplete").and.callThrough();
+      return spyOn(colors, "provideAutocomplete").and.callThrough();
     });
 
-    waitsForPromise("open sample file", () =>
+    await waitsForPromise("open sample file", () =>
       lumine.workspace.open("sample.styl").then(function (e) {
         editor = e;
         editor.setText("");
@@ -59,21 +58,21 @@ describe("autocomplete provider", function () {
       }),
     );
 
-    waitsForPromise("colors project initialized", function () {
+    await waitsForPromise("colors project initialized", function () {
       project = colors.getProject();
       return project.initialize();
     });
 
-    return runs(function () {
+    await runs(async function () {
       ({ autocompleteManager } = autocompleteMain);
-      spyOn(autocompleteManager, "findSuggestions").andCallThrough();
-      return spyOn(autocompleteManager, "displaySuggestions").andCallThrough();
+      spyOn(autocompleteManager, "findSuggestions").and.callThrough();
+      return spyOn(autocompleteManager, "displaySuggestions").and.callThrough();
     });
   });
 
   describe("writing the name of a color", function () {
-    it("returns suggestions for the matching colors", function () {
-      runs(function () {
+    it("returns suggestions for the matching colors", async function () {
+      await runs(async function () {
         expect(editorView.querySelector(".autocomplete-plus")).not.toExist();
 
         editor.moveToBottom();
@@ -85,11 +84,11 @@ describe("autocomplete provider", function () {
         return advanceClock(completionDelay);
       });
 
-      waitsFor(() => autocompleteManager.displaySuggestions.calls.length === 1);
+      await waitsFor(() => autocompleteManager.displaySuggestions.calls.length === 1);
 
-      waitsFor(() => editorView.querySelector(".autocomplete-plus li") != null);
+      await waitsFor(() => editorView.querySelector(".autocomplete-plus li") != null);
 
-      return runs(function () {
+      await runs(async function () {
         const popup = editorView.querySelector(".autocomplete-plus");
         expect(popup).toExist();
         expect(popup.querySelector("span.word").textContent).toEqual("base-color");
@@ -100,8 +99,8 @@ describe("autocomplete provider", function () {
       });
     });
 
-    it("replaces the prefix even when it contains a @", function () {
-      runs(function () {
+    it("replaces the prefix even when it contains a @", async function () {
+      await runs(async function () {
         expect(editorView.querySelector(".autocomplete-plus")).not.toExist();
 
         editor.moveToBottom();
@@ -112,18 +111,18 @@ describe("autocomplete provider", function () {
         return advanceClock(completionDelay);
       });
 
-      waitsFor(() => autocompleteManager.displaySuggestions.calls.length === 1);
+      await waitsFor(() => autocompleteManager.displaySuggestions.calls.length === 1);
 
-      waitsFor(() => editorView.querySelector(".autocomplete-plus li") != null);
+      await waitsFor(() => editorView.querySelector(".autocomplete-plus li") != null);
 
-      return runs(function () {
+      await runs(async function () {
         lumine.commands.dispatch(editorView, "autocomplete-plus:confirm");
         return expect(editor.getText()).not.toContain("@@");
       });
     });
 
-    it("replaces the prefix even when it contains a $", function () {
-      runs(function () {
+    it("replaces the prefix even when it contains a $", async function () {
+      await runs(async function () {
         expect(editorView.querySelector(".autocomplete-plus")).not.toExist();
 
         editor.moveToBottom();
@@ -134,11 +133,11 @@ describe("autocomplete provider", function () {
         return advanceClock(completionDelay);
       });
 
-      waitsFor(() => autocompleteManager.displaySuggestions.calls.length === 1);
+      await waitsFor(() => autocompleteManager.displaySuggestions.calls.length === 1);
 
-      waitsFor(() => editorView.querySelector(".autocomplete-plus li") != null);
+      await waitsFor(() => editorView.querySelector(".autocomplete-plus li") != null);
 
-      return runs(function () {
+      await runs(async function () {
         lumine.commands.dispatch(editorView, "autocomplete-plus:confirm");
         expect(editor.getText()).toContain("$other-color");
         return expect(editor.getText()).not.toContain("$$");
@@ -146,11 +145,11 @@ describe("autocomplete provider", function () {
     });
 
     return describe("when the extendAutocompleteToColorValue setting is enabled", function () {
-      beforeEach(() => lumine.config.set("colors.extendAutocompleteToColorValue", true));
+      beforeEach(async () => lumine.config.set("colors.extendAutocompleteToColorValue", true));
 
       describe("with an opaque color", () =>
-        it("displays the color hexadecimal code in the completion item", function () {
-          runs(function () {
+        it("displays the color hexadecimal code in the completion item", async function () {
+          await runs(async function () {
             expect(editorView.querySelector(".autocomplete-plus")).not.toExist();
 
             editor.moveToBottom();
@@ -161,11 +160,11 @@ describe("autocomplete provider", function () {
             return advanceClock(completionDelay);
           });
 
-          waitsFor(() => autocompleteManager.displaySuggestions.calls.length === 1);
+          await waitsFor(() => autocompleteManager.displaySuggestions.calls.length === 1);
 
-          waitsFor(() => editorView.querySelector(".autocomplete-plus li") != null);
+          await waitsFor(() => editorView.querySelector(".autocomplete-plus li") != null);
 
-          return runs(function () {
+          await runs(async function () {
             const popup = editorView.querySelector(".autocomplete-plus");
             expect(popup).toExist();
             expect(popup.querySelector("span.word").textContent).toEqual("base-color");
@@ -175,10 +174,10 @@ describe("autocomplete provider", function () {
         }));
 
       describe("when the autocompleteSuggestionsFromValue setting is enabled", function () {
-        beforeEach(() => lumine.config.set("colors.autocompleteSuggestionsFromValue", true));
+        beforeEach(async () => lumine.config.set("colors.autocompleteSuggestionsFromValue", true));
 
-        it("suggests color variables from hexadecimal values", function () {
-          runs(function () {
+        it("suggests color variables from hexadecimal values", async function () {
+          await runs(async function () {
             expect(editorView.querySelector(".autocomplete-plus")).not.toExist();
 
             editor.moveToBottom();
@@ -189,11 +188,11 @@ describe("autocomplete provider", function () {
             return advanceClock(completionDelay);
           });
 
-          waitsFor(() => autocompleteManager.displaySuggestions.calls.length === 1);
+          await waitsFor(() => autocompleteManager.displaySuggestions.calls.length === 1);
 
-          waitsFor(() => editorView.querySelector(".autocomplete-plus li") != null);
+          await waitsFor(() => editorView.querySelector(".autocomplete-plus li") != null);
 
-          return runs(function () {
+          await runs(async function () {
             const popup = editorView.querySelector(".autocomplete-plus");
             expect(popup).toExist();
             expect(popup.querySelector("span.word").textContent).toEqual("var1");
@@ -202,8 +201,8 @@ describe("autocomplete provider", function () {
           });
         });
 
-        it("suggests color variables from hexadecimal values when in a CSS expression", function () {
-          runs(function () {
+        it("suggests color variables from hexadecimal values when in a CSS expression", async function () {
+          await runs(async function () {
             expect(editorView.querySelector(".autocomplete-plus")).not.toExist();
 
             editor.moveToBottom();
@@ -216,11 +215,11 @@ describe("autocomplete provider", function () {
             return advanceClock(completionDelay);
           });
 
-          waitsFor(() => autocompleteManager.displaySuggestions.calls.length === 1);
+          await waitsFor(() => autocompleteManager.displaySuggestions.calls.length === 1);
 
-          waitsFor(() => editorView.querySelector(".autocomplete-plus li") != null);
+          await waitsFor(() => editorView.querySelector(".autocomplete-plus li") != null);
 
-          return runs(function () {
+          await runs(async function () {
             const popup = editorView.querySelector(".autocomplete-plus");
             expect(popup).toExist();
             expect(popup.querySelector("span.word").textContent).toEqual("var1");
@@ -229,8 +228,8 @@ describe("autocomplete provider", function () {
           });
         });
 
-        it("suggests color variables from rgb values", function () {
-          runs(function () {
+        it("suggests color variables from rgb values", async function () {
+          await runs(async function () {
             expect(editorView.querySelector(".autocomplete-plus")).not.toExist();
 
             editor.moveToBottom();
@@ -249,11 +248,11 @@ describe("autocomplete provider", function () {
             return advanceClock(completionDelay);
           });
 
-          waitsFor(() => autocompleteManager.displaySuggestions.calls.length === 1);
+          await waitsFor(() => autocompleteManager.displaySuggestions.calls.length === 1);
 
-          waitsFor(() => editorView.querySelector(".autocomplete-plus li") != null);
+          await waitsFor(() => editorView.querySelector(".autocomplete-plus li") != null);
 
-          return runs(function () {
+          await runs(async function () {
             const popup = editorView.querySelector(".autocomplete-plus");
             expect(popup).toExist();
             expect(popup.querySelector("span.word").textContent).toEqual("var1");
@@ -263,10 +262,10 @@ describe("autocomplete provider", function () {
         });
 
         return describe("and when extendAutocompleteToVariables is true", function () {
-          beforeEach(() => lumine.config.set("colors.extendAutocompleteToVariables", true));
+          beforeEach(async () => lumine.config.set("colors.extendAutocompleteToVariables", true));
 
-          return it("returns suggestions for the matching variable value", function () {
-            runs(function () {
+          return it("returns suggestions for the matching variable value", async function () {
+            await runs(async function () {
               expect(editorView.querySelector(".autocomplete-plus")).not.toExist();
 
               editor.moveToBottom();
@@ -280,11 +279,11 @@ describe("autocomplete provider", function () {
               return advanceClock(completionDelay);
             });
 
-            waitsFor(() => autocompleteManager.displaySuggestions.calls.length === 1);
+            await waitsFor(() => autocompleteManager.displaySuggestions.calls.length === 1);
 
-            waitsFor(() => editorView.querySelector(".autocomplete-plus li") != null);
+            await waitsFor(() => editorView.querySelector(".autocomplete-plus li") != null);
 
-            return runs(function () {
+            await runs(async function () {
               const popup = editorView.querySelector(".autocomplete-plus");
               expect(popup).toExist();
               expect(popup.querySelector("span.word").textContent).toEqual("button-padding");
@@ -296,8 +295,8 @@ describe("autocomplete provider", function () {
       });
 
       return describe("with a transparent color", () =>
-        it("displays the color hexadecimal code in the completion item", function () {
-          runs(function () {
+        it("displays the color hexadecimal code in the completion item", async function () {
+          await runs(async function () {
             expect(editorView.querySelector(".autocomplete-plus")).not.toExist();
 
             editor.moveToBottom();
@@ -308,11 +307,11 @@ describe("autocomplete provider", function () {
             return advanceClock(completionDelay);
           });
 
-          waitsFor(() => autocompleteManager.displaySuggestions.calls.length === 1);
+          await waitsFor(() => autocompleteManager.displaySuggestions.calls.length === 1);
 
-          waitsFor(() => editorView.querySelector(".autocomplete-plus li") != null);
+          await waitsFor(() => editorView.querySelector(".autocomplete-plus li") != null);
 
-          return runs(function () {
+          await runs(async function () {
             const popup = editorView.querySelector(".autocomplete-plus");
             expect(popup).toExist();
             expect(popup.querySelector("span.word").textContent).toEqual("$other-color");
@@ -326,9 +325,9 @@ describe("autocomplete provider", function () {
   });
 
   describe("writing the name of a non-color variable", () =>
-    it("returns suggestions for the matching variable", function () {
+    it("returns suggestions for the matching variable", async function () {
       lumine.config.set("colors.extendAutocompleteToVariables", false);
-      runs(function () {
+      await runs(async function () {
         expect(editorView.querySelector(".autocomplete-plus")).not.toExist();
 
         editor.moveToBottom();
@@ -339,17 +338,17 @@ describe("autocomplete provider", function () {
         return advanceClock(completionDelay);
       });
 
-      waitsFor(() => autocompleteManager.displaySuggestions.calls.length === 1);
+      await waitsFor(() => autocompleteManager.displaySuggestions.calls.length === 1);
 
-      return runs(() => expect(editorView.querySelector(".autocomplete-plus")).not.toExist());
+      await runs(() => expect(editorView.querySelector(".autocomplete-plus")).not.toExist());
     }));
 
   return describe("when extendAutocompleteToVariables is true", function () {
-    beforeEach(() => lumine.config.set("colors.extendAutocompleteToVariables", true));
+    beforeEach(async () => lumine.config.set("colors.extendAutocompleteToVariables", true));
 
     return describe("writing the name of a non-color variable", () =>
-      it("returns suggestions for the matching variable", function () {
-        runs(function () {
+      it("returns suggestions for the matching variable", async function () {
+        await runs(async function () {
           expect(editorView.querySelector(".autocomplete-plus")).not.toExist();
 
           editor.moveToBottom();
@@ -365,11 +364,11 @@ describe("autocomplete provider", function () {
           return advanceClock(completionDelay);
         });
 
-        waitsFor(() => autocompleteManager.displaySuggestions.calls.length === 1);
+        await waitsFor(() => autocompleteManager.displaySuggestions.calls.length === 1);
 
-        waitsFor(() => editorView.querySelector(".autocomplete-plus li") != null);
+        await waitsFor(() => editorView.querySelector(".autocomplete-plus li") != null);
 
-        return runs(function () {
+        await runs(async function () {
           const popup = editorView.querySelector(".autocomplete-plus");
           expect(popup).toExist();
           expect(popup.querySelector("span.word").textContent).toEqual("button-padding");
@@ -393,8 +392,8 @@ describe("autocomplete provider", function () {
   ] = Array.from([]);
 
   return describe("for sass files", function () {
-    beforeEach(function () {
-      runs(function () {
+    beforeEach(async function () {
+      await runs(async function () {
         jasmineContent = document.body.querySelector("#jasmine-content");
 
         lumine.config.set("colors.autocompleteScopes", ["*"]);
@@ -411,42 +410,42 @@ describe("autocomplete provider", function () {
         return jasmineContent.appendChild(workspaceElement);
       });
 
-      waitsForPromise("autocomplete-plus activation", () =>
+      await waitsForPromise("autocomplete-plus activation", () =>
         lumine.packages
-          .activatePackage("autocomplete-plus")
+          .activatePackage("autocomplete")
           .then((pkg) => (autocompleteMain = pkg.mainModule)),
       );
 
-      waitsForPromise("colors activation", () =>
+      await waitsForPromise("colors activation", () =>
         lumine.packages.activatePackage("colors").then((pkg) => (colors = pkg.mainModule)),
       );
 
-      runs(function () {
-        spyOn(autocompleteMain, "consumeProvider").andCallThrough();
-        return spyOn(colors, "provideAutocomplete").andCallThrough();
+      await runs(async function () {
+        spyOn(autocompleteMain, "consumeAutocomplete").and.callThrough();
+        return spyOn(colors, "provideAutocomplete").and.callThrough();
       });
 
-      waitsForPromise("open sample file", () =>
+      await waitsForPromise("open sample file", () =>
         lumine.workspace.open("sample.styl").then(function (e) {
           editor = e;
           return (editorView = lumine.views.getView(editor));
         }),
       );
 
-      waitsForPromise("colors project initialized", function () {
+      await waitsForPromise("colors project initialized", function () {
         project = colors.getProject();
         return project.initialize();
       });
 
-      return runs(function () {
+      await runs(async function () {
         ({ autocompleteManager } = autocompleteMain);
-        spyOn(autocompleteManager, "findSuggestions").andCallThrough();
-        return spyOn(autocompleteManager, "displaySuggestions").andCallThrough();
+        spyOn(autocompleteManager, "findSuggestions").and.callThrough();
+        return spyOn(autocompleteManager, "displaySuggestions").and.callThrough();
       });
     });
 
-    return it("does not display the alternate sass version", function () {
-      runs(function () {
+    return it("does not display the alternate sass version", async function () {
+      await runs(async function () {
         expect(editorView.querySelector(".autocomplete-plus")).not.toExist();
 
         editor.moveToBottom();
@@ -457,14 +456,17 @@ describe("autocomplete provider", function () {
         return advanceClock(completionDelay);
       });
 
-      waitsFor(
+      await waitsFor(
         "suggestions displayed callback",
         () => autocompleteManager.displaySuggestions.calls.length === 1,
       );
 
-      waitsFor("autocomplete lis", () => editorView.querySelector(".autocomplete-plus li") != null);
+      await waitsFor(
+        "autocomplete lis",
+        () => editorView.querySelector(".autocomplete-plus li") != null,
+      );
 
-      return runs(function () {
+      await runs(async function () {
         const lis = editorView.querySelectorAll(".autocomplete-plus li");
         const hasAlternate = Array.prototype.some.call(
           lis,

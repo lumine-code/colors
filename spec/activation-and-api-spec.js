@@ -1,4 +1,4 @@
-﻿/*
+﻿const { runs, waitsFor, waitsForPromise } = require("./helpers/waiters"); /*
  * decaffeinate suggestions:
  * DS101: Remove unnecessary use of Array.from
  * DS102: Remove unnecessary code created because of implicit returns
@@ -15,7 +15,7 @@ const { SERIALIZE_VERSION, SERIALIZE_MARKERS_VERSION } = require("../lib/version
 describe("Colors", function () {
   let [workspaceElement, colors, project] = Array.from([]);
 
-  beforeEach(function () {
+  beforeEach(async function () {
     workspaceElement = lumine.views.getView(lumine.workspace);
     jasmine.attachToDOM(workspaceElement);
 
@@ -30,7 +30,7 @@ describe("Colors", function () {
       ["txt"],
     );
 
-    return waitsForPromise({ label: "colors activation" }, () =>
+    await waitsForPromise({ label: "colors activation" }, () =>
       lumine.packages.activatePackage("colors").then(function (pkg) {
         colors = pkg.mainModule;
         return (project = colors.getProject());
@@ -38,16 +38,16 @@ describe("Colors", function () {
     );
   });
 
-  afterEach(function () {
+  afterEach(async function () {
     registry.removeExpression("colors:txt_vars");
     return project != null ? project.destroy() : undefined;
   });
 
-  it("instanciates a ColorProject instance", () => expect(colors.getProject()).toBeDefined());
+  it("instanciates a ColorProject instance", async () => expect(colors.getProject()).toBeDefined());
 
-  it("serializes the project", function () {
+  it("serializes the project", async function () {
     const date = new Date();
-    spyOn(colors.getProject(), "getTimestamp").andCallFake(() => date);
+    spyOn(colors.getProject(), "getTimestamp").and.callFake(() => date);
     return expect(colors.serialize()).toEqual({
       project: {
         deserializer: "ColorProject",
@@ -63,8 +63,8 @@ describe("Colors", function () {
 
   describe("when deactivated", function () {
     let [editor, editorElement, colorBuffer] = Array.from([]);
-    beforeEach(function () {
-      waitsForPromise({ label: "text-editor opened" }, () =>
+    beforeEach(async function () {
+      await waitsForPromise({ label: "text-editor opened" }, () =>
         lumine.workspace.open("four-variables.styl").then(function (e) {
           editor = e;
           editorElement = lumine.views.getView(e);
@@ -72,42 +72,42 @@ describe("Colors", function () {
         }),
       );
 
-      waitsFor("colors markers appended to the DOM", () =>
+      await waitsFor("colors markers appended to the DOM", () =>
         editorElement.querySelector("colors-markers"),
       );
 
-      return runs(function () {
-        spyOn(project, "destroy").andCallThrough();
-        spyOn(colorBuffer, "destroy").andCallThrough();
+      await runs(async function () {
+        spyOn(project, "destroy").and.callThrough();
+        spyOn(colorBuffer, "destroy").and.callThrough();
 
         return colors.deactivate();
       });
     });
 
-    it("destroys the colors project", () => expect(project.destroy).toHaveBeenCalled());
+    it("destroys the colors project", async () => expect(project.destroy).toHaveBeenCalled());
 
-    it("destroys all the color buffers that were created", function () {
+    it("destroys all the color buffers that were created", async function () {
       expect(project.colorBufferForEditor(editor)).toBeUndefined();
       expect(project.colorBuffersByEditorId).toBeNull();
       return expect(colorBuffer.destroy).toHaveBeenCalled();
     });
 
-    return it("destroys the color buffer element that were added to the DOM", () =>
+    return it("destroys the color buffer element that were added to the DOM", async () =>
       expect(editorElement.querySelector("colors-markers")).not.toExist());
   });
 
   describe("colors:project-settings", function () {
     let item = null;
-    beforeEach(function () {
+    beforeEach(async function () {
       lumine.commands.dispatch(workspaceElement, "colors:project-settings");
 
-      return waitsFor("active pane item", function () {
+      await waitsFor("active pane item", function () {
         item = lumine.workspace.getActivePaneItem();
         return item != null;
       });
     });
 
-    return it("opens a settings view in the active pane", () =>
+    return it("opens a settings view in the active pane", async () =>
       item.matches("colors-color-project"));
   });
 
@@ -121,8 +121,8 @@ describe("Colors", function () {
 
   describe("API provider", function () {
     let [service, editor, editorElement, buffer] = Array.from([]);
-    beforeEach(function () {
-      waitsForPromise({ label: "text-editor opened" }, () =>
+    beforeEach(async function () {
+      await waitsForPromise({ label: "text-editor opened" }, () =>
         lumine.workspace.open("four-variables.styl").then(function (e) {
           editor = e;
           editorElement = lumine.views.getView(e);
@@ -130,12 +130,12 @@ describe("Colors", function () {
         }),
       );
 
-      runs(() => (service = colors.provideAPI()));
+      await runs(() => (service = colors.provideColorsProject()));
 
-      return waitsForPromise({ label: "project initialized" }, () => project.initialize());
+      await waitsForPromise({ label: "project initialized" }, () => project.initialize());
     });
 
-    it("returns an object conforming to the API", function () {
+    it("returns an object conforming to the API", async function () {
       expect(service instanceof ColorsAPI).toBeTruthy();
 
       expect(service.getProject()).toBe(project);
@@ -150,22 +150,22 @@ describe("Colors", function () {
     return describe("::observeColorBuffers", function () {
       let [spy] = Array.from([]);
 
-      beforeEach(function () {
+      beforeEach(async function () {
         spy = jasmine.createSpy("did-create-color-buffer");
         return service.observeColorBuffers(spy);
       });
 
-      it("calls the callback for every existing color buffer", function () {
+      it("calls the callback for every existing color buffer", async function () {
         expect(spy).toHaveBeenCalled();
         return expect(spy.calls.length).toEqual(1);
       });
 
-      return it("calls the callback on every new buffer creation", function () {
-        waitsForPromise({ label: "text-editor opened" }, () =>
+      return it("calls the callback on every new buffer creation", async function () {
+        await waitsForPromise({ label: "text-editor opened" }, () =>
           lumine.workspace.open("buttons.styl"),
         );
 
-        return runs(() => expect(spy.calls.length).toEqual(2));
+        await runs(() => expect(spy.calls.length).toEqual(2));
       });
     });
   });
@@ -179,28 +179,21 @@ describe("Colors", function () {
   //#     ######   #######  ########  #######  ##     ##  ######
 
   describe("color expression consumer", function () {
-    let [
-      colorProvider,
-      consumerDisposable,
-      editor,
-      editorElement,
-      colorBuffer,
-      colorBufferElement,
-      otherConsumerDisposable,
-    ] = Array.from([]);
-    beforeEach(function () {
+    let [colorProvider, consumerDisposable, editor, colorBuffer, otherConsumerDisposable] =
+      Array.from([]);
+    beforeEach(async function () {
       return (colorProvider = {
         name: "todo",
         regexpString: "TODO",
         scopes: ["*"],
         priority: 0,
-        handle(match, expression, context) {
+        handle(_match, _expression, _context) {
           return (this.red = 255);
         },
       });
     });
 
-    afterEach(function () {
+    afterEach(async function () {
       if (consumerDisposable != null) {
         consumerDisposable.dispose();
       }
@@ -208,10 +201,10 @@ describe("Colors", function () {
     });
 
     describe("when consumed before opening a text editor", function () {
-      beforeEach(function () {
+      beforeEach(async function () {
         consumerDisposable = colors.consumeColorExpressions(colorProvider);
 
-        waitsForPromise({ label: "text-editor opened" }, () =>
+        await waitsForPromise({ label: "text-editor opened" }, () =>
           lumine.workspace.open("color-consumer-sample.txt").then(function (e) {
             editor = e;
             editorElement = lumine.views.getView(e);
@@ -219,20 +212,22 @@ describe("Colors", function () {
           }),
         );
 
-        waitsForPromise({ label: "color buffer initialized" }, () => colorBuffer.initialize());
-        return waitsForPromise({ label: "color buffer variables available" }, () =>
+        await waitsForPromise({ label: "color buffer initialized" }, () =>
+          colorBuffer.initialize(),
+        );
+        await waitsForPromise({ label: "color buffer variables available" }, () =>
           colorBuffer.variablesAvailable(),
         );
       });
 
-      it("parses the new expression and renders a color", () =>
+      it("parses the new expression and renders a color", async () =>
         expect(colorBuffer.getColorMarkers().length).toEqual(1));
 
-      it("returns a Disposable instance", () =>
+      it("returns a Disposable instance", async () =>
         expect(consumerDisposable instanceof Disposable).toBeTruthy());
 
       return describe("the returned disposable", function () {
-        it("removes the provided expression from the registry", function () {
+        it("removes the provided expression from the registry", async function () {
           consumerDisposable.dispose();
 
           return expect(
@@ -240,22 +235,25 @@ describe("Colors", function () {
           ).toBeUndefined();
         });
 
-        return it("triggers an update in the opened editors", function () {
+        return it("triggers an update in the opened editors", async function () {
           const updateSpy = jasmine.createSpy("did-update-color-markers");
 
           colorBuffer.onDidUpdateColorMarkers(updateSpy);
           consumerDisposable.dispose();
 
-          waitsFor("did-update-color-markers event dispatched", () => updateSpy.callCount > 0);
+          await waitsFor(
+            "did-update-color-markers event dispatched",
+            () => updateSpy.calls.count() > 0,
+          );
 
-          return runs(() => expect(colorBuffer.getColorMarkers().length).toEqual(0));
+          await runs(() => expect(colorBuffer.getColorMarkers().length).toEqual(0));
         });
       });
     });
 
     describe("when consumed after opening a text editor", function () {
-      beforeEach(function () {
-        waitsForPromise({ label: "text-editor opened" }, () =>
+      beforeEach(async function () {
+        await waitsForPromise({ label: "text-editor opened" }, () =>
           lumine.workspace.open("color-consumer-sample.txt").then(function (e) {
             editor = e;
             editorElement = lumine.views.getView(e);
@@ -263,33 +261,41 @@ describe("Colors", function () {
           }),
         );
 
-        waitsForPromise({ label: "color buffer initialized" }, () => colorBuffer.initialize());
-        return waitsForPromise({ label: "color buffer variables available" }, () =>
+        await waitsForPromise({ label: "color buffer initialized" }, () =>
+          colorBuffer.initialize(),
+        );
+        await waitsForPromise({ label: "color buffer variables available" }, () =>
           colorBuffer.variablesAvailable(),
         );
       });
 
-      it("triggers an update in the opened editors", function () {
+      it("triggers an update in the opened editors", async function () {
         const updateSpy = jasmine.createSpy("did-update-color-markers");
 
         colorBuffer.onDidUpdateColorMarkers(updateSpy);
         consumerDisposable = colors.consumeColorExpressions(colorProvider);
 
-        waitsFor("did-update-color-markers event dispatched", () => updateSpy.callCount > 0);
+        await waitsFor(
+          "did-update-color-markers event dispatched",
+          () => updateSpy.calls.count() > 0,
+        );
 
-        runs(function () {
+        await runs(async function () {
           expect(colorBuffer.getColorMarkers().length).toEqual(1);
 
           return consumerDisposable.dispose();
         });
 
-        waitsFor("did-update-color-markers event dispatched", () => updateSpy.callCount > 1);
+        await waitsFor(
+          "did-update-color-markers event dispatched",
+          () => updateSpy.calls.count() > 1,
+        );
 
-        return runs(() => expect(colorBuffer.getColorMarkers().length).toEqual(0));
+        await runs(() => expect(colorBuffer.getColorMarkers().length).toEqual(0));
       });
 
       return describe("when an array of expressions is passed", () =>
-        it("triggers an update in the opened editors", function () {
+        it("triggers an update in the opened editors", async function () {
           const updateSpy = jasmine.createSpy("did-update-color-markers");
 
           colorBuffer.onDidUpdateColorMarkers(updateSpy);
@@ -297,60 +303,67 @@ describe("Colors", function () {
             expressions: [colorProvider],
           });
 
-          waitsFor("did-update-color-markers event dispatched", () => updateSpy.callCount > 0);
+          await waitsFor(
+            "did-update-color-markers event dispatched",
+            () => updateSpy.calls.count() > 0,
+          );
 
-          runs(function () {
+          await runs(async function () {
             expect(colorBuffer.getColorMarkers().length).toEqual(1);
 
             return consumerDisposable.dispose();
           });
 
-          waitsFor("did-update-color-markers event dispatched", () => updateSpy.callCount > 1);
+          await waitsFor(
+            "did-update-color-markers event dispatched",
+            () => updateSpy.calls.count() > 1,
+          );
 
-          return runs(() => expect(colorBuffer.getColorMarkers().length).toEqual(0));
+          await runs(() => expect(colorBuffer.getColorMarkers().length).toEqual(0));
         }));
     });
 
     return describe("when the expression matches a variable value", function () {
-      beforeEach(() =>
-        waitsForPromise({ label: "project initialized" }, () => project.initialize()),
+      beforeEach(
+        async () =>
+          await waitsForPromise({ label: "project initialized" }, () => project.initialize()),
       );
 
-      it("detects the new variable as a color variable", function () {
+      it("detects the new variable as a color variable", async function () {
         const variableSpy = jasmine.createSpy("did-update-variables");
 
         project.onDidUpdateVariables(variableSpy);
 
         lumine.config.set("colors.sourceNames", ["**/*.txt"]);
 
-        waitsFor("variables updated", () => variableSpy.callCount > 1);
+        await waitsFor("variables updated", () => variableSpy.calls.count() > 1);
 
-        runs(function () {
+        await runs(async function () {
           expect(project.getVariables().length).toEqual(6);
           expect(project.getColorVariables().length).toEqual(4);
 
           return (consumerDisposable = colors.consumeColorExpressions(colorProvider));
         });
 
-        waitsFor("variables updated", () => variableSpy.callCount > 2);
+        await waitsFor("variables updated", () => variableSpy.calls.count() > 2);
 
-        return runs(function () {
+        await runs(async function () {
           expect(project.getVariables().length).toEqual(6);
           return expect(project.getColorVariables().length).toEqual(5);
         });
       });
 
       return describe("and there was an expression that could not be resolved before", () =>
-        it("updates the invalid color as a now valid color", function () {
+        it("updates the invalid color as a now valid color", async function () {
           const variableSpy = jasmine.createSpy("did-update-variables");
 
           project.onDidUpdateVariables(variableSpy);
 
           lumine.config.set("colors.sourceNames", ["**/*.txt"]);
 
-          waitsFor("variables updated", () => variableSpy.callCount > 1);
+          await waitsFor("variables updated", () => variableSpy.calls.count() > 1);
 
-          return runs(function () {
+          await runs(async function () {
             otherConsumerDisposable = colors.consumeColorExpressions({
               name: "bar",
               regexpString: "baz\\s+(\\w+)",
@@ -369,9 +382,9 @@ describe("Colors", function () {
 
             consumerDisposable = colors.consumeColorExpressions(colorProvider);
 
-            waitsFor("variables updated", () => variableSpy.callCount > 2);
+            await waitsFor("variables updated", () => variableSpy.calls.count() > 2);
 
-            runs(function () {
+            await runs(async function () {
               expect(project.getVariables().length).toEqual(6);
               expect(project.getColorVariables().length).toEqual(6);
               expect(project.getVariableByName("bar").color.invalid).toBeFalsy();
@@ -379,9 +392,9 @@ describe("Colors", function () {
               return consumerDisposable.dispose();
             });
 
-            waitsFor("variables updated", () => variableSpy.callCount > 3);
+            await waitsFor("variables updated", () => variableSpy.calls.count() > 3);
 
-            return runs(function () {
+            await runs(async function () {
               expect(project.getVariables().length).toEqual(6);
               expect(project.getColorVariables().length).toEqual(5);
               return expect(project.getVariableByName("bar").color.invalid).toBeTruthy();
@@ -400,71 +413,70 @@ describe("Colors", function () {
   //#       ###    ##     ## ##     ##  ######
 
   return describe("variable expression consumer", function () {
-    let [
-      variableProvider,
-      consumerDisposable,
-      editor,
-      editorElement,
-      colorBuffer,
-      colorBufferElement,
-    ] = Array.from([]);
+    let [variableProvider, consumerDisposable] = Array.from([]);
 
-    beforeEach(function () {
+    beforeEach(async function () {
       variableProvider = {
         name: "todo",
         regexpString: "(TODO):\\s*([^;\\n]+)",
       };
 
-      return waitsForPromise({ label: "project initialized" }, () => project.initialize());
+      await waitsForPromise({ label: "project initialized" }, () => project.initialize());
     });
 
-    afterEach(() => (consumerDisposable != null ? consumerDisposable.dispose() : undefined));
+    afterEach(async () => (consumerDisposable != null ? consumerDisposable.dispose() : undefined));
 
-    it("updates the project variables when consumed", function () {
+    it("updates the project variables when consumed", async function () {
       const variableSpy = jasmine.createSpy("did-update-variables");
 
       project.onDidUpdateVariables(variableSpy);
 
       lumine.config.set("colors.sourceNames", ["**/*.txt"]);
 
-      waitsFor("variables updated", () => variableSpy.callCount > 1);
+      await waitsFor("variables updated", () => variableSpy.calls.count() > 1);
 
-      runs(function () {
+      await runs(async function () {
         expect(project.getVariables().length).toEqual(6);
         expect(project.getColorVariables().length).toEqual(4);
 
         return (consumerDisposable = colors.consumeVariableExpressions(variableProvider));
       });
 
-      waitsFor("variables updated after service consumed", () => variableSpy.callCount > 2);
+      await waitsFor(
+        "variables updated after service consumed",
+        () => variableSpy.calls.count() > 2,
+      );
 
-      runs(function () {
+      await runs(async function () {
         expect(project.getVariables().length).toEqual(7);
         expect(project.getColorVariables().length).toEqual(4);
 
         return consumerDisposable.dispose();
       });
 
-      waitsFor("variables updated after service disposed", () => variableSpy.callCount > 3);
+      await waitsFor(
+        "variables updated after service disposed",
+        () => variableSpy.calls.count() > 3,
+      );
 
-      return runs(function () {
+      await runs(async function () {
         expect(project.getVariables().length).toEqual(6);
         return expect(project.getColorVariables().length).toEqual(4);
       });
     });
 
     return describe("when an array of expressions is passed", () =>
-      it("updates the project variables when consumed", function () {
+      it("updates the project variables when consumed", async function () {
         let previousVariablesCount = null;
         lumine.config.set("colors.sourceNames", ["**/*.txt"]);
 
-        waitsFor("variables initialized", () => project.getVariables().length === 45);
+        await waitsFor("variables initialized", () => project.getVariables().length === 45);
 
-        runs(() => (previousVariablesCount = project.getVariables().length));
+        await runs(() => (previousVariablesCount = project.getVariables().length));
 
-        waitsFor("variables updated", () => project.getVariables().length === 6);
+        await waitsFor("variables updated", () => project.getVariables().length === 6);
 
-        runs(function () {
+        await runs(async function () {
           expect(project.getVariables().length).toEqual(6);
           expect(project.getColorVariables().length).toEqual(4);
 
@@ -475,12 +487,12 @@ describe("Colors", function () {
           }));
         });
 
-        waitsFor(
+        await waitsFor(
           "variables updated after service consumed",
           () => project.getVariables().length !== previousVariablesCount,
         );
 
-        runs(function () {
+        await runs(async function () {
           expect(project.getVariables().length).toEqual(7);
           expect(project.getColorVariables().length).toEqual(4);
 
@@ -489,12 +501,12 @@ describe("Colors", function () {
           return consumerDisposable.dispose();
         });
 
-        waitsFor(
+        await waitsFor(
           "variables updated after service disposed",
           () => project.getVariables().length !== previousVariablesCount,
         );
 
-        return runs(function () {
+        await runs(async function () {
           expect(project.getVariables().length).toEqual(6);
           return expect(project.getColorVariables().length).toEqual(4);
         });
