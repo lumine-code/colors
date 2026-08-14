@@ -270,6 +270,53 @@ describe("ColorBuffer", function () {
         return expect(project.colorBuffersByEditorId[editor.id]).toBeUndefined();
       }));
 
+    describe("when the color buffer is destroyed", function () {
+      it("completes a scan started before the destruction without reporting an error", async function () {
+        spyOn(console, "log");
+
+        const promise = colorBuffer.update();
+        colorBuffer.destroy();
+
+        await waitsForPromise(() => promise);
+        await runs(() => expect(console.log).not.toHaveBeenCalled());
+      });
+
+      it("scans nothing at all", async function () {
+        colorBuffer.destroy();
+
+        await waitsForPromise(() =>
+          colorBuffer.scanBufferForColors().then((results) => expect(results).toEqual([])),
+        );
+        await waitsForPromise(() =>
+          colorBuffer.scanBufferForVariables().then((results) => expect(results).toEqual([])),
+        );
+      });
+
+      it("does not update its markers any more", async function () {
+        const updateSpy = jasmine.createSpy("did-update-color-markers");
+        colorBuffer.onDidUpdateColorMarkers(updateSpy);
+        colorBuffer.destroy();
+
+        await waitsForPromise(() => colorBuffer.update());
+        await runs(() => expect(updateSpy).not.toHaveBeenCalled());
+      });
+
+      return it("clears the scan scheduled by the last edit", async function () {
+        lumine.config.set("colors.delayBeforeScan", 300);
+        spyOn(colorBuffer, "update").and.callThrough();
+
+        editor.insertText(" ");
+        editor.getBuffer().emitter.emit("did-stop-changing", { changes: [] });
+        expect(colorBuffer.timeout).not.toBeNull();
+
+        colorBuffer.destroy();
+        expect(colorBuffer.timeout).toBeNull();
+
+        advanceClock(500);
+        return expect(colorBuffer.update).not.toHaveBeenCalled();
+      });
+    });
+
     describe("::getColorMarkerAtBufferPosition", function () {
       describe("when the buffer position is contained in a marker range", () =>
         it("returns the corresponding color marker", async function () {
