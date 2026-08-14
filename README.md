@@ -2,9 +2,7 @@
 
 Show the colors written in a file and across the project.
 
-Every colour in an open file is marked where it is written, and the variables a
-project declares are scanned so that a name resolves to the colour it stands
-for, wherever it was defined.
+Every colour in an open file is marked where it is written, and the variables a project declares are scanned so that a name resolves to the colour it stands for, wherever it was defined.
 
 ## Features
 
@@ -19,7 +17,7 @@ for, wherever it was defined.
 
 ## Installation
 
-To install `colors` search for _colors_ in the Install pane of the Lumine settings or run `lumine --install lumine-code/colors`.
+To install `colors` search for it in the Install pane of the Lumine settings, or run the command `lumine --install lumine-code/colors`.
 
 ## Commands
 
@@ -46,21 +44,13 @@ Commands available in `lumine-text-editor`, acting on the colour under the curso
 
 ## Usage
 
-Variables are scanned from the files matching the `sourceNames` setting, which
-covers CSS, Less, Sass, SCSS and Stylus by default. Which files get colour marks
-is a separate question, answered by `supportedFiletypes` — every file by
-default. Colour _words_ such as `red` or `whitesmoke` are only marked in the
-file types listed in `filetypesForColorWords`, so prose is not littered with
-them.
+Variables are scanned from the files matching the `sourceNames` setting, which covers CSS, Less, Sass, SCSS and Stylus by default. Which files get colour marks is a separate question, answered by `supportedFiletypes` — every file by default. Colour _words_ such as `red` or `whitesmoke` are only marked in the file types listed in `filetypesForColorWords`, so prose is not littered with them.
 
-The scan uses the editor's bundled ripgrep to find candidate files and honours
-the repository's ignore rules; `ignoredNames` excludes further paths, and a
-pattern naming a directory excludes everything beneath it.
+The scan uses the editor's bundled ripgrep to find candidate files and honours the repository's ignore rules; `ignoredNames` excludes further paths, and a pattern naming a directory excludes everything beneath it.
 
 ## Customization
 
-The marks are styled from the theme's own variables. To change how a colour mark
-reads, paste something like this into your `styles.css`:
+The marks are styled from the theme's own variables. To change how a colour mark reads, paste something like this into your `styles.css`:
 
 ```css
 lumine-text-editor .colors-background {
@@ -71,11 +61,11 @@ lumine-text-editor .colors-background {
 
 ## Services
 
-- **[colors.project](docs/1_colors-project.md)** (`1.0.0`): provided to expose the scanned colour project, its palette, its variables and its buffers.
-- **autocomplete.provider** (`1.0.0`): provided to complete colour names and colour variables while typing.
-- **[colors.color-expressions](docs/2_colors-color-expressions.md)** (`^1.0.0`): consumed so other packages can add colour expressions.
-- **[colors.variable-expressions](docs/3_colors-variable-expressions.md)** (`^1.0.0`): consumed so other packages can add variable expressions.
-- **color-picker** (`^1.0.0`): consumed to open a picker on the colour under the cursor.
+- [`colors.project`](docs/1_colors-project.md): provided to expose the scanned colour project, its palette, its variables and its buffers.
+- `autocomplete.provider`: provided to complete colour names and colour variables while typing.
+- [`colors.color-expressions`](docs/2_colors-color-expressions.md): consumed so other packages can add colour expressions.
+- [`colors.variable-expressions`](docs/3_colors-variable-expressions.md): consumed so other packages can add variable expressions.
+- `color-picker`: consumed to open a picker on the colour under the cursor.
 
 Extending the colour and variable expressions is described in [docs/4_extending-colors.md](docs/4_extending-colors.md), and the parsing context in [docs/5_color-context-api.md](docs/5_color-context-api.md).
 

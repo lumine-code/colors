@@ -1,7 +1,6 @@
 # colors.project
 
-Read access to the scanned colour project: its palette, its variables, and the
-colour buffers attached to open editors.
+Read access to the scanned colour project: its palette, its variables, and the colour buffers attached to open editors.
 
 |             |                                              |
 | ----------- | -------------------------------------------- |
@@ -28,8 +27,7 @@ Your method is called with the API object and may return a `Disposable`.
 
 ## Contract
 
-The provided object exposes these methods. All of them read; nothing here
-mutates the project.
+The provided object exposes these methods. All of them read; nothing here mutates the project.
 
 | method                          | returns                                                                      |
 | ------------------------------- | ---------------------------------------------------------------------------- |
@@ -39,8 +37,7 @@ mutates the project.
 | `getColorVariables()`           | only the variables whose value is a colour                                   |
 | `observeColorBuffers(callback)` | a `Disposable`; calls back for every existing colour buffer and each new one |
 
-A variable carries at least `name`, `value`, `path`, `line` and `isColor`; a
-colour variable also carries a `color` with `red`, `green`, `blue` and `alpha`.
+A variable carries at least `name`, `value`, `path`, `line` and `isColor`; a colour variable also carries a `color` with `red`, `green`, `blue` and `alpha`.
 
 ## Minimal example
 
@@ -58,18 +55,12 @@ module.exports = {
 
 ## Behavior
 
-The project scans lazily. `getVariables()` answers with what has been found so
-far, which is empty until the first scan settles, so a consumer that needs the
-whole set should wait on `getProject().initialize()` rather than reading
-immediately.
+The project scans lazily. `getVariables()` answers with what has been found so far, which is empty until the first scan settles, so a consumer that needs the whole set should wait on `getProject().initialize()` rather than reading immediately.
 
 ## Teardown
 
-`observeColorBuffers` returns a `Disposable`, and whatever your consume method
-returns is disposed when `colors` deactivates. Hold no reference to a colour
-buffer past its `onDidDestroy`.
+`observeColorBuffers` returns a `Disposable`, and whatever your consume method returns is disposed when `colors` deactivates. Hold no reference to a colour buffer past its `onDidDestroy`.
 
 ## Versioning
 
-`1.0.0`. A change to any method's name, arguments or return shape is a new
-major version.
+`1.0.0`. A change to any method's name, arguments or return shape is a new major version.

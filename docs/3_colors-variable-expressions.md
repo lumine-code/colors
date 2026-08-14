@@ -1,7 +1,6 @@
 # colors.variable-expressions
 
-Lets a package teach `colors` to recognise a variable declaration it does not
-know, so the values it declares can be resolved wherever they are used.
+Lets a package teach `colors` to recognise a variable declaration it does not know, so the values it declares can be resolved wherever they are used.
 
 |             |                                         |
 | ----------- | --------------------------------------- |
@@ -10,8 +9,7 @@ know, so the values it declares can be resolved wherever they are used.
 | Consumed by | `colors`                                |
 | Owner       | `colors`                                |
 
-This is a hub contract: `colors` is the consumer, and other packages provide
-into it.
+This is a hub contract: `colors` is the consumer, and other packages provide into it.
 
 ## Registration
 
@@ -25,8 +23,7 @@ into it.
 }
 ```
 
-Return either one expression or `{ expressions: [...] }`. `colors` hands back a
-`Disposable` that removes what you registered.
+Return either one expression or `{ expressions: [...] }`. `colors` hands back a `Disposable` that removes what you registered.
 
 ## Contract
 
@@ -45,8 +42,7 @@ Optional fields:
 | `scopes`   | `Array<String>` | `['*']` | which languages it applies to                                                              |
 | `priority` | `Number`        | `0`     | higher wins where two expressions match the same text                                      |
 
-Without a `handle`, the first two capture groups are taken as the name and the
-value, which covers most `name: value` syntaxes.
+Without a `handle`, the first two capture groups are taken as the name and the value, which covers most `name: value` syntaxes.
 
 ## Minimal example
 
@@ -65,14 +61,10 @@ module.exports = {
 
 ## Behavior
 
-Variable expressions run over the files matched by the `sourceNames` setting,
-not over every file, so a declaration syntax that lives elsewhere needs that
-setting widened before it is seen.
+Variable expressions run over the files matched by the `sourceNames` setting, not over every file, so a declaration syntax that lives elsewhere needs that setting widened before it is seen.
 
-Registering or removing an expression re-scans the project's variables, which
-in turn re-resolves every colour that referred to one.
+Registering or removing an expression re-scans the project's variables, which in turn re-resolves every colour that referred to one.
 
 ## Versioning
 
-`1.0.0`. Adding an optional field is a minor version; changing `handle`'s
-arguments or the default capture-group meaning is a major one.
+`1.0.0`. Adding an optional field is a minor version; changing `handle`'s arguments or the default capture-group meaning is a major one.
