@@ -106,6 +106,15 @@ describe("VariableParser", function () {
   itParses("--color: white;").as({ "var(--color)": "white" });
   itParses("--non-color: 10px;").as({ "var(--non-color)": "10px" });
 
+  // A minified stylesheet has no whitespace between rules, so the name must
+  // stop at CSS punctuation. It used to run to the last colon on the line,
+  // producing a name full of selector syntax that then threw when it was
+  // interpolated into a RegExp -- `[data-color-mode=light]` reads as an
+  // out-of-order character class range.
+  itParses(
+    ".a{--first:#0969da;--second:var(--second)}[data-color-mode=light][data-light-theme*=dark]{--third:#0969da;}",
+  ).as({ "var(--first)": "#0969da" });
+
   itParses("\\definecolor{orange}{gray}{1}").as({
     "{orange}": "gray(100%)",
   });
