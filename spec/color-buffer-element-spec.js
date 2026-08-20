@@ -9,7 +9,10 @@ const { runs, waitsFor, waitsForPromise } = require("./helpers/waiters"); /*
 const fs = require("fs");
 const path = require("path");
 require("./helpers/spec-helper");
+require("./helpers/matchers");
 const { mousedown } = require("./helpers/events");
+const Color = require("../lib/color");
+const ColorBufferElement = require("../lib/color-buffer-element");
 
 const _sleep = async function (duration) {
   const t = new Date();
@@ -507,6 +510,73 @@ describe("ColorBufferElement", function () {
         return it("ignores the colors that matches the defined scopes", async () =>
           expect(getEditorDecorations("background").length).toEqual(0));
       });
+    });
+  });
+});
+
+describe("ColorBufferElement decoration styles", function () {
+  let [element] = Array.from([]);
+
+  const cssFor = (color, type, backdrop) =>
+    element.getHighlighDecorationCSS({ color }, type, backdrop).style.innerHTML;
+
+  beforeEach(() => (element = new ColorBufferElement()));
+
+  describe("::getHighlighDecorationCSS", function () {
+    it("paints the color once, so its alpha reads as written", function () {
+      const css = cssFor(new Color(255, 0, 0, 0.5), "background", new Color("#ffffff"));
+
+      expect(css).not.toContain("background-color:");
+      return expect(css).toContain("linear-gradient(to bottom, rgba(255,0,0,0.5) 0%");
+    });
+
+    it("takes the text color from what the marker composites to", function () {
+      const barelyThere = new Color(70, 72, 83, 0.06);
+
+      expect(cssFor(barelyThere, "background", new Color("#ffffff"))).toContain("color: black");
+      return expect(cssFor(barelyThere, "background", new Color("#282c34"))).toContain(
+        "color: white",
+      );
+    });
+
+    it("reads the color on its own when the backdrop is unknown", () =>
+      expect(cssFor(new Color(255, 255, 255, 0.06), "background", null)).toContain("color: black"));
+
+    return it("paints an underline once as well", function () {
+      const css = cssFor(new Color(255, 0, 0, 0.5), "underline", null);
+
+      expect(css).not.toContain("background-color:");
+      return expect(css).toContain("repeating-conic-gradient");
+    });
+  });
+
+  return describe("::getEditorBackgroundColor", function () {
+    let [host] = Array.from([]);
+
+    beforeEach(function () {
+      host = document.createElement("div");
+      return jasmine.attachToDOM(host);
+    });
+
+    it("reads the color the editor paints", function () {
+      host.innerHTML = "<div style='background-color: rgb(40, 44, 52)'></div>";
+      element.editorElement = host.firstElementChild;
+
+      return expect(element.getEditorBackgroundColor()).toBeColor(40, 44, 52, 1);
+    });
+
+    it("composites what an editor painting no background of its own sits on", function () {
+      host.style.backgroundColor = "rgb(255, 255, 255)";
+      host.innerHTML = "<div style='background-color: rgba(0, 0, 0, 0.5)'></div>";
+      element.editorElement = host.firstElementChild;
+
+      return expect(element.getEditorBackgroundColor()).toBeColor(128, 128, 128, 1);
+    });
+
+    return it("returns null when the background cannot be read", function () {
+      element.editorElement = document.createElement("div");
+
+      return expect(element.getEditorBackgroundColor()).toBeNull();
     });
   });
 });

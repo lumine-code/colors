@@ -304,6 +304,32 @@ describe("Color", function () {
       return expect(color.transparentize(0.1)).toBeColor(255, 105, 51, 0.1);
     }));
 
+  describe("::over", function () {
+    it("returns the color itself when it is opaque", () =>
+      expect(new Color(255, 105, 51).over(new Color("#000000"))).toBeColor(255, 105, 51, 1));
+
+    it("composites the color over the passed-in one", function () {
+      expect(new Color(0, 0, 0, 0.5).over(new Color("#ffffff"))).toBeColor(128, 128, 128, 1);
+      return expect(new Color(255, 255, 255, 0.25).over(new Color("#000000"))).toBeColor(
+        64,
+        64,
+        64,
+        1,
+      );
+    });
+
+    it("keeps the transparency the backdrop has of its own", () =>
+      expect(new Color(0, 0, 0, 0.5).over(new Color(255, 255, 255, 0.5))).toBeColor(
+        85,
+        85,
+        85,
+        0.75,
+      ));
+
+    it("returns a copy of the color when there is no backdrop", () =>
+      expect(new Color(255, 105, 51, 0.1).over(null)).toBeColor(255, 105, 51, 0.1));
+  });
+
   return describe("::luma", () =>
     it("returns the luma value of the color", () => expect(color.luma).toBeCloseTo(0.31, 1)));
 });
