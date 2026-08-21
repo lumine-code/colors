@@ -24,6 +24,11 @@
     "You can see every colour a project defines, grouped and sorted, with {{ 'colors:show-palette' | keystroke }}",
     "You can find every use of a colour across the project with {{ 'colors:find-colors' | keystroke }}"
   ],
+  "specPackages": [
+    "autocomplete",
+    "language-coffee-script",
+    "language-less"
+  ],
   "main": "./lib/main",
   "files": [
     "docs",
